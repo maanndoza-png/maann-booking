@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin</title>
+<style>
+:root{--gold:#d4a62a;--green:#34c38f;--red:#f1556c;--blue:#4c8dff;--purple:#9b6cf0;--onGold:#1f1a05}
+[data-theme=dark]{--bg:#070b16;--panel:#0d1424;--panel2:#121b30;--line:#1f2a44;--ink:#e8ecf5;--mute:#8d99b5;--hover:#16213a}
+[data-theme=light]{--bg:#f4f1e8;--panel:#fff;--panel2:#faf8f3;--line:#e5dfcf;--ink:#1f2328;--mute:#6b7280;--hover:#f1ecdd}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink);background:var(--bg)}
+#login{max-width:340px;margin:90px auto;padding:0 16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+#app{display:none;min-height:100vh}
+aside{position:fixed;inset:0 auto 0 0;width:240px;background:var(--panel);border-right:1px solid var(--line);padding:16px 12px;overflow:auto;z-index:30;transition:transform .2s}
+.brand{display:flex;gap:10px;align-items:center;padding:4px 8px 16px}
+.logo{width:38px;height:38px;border-radius:10px;background:var(--gold);color:var(--onGold);display:grid;place-items:center;font-size:20px}
+.brand b{display:block;letter-spacing:.5px}.brand small{color:var(--gold);font-weight:700;font-size:11px;letter-spacing:.8px}
+aside button.nv{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;color:var(--mute);padding:11px 12px;border-radius:10px;font-size:14px;cursor:pointer;margin-bottom:2px}
+aside button.nv:hover{background:var(--hover);color:var(--ink)}
+aside button.nv.on{background:var(--gold);color:var(--onGold);font-weight:700}
+.status{margin:14px 8px 0;font-size:12px;color:var(--mute)}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:6px}
+.top{position:sticky;top:0;z-index:20;background:var(--bg);border-bottom:1px solid var(--line);padding:12px 16px 12px 256px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.top .r{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:20px;padding:8px 14px;font-size:13px;cursor:pointer}
+#burger{display:none}
+main{padding:20px 16px 40px 256px;max-width:1280px}
+h1{margin:0 0 4px;font-size:26px;font-family:Georgia,serif}h2{margin:0 0 4px;font-size:17px;font-family:Georgia,serif}
+.sub{color:var(--mute);font-size:13px;margin-bottom:16px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:14px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.kpi small{color:var(--mute);font-size:11px;letter-spacing:.6px;text-transform:uppercase}.kpi b{display:block;font-size:26px;margin:6px 0 4px}.kpi i{font-style:normal;color:var(--green);font-size:11px;font-weight:700}
+.g{display:grid;gap:14px;grid-template-columns:2fr 1fr}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.mute{color:var(--mute);font-size:13px}
+.btn{background:var(--gold);color:var(--onGold);border:0;border-radius:10px;padding:10px 14px;font-weight:700;font-size:14px;cursor:pointer}
+.btn.sec{background:var(--secBg,var(--panel2));color:var(--secText,var(--ink));border:1px solid var(--line)}.btn.ok{background:var(--green);color:#04281a}.btn.bad{background:var(--red);color:#fff}.btn.sm{padding:6px 10px;font-size:13px}
+label{display:block;font-size:12px;color:var(--mute);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px;border:1px solid var(--line);border-radius:10px;font-size:15px;font-family:inherit;background:var(--panel2);color:var(--ink)}
+input[type=color]{padding:2px;height:42px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.chk{display:flex;align-items:center;gap:8px;margin-top:6px}.chk input{width:auto}.chk label{margin:0;color:var(--ink);font-size:14px}
+.tag{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:700}
+.Pending{background:#4a3b0b;color:#ffd666}.Confirmed{background:#0f3b2a;color:#5ee0a4}.Cancelled{background:#4a1520;color:#ff8da0}
+[data-theme=light] .Pending{background:#fff1c9;color:#7a5a00}[data-theme=light] .Confirmed{background:#d8f1e2;color:#1d6b40}[data-theme=light] .Cancelled{background:#f8d9de;color:#a3243a}
+svg .grid{stroke:var(--line);stroke-width:1}svg .ax{fill:var(--mute);font-size:11px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin:6px 0}.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.thumbs div{position:relative}.thumbs img{width:78px;height:78px;object-fit:cover;border-radius:8px}
+.thumbs button{position:absolute;top:-6px;right:-6px;border:0;background:var(--red);color:#fff;border-radius:50%;width:22px;height:22px;cursor:pointer}
+.err{color:var(--red);font-size:14px;margin:8px 0}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dw{font-size:11px;color:var(--mute);text-align:center;padding:4px}
+.cd{min-height:78px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px;font-size:11px;cursor:pointer;overflow:hidden}
+.cd:hover{border-color:var(--gold)}.cd.sel{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}.cd.past{opacity:.5}
+.cd .n{font-weight:700;font-size:12px}.cd .hd{color:var(--purple)}
+.ev{border-radius:4px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10.5px}
+.ev.C{background:#0f3b2a;color:#5ee0a4}.ev.P{background:#4a3b0b;color:#ffd666}.ev.K{background:#2a2f3e;color:#aab2c5}
+[data-theme=light] .ev.C{background:#d8f1e2;color:#1d6b40}[data-theme=light] .ev.P{background:#fff1c9;color:#7a5a00}[data-theme=light] .ev.K{background:#e6e6e6;color:#555}
+@media(max-width:900px){aside{transform:translateX(-100%)}aside.open{transform:none}.top{padding-left:16px}main{padding-left:16px}#burger{display:inline-block}.g{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="login"><div class="card"><h2 id="lt">Sign in</h2>
+<div id="lform"><label>Email</label><input type="email" id="em" autocomplete="username"><label>Password</label><input type="password" id="pw" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"><div class="err" id="le"></div><button class="btn" style="width:100%;margin-top:6px" onclick="login()">Sign in</button>
+<p class="mute" style="text-align:center;margin:14px 0 0">New host? <a href="#" onclick="showSignup(event)" style="color:var(--gold)">Create a host account</a></p></div>
+<div id="sform" style="display:none"><label>Your name</label><input id="sn" autocomplete="name"><label>Business / property name</label><input id="sb"><label>What will you use this app for?</label><select id="si"><option value="">— Select —</option><option value="business">💼 1. Other business</option><option value="real_estate">🏘️ 2. Property Listing</option><option value="staycation">🏠 3. Booking App (staycation)</option></select><div class="mute" style="margin:4px 0 8px">Choosing one locks the other two. You can pay later to unlock them.</div><label>Phone</label><input id="sp" type="tel"><label>Email</label><input id="se" type="email" autocomplete="email"><label>Password (min 8 characters)</label><input type="password" id="sw" autocomplete="new-password"><div class="err" id="sx"></div><button class="btn" style="width:100%;margin-top:6px" onclick="doSignup()">Request host account</button>
+<p class="mute" style="text-align:center;margin:14px 0 0">Already have an account? <a href="#" onclick="showLogin(event)" style="color:var(--gold)">Sign in</a></p></div>
+</div></div>
+
+<div id="app">
+  <aside id="side"><div class="brand"><div class="logo">🏠</div><div><b id="bn">ADMIN</b><small>MANAGEMENT PORTAL</small></div></div><div id="nav"></div>
+    <div class="status"><span class="dot"></span><span id="st">Online &amp; Synced</span></div></aside>
+  <div class="top"><div><button class="pill" id="burger" onclick="$('#side').classList.toggle('open')">☰</button> <span class="pill" id="clk"></span></div>
+    <div class="r"><button class="pill" id="indp" onclick="go('industries')" style="display:none"></button><button class="pill" onclick="toggleTheme()">🌓</button><a class="pill" id="vs" href="#" target="_top" style="text-decoration:none">View site</a><button class="pill" onclick="logout()">Log out</button></div></div>
+  <main id="main"></main>
+</div>
+
+<script>
+const SITE_BASE = '';  // set to your hosting address, e.g. 'https://yourname.github.io/booking/' (leave empty if admin.html and index.html sit in the same folder)
+// ===== Supabase connection (plain fetch, no library). Publishable key is safe in the browser: row-level security protects the data. =====
+const SBX = (() => {
+  const BASE = 'https://wqngwiagcoehytfbexil.supabase.co', KEY = 'sb_publishable_Gb7BwZtFLVt5pnZ4chSccA_XuenGpK6';
+  function make(skey) {
+    let sess = null;
+    try { sess = JSON.parse(sessionStorage.getItem(skey) || 'null'); } catch (e) {}
+    const save = s => { sess = s; try { s ? sessionStorage.setItem(skey, JSON.stringify(s)) : sessionStorage.removeItem(skey); } catch (e) {} };
+    const take = j => { if (j && j.access_token) { save({ access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600), user: j.user }); return true; } return false; };
+    const msg = (j, st) => (j && (j.message || j.msg || j.error_description || (typeof j.error === 'string' && j.error) || j.hint)) || ('Request failed (' + st + ')');
+    const nice = m => /Invalid login credentials/i.test(m) ? 'Wrong email or password.'
+      : /already (been )?registered/i.test(m) ? 'That email already has an account. Sign in instead.'
+      : /at least \d+ char/i.test(m) ? 'Password must be at least 8 characters.'
+      : /rate limit|too many/i.test(m) ? 'Too many attempts. Please wait a few minutes and try again.'
+      : /JWT expired/i.test(m) ? 'Session expired. Please sign in again.' : m;
+    let refreshing = null;
+    const refresh = () => refreshing || (refreshing = (async () => {
+      try {
+        if (!sess || !sess.refresh_token) return false;
+        const r = await fetch(BASE + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: sess.refresh_token }) });
+        const j = await r.json().catch(() => null);
+        if (r.ok && take(j)) return true;
+        save(null); return false;
+      } finally { refreshing = null; }
+    })());
+    async function raw(path, o = {}, retry = true) {
+      if (!o.anon && sess && sess.expires_at - 60 < Date.now() / 1000) await refresh();
+      const h = Object.assign({ apikey: KEY }, o.headers || {});
+      h.Authorization = 'Bearer ' + ((!o.anon && sess && sess.access_token) || KEY);
+      let body = o.body;
+      if (body !== undefined && typeof body !== 'string' && !(typeof Blob !== 'undefined' && body instanceof Blob)) { h['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
+      const r = await fetch(BASE + path, { method: o.method || (body !== undefined ? 'POST' : 'GET'), headers: h, body });
+      const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {}
+      if (r.status === 401 && retry && !o.anon && sess && sess.refresh_token) { if (await refresh()) return raw(path, o, false); throw new Error('Session expired. Please sign in again.'); }
+      if (!r.ok) throw new Error(nice(msg(j, r.status)));
+      return j;
+    }
+    const enc = p => p.split('/').map(encodeURIComponent).join('/');
+    return {
+      raw, BASE,
+      get session() { return sess; }, get uid() { return sess && sess.user && sess.user.id; },
+      async signIn(email, password) {
+        const j = await raw('/auth/v1/token?grant_type=password', { anon: true, body: { email: String(email || '').trim(), password: String(password || '') } });
+        take(j); return j.user;
+      },
+      async signUp(email, password, data) {
+        const j = await raw('/auth/v1/signup', { anon: true, body: { email: String(email || '').trim(), password: String(password || ''), data: data || {} } });
+        return take(j) ? j.user : null;     // null = email confirmation is switched on in Supabase
+      },
+      async signOut() { try { await raw('/auth/v1/logout', { method: 'POST' }); } catch (e) {} save(null); },
+      async setPassword(pw) { return raw('/auth/v1/user', { method: 'PUT', body: { password: pw } }); },
+      rpc: (fn, args) => raw('/rest/v1/rpc/' + fn, { body: args || {} }),
+      sel: (table, q) => raw('/rest/v1/' + table + (q ? '?' + q : '')),
+      ins: (table, row) => raw('/rest/v1/' + table, { method: 'POST', body: row, headers: { Prefer: 'return=representation' } }),
+      upd: (table, q, patch) => raw('/rest/v1/' + table + '?' + q, { method: 'PATCH', body: patch, headers: { Prefer: 'return=representation' } }),
+      ups: (table, row, conflict) => raw('/rest/v1/' + table + (conflict ? '?on_conflict=' + conflict : ''), { method: 'POST', body: row, headers: { Prefer: 'resolution=merge-duplicates,return=representation' } }),
+      del: (table, q) => raw('/rest/v1/' + table + '?' + q, { method: 'DELETE', headers: { Prefer: 'return=representation' } }),
+      upload: (bucket, path, blob) => raw('/storage/v1/object/' + bucket + '/' + enc(path), { method: 'POST', body: blob, headers: { 'Content-Type': blob.type || 'application/octet-stream', 'x-upsert': 'false' } }),
+      publicUrl: (bucket, path) => BASE + '/storage/v1/object/public/' + bucket + '/' + enc(path),
+      async signed(bucket, paths) {
+        if (!paths.length) return {};
+        const j = await raw('/storage/v1/object/sign/' + bucket, { body: { expiresIn: 3600, paths } });
+        const m = {}; (j || []).forEach(x => { if (x.signedURL) m[x.path] = BASE + '/storage/v1' + x.signedURL; }); return m;
+      },
+      fn: (name, body) => raw('/functions/v1/' + name, { body })
+    };
+  }
+  return { make };
+})();
+const manilaToday = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+const dataUrlBlob = async d => { const m = String(d).match(/^data:([\w\/+.-]+);base64,/); if (!m) throw new Error('Invalid image.'); const r = await fetch(d); return r.blob(); };
+
+// ===== Host portal adapter: same rpc()/api() interface the portal already uses, backed by Supabase =====
+const A = SBX.make('sb_admin');
+const UNIT_BUCKET = 'unit-photos', PROOF = 'payment-proofs';
+const INDUSTRIES = [['staycation', 'Booking App (staycation)', '🏠'], ['real_estate', 'Property Listing', '🏘️'], ['business', 'Other business', '💼']];
+const IND_NAME = Object.fromEntries(INDUSTRIES.map(i => [i[0], i[1]]));
+const nz = v => v == null ? '' : v;
+const unitOut = u => ({ id: u.id, ownerId: u.owner_id, name: u.name, location: u.location, price: u.price, baseGuests: u.base_guests, maxGuests: u.max_guests, extraGuestFee: u.extra_guest_fee,
+  petsAllowed: u.pets_allowed, petFee: u.pet_fee, rating: u.rating, beds: u.beds, bedrooms: u.bedrooms, bathrooms: u.bathrooms, checkInTime: String(u.check_in_time || '14:00').slice(0, 5),
+  checkOutTime: String(u.check_out_time || '11:00').slice(0, 5), description: u.description, images: (u.images || []).join(','), amenities: (u.amenities || []).join(',') });
+const num = v => Number(v) || 0, clean = (v, n = 200) => String(v == null ? '' : v).trim().slice(0, n);
+const dd = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
+let _me = null;
+async function loadMe() {
+  const uid = A.uid; if (!uid) throw new Error('Session expired. Please sign in again.');
+  const [p] = await A.sel('profiles', 'id=eq.' + uid + '&select=*');
+  if (!p) throw new Error('Account not found.');
+  if (p.role === 'guest') throw new Error('This is a guest account. Guests sign in on the booking page.');
+  if (p.status === 'pending') { await A.signOut(); throw new Error('Your host account is waiting for approval.'); }
+  if (p.status !== 'active') { await A.signOut(); throw new Error('This account is disabled.'); }
+  const acc = p.role === 'host' || p.role === 'admin' ? await A.sel('industry_access', 'owner_id=eq.' + p.id + '&select=industry,paid_until,source') : [];
+  const now = Date.now(), inds = acc.filter(x => !x.paid_until || Date.parse(x.paid_until) > now).map(x => x.industry);
+  _me = { id: p.id, role: p.role, name: p.name, email: p.email, phone: p.phone, businessName: p.business_name, paymentInfo: nz(p.payment_info), perms: p.perms,
+    ownerId: p.role === 'staff' ? p.owner_id : p.id, businessType: p.business_type, industries: inds, needsIndustry: p.role === 'host' && !acc.length,
+    logoUrl: p.logo_url, tagline: p.tagline, about: p.about, ownerPhotoUrl: p.owner_photo_url, contactPhone: p.contact_phone, contactEmail: p.contact_email,
+    socials: p.socials || {}, testimonials: p.testimonials || [], token: 'sb' };
+  if (p.role === 'staff') { const [o] = await A.sel('profiles', 'id=eq.' + p.owner_id + '&select=business_type,business_name'); _me.businessType = o && o.business_type; _me.businessName = o && o.business_name; }
+  return _me;
+}
+async function upPhoto(dataUrl, kind) {
+  const blob = await dataUrlBlob(dataUrl); const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '');
+  const path = A.uid + '/' + kind + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
+  await A.upload(UNIT_BUCKET, path, blob); return A.publicUrl(UNIT_BUCKET, path);
+}
+const monthsList = (period, B, E) => {
+  const t = manilaToday(); let y = +t.slice(0, 4), m = +t.slice(5, 7); let n = { m1: 1, m3: 3, m6: 6, m12: 12 }[period];
+  if (!n) { const all = B.map(b => String(b.checkIn).slice(0, 7)).concat(E.map(e => String(e.date).slice(0, 7))).filter(Boolean).sort(); n = all.length ? Math.min(36, (y - +all[0].slice(0, 4)) * 12 + (m - +all[0].slice(5, 7)) + 1) : 1; }
+  const out = []; for (let i = n - 1; i >= 0; i--) { let mm = m - i, yy = y; while (mm < 1) { mm += 12; yy--; } out.push(yy + '-' + String(mm).padStart(2, '0')); } return out;
+};
+async function bookingsAll() {
+  const r = await A.sel('bookings', 'select=*,units(name)&order=created_at.desc');
+  const paths = r.map(b => b.proof_path).filter(Boolean); let urls = {}; try { urls = await A.signed(PROOF, paths); } catch (e) {}
+  return r.map(b => ({ id: b.ref, uuid: b.id, unitId: b.unit_id, unitName: b.units ? b.units.name : '', checkIn: b.check_in, checkOut: b.check_out, nights: b.nights, guestName: b.guest_name, email: b.email, phone: b.phone,
+    guests: b.guests, pets: b.pets ? 'Yes' : 'No', addons: (Array.isArray(b.addons) ? b.addons : []).map(a => a.name || a).join(', '), total: b.total, proofUrl: urls[b.proof_path] || '', status: b.status, createdAt: String(b.created_at).slice(0, 16).replace('T', ' ') }));
+}
+async function dashboardStay(period) {
+  const [B0, E0, U0] = await Promise.all([bookingsAll(), A.sel('expenses', 'select=*'), A.sel('units', 'active=eq.true&select=id,name')]);
+  const B = B0, E = E0.map(e => ({ date: e.date, amount: e.amount })), months = monthsList(period, B, E), set = Object.fromEntries(months.map(m => [m, 1])), last = months[months.length - 1];
+  const start = months[0] + '-01'; let ny = +last.slice(0, 4), nm = +last.slice(5, 7) + 1; if (nm > 12) { nm = 1; ny++; } const endEx = ny + '-' + String(nm).padStart(2, '0') + '-01';
+  const bk = B.filter(b => set[String(b.checkIn).slice(0, 7)]), ex = E.filter(e => set[String(e.date).slice(0, 7)]), conf = bk.filter(b => b.status === 'Confirmed');
+  const sum = (a, f) => a.reduce((s, x) => s + Number(f(x)), 0), revenue = sum(conf, b => b.total), expenses = sum(ex, e => e.amount);
+  const trend = months.map(m => ({ m, confirmed: bk.filter(b => b.status === 'Confirmed' && b.checkIn.slice(0, 7) === m).length, cancelled: bk.filter(b => b.status === 'Cancelled' && b.checkIn.slice(0, 7) === m).length }));
+  const finance = months.map(m => { const r = sum(conf.filter(b => b.checkIn.slice(0, 7) === m), b => b.total), x = sum(ex.filter(e => String(e.date).slice(0, 7) === m), e => e.amount); return { m, revenue: r, expenses: x, net: r - x }; });
+  const span = dd(start, endEx);
+  const occupancy = U0.map(u => { let n = 0; B.forEach(b => { if (b.status !== 'Confirmed' || b.unitId !== u.id) return; const a = b.checkIn > start ? b.checkIn : start, z = b.checkOut < endEx ? b.checkOut : endEx; if (z > a) n += dd(a, z); }); return { unit: u.name, nights: n, pct: span ? Math.round(n / span * 1000) / 10 : 0 }; });
+  const peak = occupancy.slice().sort((a, b) => b.nights - a.nights)[0], avg = occupancy.length ? Math.round(occupancy.reduce((s, o) => s + o.pct, 0) / occupancy.length * 10) / 10 : 0;
+  return { period, months, kpi: { revenue, confirmed: conf.length, pending: bk.filter(b => b.status === 'Pending').length, cancelled: bk.filter(b => b.status === 'Cancelled').length, total: bk.length, expenses, net: revenue - expenses, opexPct: revenue ? Math.round(expenses / revenue * 1000) / 10 : 0, unitCount: U0.length },
+    trend, finance, occupancy, peak: peak && peak.nights ? peak.unit : '—', avgOccupancy: avg };
+}
+const SETKEYS = ['brand','tagline','accent','theme','paymentInfo','terms','minNights','logoUrl','contact','primaryText','secondaryBg','secondaryText','errorColor','headingFont','bodyFont','showHero','showPromo','showAmenities','showReviews','showUnits','heroImages','promoBanners','testimonials','seoTitle','seoKeywords','seoDescription','seoOgImage','allowHostSignup','allowGuestSignup','unlockPrice','unlockInstructions'];
+const H = {
+  async me() { return _me || loadMe(); },
+  url: async () => location.origin + location.pathname.replace(/[^/]*$/, ''),
+  sync: async () => true, login: async () => true,
+  async dashboard(p) { return dashboardStay(p.period || 'm12'); },
+  async units() { return (await A.sel('units', 'active=eq.true&order=name')).map(unitOut); },
+  async saveUnit(u) {
+    const rec = { name: clean(u.name, 120), location: clean(u.location, 160), price: num(u.price), base_guests: Math.max(1, num(u.baseGuests)), max_guests: Math.max(1, num(u.maxGuests)), extra_guest_fee: num(u.extraGuestFee),
+      pets_allowed: !!u.petsAllowed, pet_fee: num(u.petFee), rating: num(u.rating), beds: num(u.beds), bedrooms: num(u.bedrooms), bathrooms: num(u.bathrooms), check_in_time: u.checkInTime || '14:00', check_out_time: u.checkOutTime || '11:00',
+      description: clean(u.description, 3000), images: u.images || [], amenities: u.amenities || [], active: true };
+    if (!rec.name) throw new Error('Unit name is required.');
+    if (u.id) { await A.upd('units', 'id=eq.' + u.id, rec); return u.id; }
+    rec.owner_id = _me.ownerId; return (await A.ins('units', rec))[0].id;
+  },
+  async deleteUnit(p) { await A.upd('units', 'id=eq.' + p.id, { active: false }); return true; },
+  async uploadImage(p) { return upPhoto(p.data, 'unit'); },
+  bookings: bookingsAll,
+  async setStatus(p) { if (['Pending', 'Confirmed', 'Cancelled'].indexOf(p.status) < 0) throw new Error('Bad status.'); const r = await A.upd('bookings', 'ref=eq.' + encodeURIComponent(p.id), { status: p.status }); if (!r.length) throw new Error('Booking not found.'); return true; },
+  async expenses() { return (await A.sel('expenses', 'order=date.desc')).map(e => ({ id: e.id, date: e.date, category: e.category, description: e.description, amount: e.amount })); },
+  async addExpense(p) { if (!/^\d{4}-\d{2}-\d{2}$/.test(p.date || '')) throw new Error('Pick a date.'); await A.ins('expenses', { owner_id: _me.ownerId, date: p.date, category: clean(p.category, 40), description: clean(p.description, 200), amount: num(p.amount) }); return true; },
+  async deleteExpense(p) { await A.del('expenses', 'id=eq.' + p.id); return true; },
+  async calendar() {
+    const [units, bk, bl, ho] = await Promise.all([H.units(), bookingsAll(), H.blocks(), H.holidays()]);
+    return { units, bookings: bk.filter(b => b.status !== 'Cancelled'), blocks: bl, holidays: ho };
+  },
+  async blocks() { return (await A.sel('blocks', 'order=start_date')).map(k => ({ id: k.id, unitId: k.unit_id || 'ALL', start: k.start_date, end: k.end_date, reason: k.reason })); },
+  async addBlock(p) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(p.start || '') || !/^\d{4}-\d{2}-\d{2}$/.test(p.end || '') || p.end < p.start) throw new Error('Check the start and end dates.');
+    await A.ins('blocks', { owner_id: _me.ownerId, unit_id: !p.unitId || p.unitId === 'ALL' ? null : p.unitId, start_date: p.start, end_date: p.end, reason: clean(p.reason, 120) }); return true;
+  },
+  async deleteBlock(p) { await A.del('blocks', 'id=eq.' + p.id); return true; },
+  async addons() { return (await A.sel('addons', 'order=name')).map(a => ({ id: a.id, name: a.name, price: a.price })); },
+  async addAddon(p) { await A.ins('addons', { owner_id: _me.ownerId, name: clean(p.name, 80), price: num(p.price) }); return true; },
+  async deleteAddon(p) { await A.del('addons', 'id=eq.' + p.id); return true; },
+  async holidays() { return (await A.sel('holidays', 'order=date')).map(h => ({ id: h.id, date: h.date, name: h.name, surcharge: h.surcharge })); },
+  async addHoliday(p) { if (!/^\d{4}-\d{2}-\d{2}$/.test(p.date || '')) throw new Error('Pick a date.'); await A.ins('holidays', { owner_id: _me.ownerId, date: p.date, name: clean(p.name, 80), surcharge: num(p.surcharge) }); return true; },
+  async deleteHoliday(p) { await A.del('holidays', 'date=eq.' + p.date); return true; },
+  async amenities() { return A.sel('amenities', 'order=name'); },
+  async addAmenity(p) { await A.ins('amenities', { id: 'M' + Math.random().toString(36).slice(2, 8), name: clean(p.name, 60), icon: clean(p.icon, 8) || '✔️' }); return true; },
+  async deleteAmenity(p) { await A.del('amenities', 'id=eq.' + encodeURIComponent(p.id)); return true; },
+  async settings() { const r = await A.sel('site_settings', 'select=key,value'); const s = {}; r.forEach(x => { s[x.key] = x.value; }); return s; },
+  async saveSettings(p) {
+    const rows = Object.keys(p).filter(k => SETKEYS.indexOf(k) >= 0).map(k => ({ key: k, value: String(p[k]) }));
+    if (rows.length) await A.ups('site_settings', rows, 'key'); return true;
+  },
+  async changePassword(p) {
+    if (String(p.newPassword || '').length < 8) throw new Error('New password must be at least 8 characters.');
+    await A.signIn(_me.email, p.oldPassword).catch(() => { throw new Error('Current password is wrong.'); });
+    await A.setPassword(p.newPassword); return true;
+  },
+  async setPassword(p) { if (String(p.newPassword || '').length < 8) throw new Error('New password must be at least 8 characters.'); await A.setPassword(p.newPassword); return true; },
+  async saveProfile(p) {
+    const biz = clean(p.businessName, 80), nm = clean(p.name, 80); if (!biz || !nm) throw new Error('Name and business name are required.');
+    await A.upd('profiles', 'id=eq.' + A.uid, { name: nm, business_name: biz, phone: clean(p.phone, 30), payment_info: clean(p.paymentInfo, 1000) }); _me = null; return true;
+  },
+  async saveStorefront(p) {
+    const so = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => { const v = clean((p.socials || {})[k], 300); if (v && !/^https:\/\/\S+$/.test(v)) throw new Error(k + ' link must start with https://'); so[k] = v; });
+    const tm = (p.testimonials || []).map(t => ({ name: clean(t.name, 60), text: clean(t.text, 400) })).filter(t => t.text).slice(0, 12);
+    await A.upd('profiles', 'id=eq.' + A.uid, { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm });
+    _me = null; return true;
+  },
+  async team() { return ((await A.fn('manage-staff', { action: 'list' })).staff || []).map(s => ({ id: s.id, name: s.name, email: s.email, perms: s.perms, status: s.status, createdAt: s.created_at })); },
+  async addStaff(p) { await A.fn('manage-staff', { action: 'add', name: p.name, email: p.email, password: p.password, perms: p.perms }); return true; },
+  async setStaff(p) { await A.fn('manage-staff', { action: p.newPassword ? 'reset' : 'set', id: p.id, newPassword: p.newPassword, perms: p.perms, status: p.status }); return true; },
+  async deleteStaff(p) { await A.fn('manage-staff', { action: 'remove', id: p.id }); return true; },
+  async users() { return (await A.sel('profiles', 'role=in.(host,staff,admin)&order=created_at.desc&select=*')).map(u => ({ id: u.id, role: u.role, name: u.name, email: u.email, status: u.status, ownerId: u.owner_id, perms: u.perms, businessName: u.business_name, phone: u.phone, createdAt: String(u.created_at).slice(0, 16).replace('T', ' '), businessType: u.business_type })); },
+  async setUserStatus(p) { await A.rpc('admin_set_user_status', { p_id: p.id, p_status: p.status }); return true; },
+  // --- industries ---
+  async chooseIndustry(p) { await A.rpc('choose_industry', { p_type: p.type }); _me = null; return true; },
+  async switchIndustry(p) { await A.rpc('switch_industry', { p_type: p.type }); _me = null; return true; },
+  async requestUnlock(p) {
+    let path = ''; if (p.proof) { const b = await dataUrlBlob(p.proof); path = 'unlock/' + A.uid + '-' + Date.now() + '.' + (b.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg'); await A.upload(PROOF, path, b); }
+    await A.rpc('request_unlock', { p_type: p.type, p_note: clean(p.note, 500), p_proof_path: path }); return true;
+  },
+  async myUnlocks() { return A.sel('unlock_requests', 'order=created_at.desc&select=*'); },
+  async unlockRequests() {
+    const r = await A.sel('unlock_requests', 'order=created_at.desc&select=*,profiles(name,email,business_name)'); const urls = await A.signed(PROOF, r.map(x => x.proof_path).filter(Boolean)).catch(() => ({}));
+    return r.map(x => ({ id: x.id, industry: x.industry, note: x.note, status: x.status, createdAt: String(x.created_at).slice(0, 16).replace('T', ' '), proofUrl: urls[x.proof_path] || '', name: x.profiles && x.profiles.name, email: x.profiles && x.profiles.email, businessName: x.profiles && x.profiles.business_name }));
+  },
+  async resolveUnlock(p) { await A.rpc('admin_resolve_unlock', { p_request: p.id, p_approve: !!p.approve, p_months: num(p.months) || 1 }); return true; },
+  // --- property listings ---
+  async listings() { return (await A.sel('listings', 'active=eq.true&order=created_at.desc')).map(l => ({ id: l.id, title: l.title, location: l.location, listingType: l.listing_type, propertyType: l.property_type, price: l.price, bedrooms: l.bedrooms, bathrooms: l.bathrooms, floorArea: l.floor_area_sqm, lotArea: l.lot_area_sqm, description: l.description, images: l.images || [], status: l.status })); },
+  async saveListing(l) {
+    const rec = { title: clean(l.title, 140), location: clean(l.location, 160), listing_type: l.listingType === 'rent' ? 'rent' : 'sale', property_type: clean(l.propertyType, 40), price: num(l.price), bedrooms: num(l.bedrooms), bathrooms: num(l.bathrooms), floor_area_sqm: num(l.floorArea), lot_area_sqm: num(l.lotArea), description: clean(l.description, 3000), images: l.images || [], status: clean(l.status, 20) || 'available', active: true };
+    if (!rec.title) throw new Error('Title is required.'); if (l.id) { await A.upd('listings', 'id=eq.' + l.id, rec); return l.id; } rec.owner_id = _me.ownerId; return (await A.ins('listings', rec))[0].id;
+  },
+  async deleteListing(p) { await A.upd('listings', 'id=eq.' + p.id, { active: false }); return true; },
+  async inquiries() { return (await A.sel('inquiries', 'select=*,listings(title)&order=created_at.desc')).map(q => ({ id: q.ref, uuid: q.id, listing: q.listings ? q.listings.title : '', name: q.name, email: q.email, phone: q.phone, message: q.message, date: q.preferred_date, status: q.status, createdAt: String(q.created_at).slice(0, 16).replace('T', ' ') })); },
+  async setInquiry(p) { if (['New', 'Contacted', 'Viewing', 'Closed'].indexOf(p.status) < 0) throw new Error('Bad status.'); await A.upd('inquiries', 'ref=eq.' + encodeURIComponent(p.id), { status: p.status }); return true; },
+  // --- other business ---
+  async services() { return (await A.sel('services', 'active=eq.true&order=created_at.desc')).map(s => ({ id: s.id, name: s.name, description: s.description, price: s.price, duration: s.duration_minutes, images: s.images || [] })); },
+  async saveService(s) {
+    const rec = { name: clean(s.name, 120), description: clean(s.description, 2000), price: num(s.price), duration_minutes: Math.max(5, num(s.duration) || 60), images: s.images || [], active: true };
+    if (!rec.name) throw new Error('Service name is required.'); if (s.id) { await A.upd('services', 'id=eq.' + s.id, rec); return s.id; } rec.owner_id = _me.ownerId; return (await A.ins('services', rec))[0].id;
+  },
+  async deleteService(p) { await A.upd('services', 'id=eq.' + p.id, { active: false }); return true; },
+  async hours() { const r = await A.sel('working_hours', 'order=weekday'); const m = {}; r.forEach(x => { m[x.weekday] = { open: String(x.open_time).slice(0, 5), close: String(x.close_time).slice(0, 5) }; }); return m; },
+  async saveHours(p) {
+    await A.del('working_hours', 'owner_id=eq.' + _me.ownerId);
+    const rows = Object.keys(p.hours || {}).filter(d => p.hours[d] && p.hours[d].open && p.hours[d].close).map(d => ({ owner_id: _me.ownerId, weekday: +d, open_time: p.hours[d].open, close_time: p.hours[d].close }));
+    if (rows.length) await A.ins('working_hours', rows); return true;
+  },
+  async appointments() { return (await A.sel('appointments', 'select=*,services(name)&order=starts_at.desc')).map(a => ({ id: a.ref, service: a.services ? a.services.name : '', name: a.name, email: a.email, phone: a.phone, notes: a.notes, start: a.starts_at, total: a.total, status: a.status })); },
+  async setAppointment(p) { if (['Pending', 'Confirmed', 'Cancelled', 'Done'].indexOf(p.status) < 0) throw new Error('Bad status.'); await A.upd('appointments', 'ref=eq.' + encodeURIComponent(p.id), { status: p.status }); return true; },
+  async dashboardOther() {
+    const [ap, iq, un, li, sv] = await Promise.all([H.appointments().catch(() => []), H.inquiries().catch(() => []), H.units().catch(() => []), H.listings().catch(() => []), H.services().catch(() => [])]);
+    return { appointments: ap, inquiries: iq, units: un.length, listings: li.length, services: sv.length };
+  }
+};
+const rpc = async (fn, ...a) => {
+  if (fn === 'authLogin') { await A.signIn(a[0], a[1]); const m = await loadMe().catch(async e => { await A.signOut(); throw e; }); return m; }
+  if (fn === 'logout') { await A.signOut(); _me = null; return true; }
+  if (fn === 'signupHost') {
+    const d = a[0]; if (!clean(d.name) || !clean(d.businessName)) throw new Error('Please enter your name and business name.');
+    if (['staycation', 'real_estate', 'business'].indexOf(d.businessType) < 0) throw new Error('Please choose your industry.');
+    await A.signUp(d.email, d.password, { role: 'host', name: clean(d.name, 80), business_name: clean(d.businessName, 80), phone: clean(d.phone, 30), business_type: d.businessType }); await A.signOut(); return true;
+  }
+  throw new Error('Unknown action ' + fn);
+};
+const api = async (action, p) => {
+  if (!H[action]) throw new Error('Unknown action ' + action); if (!_me && A.session) await loadMe();
+  try { return await H[action](p || {}); } catch (e) { if (/Session expired|JWT/.test(e.message)) { try { sessionStorage.clear(); } catch (x) {} alert('Your session expired. Please sign in again.'); location.reload(); } throw e; }
+};
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const peso = n => '₱' + Math.round(Number(n || 0)).toLocaleString('en-US');
+const ymd = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+const addD = (s, n) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const ds = (y, m, d) => y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const mLabel = (m, long) => MON[+m.slice(5, 7) - 1] + (long ? " '" + m.slice(2, 4) : '');
+let ME = {}, PW = '', tab = 'dashboard', editing = null, period = 'm12', SET = {}, AM = [], CAL = null, calUnit = '', calView = null, calSel = null, bkFilter = 'All';
+PW = A.session ? 'sb' : ''; try { ME = JSON.parse(sessionStorage.getItem('me') || '{}'); } catch (e) {}
+const canAct = () => ME.role !== 'staff' || ME.perms === 'bookings';
+
+const ALLTABS = [['dashboard','📈','Dashboard'],['bookings','🗓️','Bookings'],['expenses','🧾','Expenses'],['calendar','📅','Interactive Calendar'],['blocking','⛔','Manual Blocking'],['units','🏠','Unit Management'],['addons','➕','Add-ons'],['holidays','🎉','Holiday Rates'],['listings','🏘️','Property Listings'],['inquiries','📨','Inquiries'],['services','🛎️','Services'],['hours','🕒','Working Hours'],['appointments','📆','Appointments'],['storefront','🏪','My Storefront'],['industries','🔓','My Industries'],['amenities','🛋️','Amenities'],['settings','⚙️','System Settings'],['ux','🎨','UI / UX Control'],['users','👥','Users'],['unlocks','🔑','Unlock Requests'],['team','🧑‍🤝‍🧑','Team'],['profile','👤','My Profile']];
+let TABS = ALLTABS;
+function tabsFor() {
+  const bt = ME.businessType, byInd = { staycation: ['dashboard','bookings','expenses','calendar','blocking','units','addons','holidays'], real_estate: ['dashboard','inquiries','listings'], business: ['dashboard','appointments','services','hours'] };
+  const base = byInd[bt] || ['dashboard'];
+  const allow = { admin: ['dashboard','bookings','expenses','calendar','blocking','units','addons','holidays','amenities','settings','ux','users','unlocks','team','profile'],
+    host: base.concat(['storefront','industries','team','profile']),
+    staff: (ME.perms === 'bookings' && bt === 'staycation') ? ['dashboard','bookings','calendar','blocking','profile'] : bt === 'staycation' ? ['dashboard','bookings','calendar','profile'] : base.filter(t => t !== 'dashboard' || true).slice(0, 2).concat(['profile']) }[ME.role] || ['dashboard'];
+  return ALLTABS.filter(t => allow.indexOf(t[0]) >= 0);
+}
+
+/* theme + clock */
+function setTheme(t) { document.documentElement.setAttribute('data-theme', t); try { localStorage.setItem('adm_theme', t); } catch (e) {} }
+function toggleTheme() { setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'); load(); }
+try { setTheme(localStorage.getItem('adm_theme') || 'dark'); } catch (e) {}
+setInterval(() => { $('#clk').textContent = '🕐 ' + new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' }); }, 1000);
+const okHex = c => /^#[0-9a-fA-F]{6}$/.test(c || '');
+function applyAccent(c) { if (okHex(c)) document.documentElement.style.setProperty('--gold', c); }
+function applyTheme(S) {
+  const r = document.documentElement.style;
+  if (okHex(S.accent)) r.setProperty('--gold', S.accent);
+  if (okHex(S.primaryText)) r.setProperty('--onGold', S.primaryText);
+  if (okHex(S.errorColor)) r.setProperty('--red', S.errorColor);
+  okHex(S.secondaryBg) ? r.setProperty('--secBg', S.secondaryBg) : r.removeProperty('--secBg');
+  okHex(S.secondaryText) ? r.setProperty('--secText', S.secondaryText) : r.removeProperty('--secText');
+}
+
+/* auth */
+function startSession(r) { PW = r.token; ME = r; try { sessionStorage.setItem('tok', PW); sessionStorage.setItem('me', JSON.stringify(r)); } catch (e) {} enter(); }
+if (PW) api('me').then(m => { ME = Object.assign(ME, m); enter(); }).catch(() => { PW = ''; try { sessionStorage.clear(); } catch (e) {} });
+async function login() { try { startSession(await rpc('authLogin', $('#em').value, $('#pw').value, 'admin')); } catch (e) { $('#le').textContent = e.message; } }
+async function logout() { await rpc('logout').catch(() => {}); try { sessionStorage.clear(); } catch (e) {} location.reload(); }
+function showSignup(ev) { if (ev) ev.preventDefault(); $('#lform').style.display = 'none'; $('#sform').style.display = 'block'; $('#lt').textContent = 'Create a host account'; }
+function showLogin(ev) { if (ev) ev.preventDefault(); location.reload(); }
+async function doSignup() {
+  const d = { name: $('#sn').value, businessName: $('#sb').value, phone: $('#sp').value, businessType: $('#si').value, email: $('#se').value, password: $('#sw').value };
+  try { await rpc('signupHost', d); $('#sform').innerHTML = '<p>Thanks! Your host account is waiting for approval. You will get an email when it is approved, then you can sign in here.</p><button class="btn" onclick="location.reload()">Back to sign in</button>'; }
+  catch (e) { $('#sx').textContent = e.message; }
+}
+async function enter() {
+  $('#login').style.display = 'none'; $('#app').style.display = 'block';
+  try { Object.assign(ME, await api('me')); try { sessionStorage.setItem('me', JSON.stringify(ME)); } catch (e) {} } catch (e) { return; }
+  if (ME.needsIndustry) { showIndustryPicker(); return; }
+  TABS = tabsFor();
+  try { SET = await api('settings'); applyTheme(SET); $('#bn').textContent = ((ME.role !== 'admin' ? ME.businessName : '') || SET.brand || 'ADMIN').toUpperCase(); } catch (e) {}
+  if (ME.role === 'host') { const p = $('#indp'); p.style.display = ''; p.textContent = (IND_ICON[ME.businessType] || '') + ' ' + (IND_NAME[ME.businessType] || 'Industry') + ' ▾'; }
+  $('#vs').href = siteLink('guest', ME.role === 'admin' ? '' : { host: ME.ownerId });
+  go(TABS[0][0]);
+}
+function go(t) { tab = t; editing = null; calSel = null; $('#side').classList.remove('open');
+  $('#nav').innerHTML = TABS.map(([k, i, l]) => `<button class="nv ${k === t ? 'on' : ''}" onclick="go('${k}')"><span>${i}</span>${l}</button>`).join(''); load(); }
+async function load() {
+  $('#main').innerHTML = '<p class="mute">Loading…</p>';
+  try { await ({ dashboard, bookings, expenses, calendar, blocking, units, addons, holidays, amenities, settings, ux, users, team, profile, listings, inquiries, services, hours, appointments, storefront, industries, unlocks })[tab](); $('#st').textContent = 'Online & Synced · ' + new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' }); }
+  catch (e) { $('#main').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
+}
+async function syncNow() { try { await api('sync'); } catch (e) { return alert(e.message); } load(); }
+const act = async (action, p, after) => { try { await api(action, p); await (after || load)(); } catch (e) { alert(e.message); } };
+const head = (t, s, right) => `<div class="row"><div><h1>${t}</h1><div class="sub">${s}</div></div>${right || ''}</div>`;
+
+/* ---------- charts (dependency-free SVG) ---------- */
+const niceMax = v => { if (v <= 0) return 1; const p = Math.pow(10, Math.floor(Math.log10(v))), f = v / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p; };
+const short = v => Math.abs(v) >= 1000 ? (Math.round(v / 100) / 10) + 'k' : String(Math.round(v * 10) / 10);
+function frame(labels, lo, hi, W, H, L, R, T, B, xpos) {
+  const y = v => T + (H - T - B) * (hi - v) / (hi - lo); let g = '';
+  for (let i = 0; i <= 4; i++) { const v = lo + (hi - lo) * i / 4; g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="grid"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end" class="ax">${short(v)}</text>`; }
+  labels.forEach((l, i) => { g += `<text x="${xpos(i)}" y="${H - 8}" text-anchor="middle" class="ax">${l}</text>`; });
+  return { y, g };
+}
+function lineChart(labels, series) {
+  const W = 760, H = 260, L = 44, R = 14, T = 12, B = 28, hi = niceMax(Math.max(1, ...series.flatMap(s => s.values)));
+  const x = i => L + (labels.length > 1 ? i * (W - L - R) / (labels.length - 1) : (W - L - R) / 2), f = frame(labels, 0, hi, W, H, L, R, T, B, x);
+  let g = f.g;
+  series.forEach(s => { g += `<polyline fill="none" stroke="${s.color}" stroke-width="2.5" stroke-linejoin="round" points="${s.values.map((v, i) => x(i) + ',' + f.y(v)).join(' ')}"/>` +
+    s.values.map((v, i) => `<circle cx="${x(i)}" cy="${f.y(v)}" r="3.5" fill="${s.color}"><title>${esc(s.name)} · ${labels[i]}: ${v}</title></circle>`).join(''); });
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+}
+function barChart(labels, series) {
+  const W = 1000, H = 280, L = 50, R = 14, T = 12, B = 28, all = series.flatMap(s => s.values);
+  const hi = niceMax(Math.max(1, ...all)), lo = Math.min(0, ...all) < 0 ? -niceMax(-Math.min(...all)) : 0, step = (W - L - R) / labels.length;
+  const f = frame(labels, lo, hi, W, H, L, R, T, B, i => L + step * (i + .5)); let g = f.g;
+  const bw = Math.min(26, step * .8 / series.length);
+  series.forEach((s, si) => s.values.forEach((v, i) => { const x0 = L + step * (i + .5) - bw * series.length / 2 + bw * si, y0 = f.y(0), y1 = f.y(v);
+    g += `<rect x="${x0}" y="${Math.min(y0, y1)}" width="${bw - 2}" height="${Math.max(1, Math.abs(y1 - y0))}" rx="3" fill="${s.color}"><title>${esc(s.name)} · ${labels[i]}: ${peso(v)}</title></rect>`; }));
+  return `<svg viewBox="0 0 ${W} ${H}" width="100%">${g}</svg>`;
+}
+function donut(items) {
+  const R = 70, C = 2 * Math.PI * R, tot = items.reduce((s, i) => s + i.value, 0); let off = 0, g = `<circle r="${R}" cx="100" cy="100" fill="none" stroke="var(--line)" stroke-width="26"/>`;
+  if (tot > 0) items.forEach(i => { const len = i.value / tot * C; g += `<circle r="${R}" cx="100" cy="100" fill="none" stroke="${i.color}" stroke-width="26" stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}" transform="rotate(-90 100 100)"><title>${esc(i.label)}: ${i.value} night(s)</title></circle>`; off += len; });
+  return `<svg viewBox="0 0 200 200" width="190" style="display:block;margin:0 auto">${g}</svg>`;
+}
+const PAL = ['#d4a62a', '#34c38f', '#4c8dff', '#9b6cf0', '#f1556c', '#38bdf8'];
+const legend = items => `<div class="legend">${items.map(i => `<span><i style="background:${i.color}"></i>${esc(i.name)}</span>`).join('')}</div>`;
+
+/* ---------- dashboard ---------- */
+async function dashboard() { if (ME.role !== 'admin' && ME.businessType && ME.businessType !== 'staycation') return dashOther(); return dashStay(); }
+async function dashStay() {
+  const d = await api('dashboard', { period }), k = d.kpi, lab = d.months.map(m => mLabel(m, d.months.length > 12));
+  const occ = d.occupancy.map((o, i) => ({ label: o.unit, value: o.nights, color: PAL[i % PAL.length], pct: o.pct }));
+  $('#main').innerHTML = head('Performance Insights', 'Key metrics, booking trends and property status.',
+    `<div><label style="margin:0 0 4px">SHOW STATS</label><select id="per" onchange="period=this.value;load()">${[['m1','This month'],['m3','Last 3 months'],['m6','Last 6 months'],['m12','Last 12 months'],['all','All time']].map(([v, l]) => `<option value="${v}" ${v === period ? 'selected' : ''}>${l}</option>`).join('')}</select></div>`) +
+    `<div class="kpis">
+      <div class="kpi"><small>Gross revenue</small><b>${peso(k.revenue)}</b><i>Total bookings: ${k.total}</i></div>
+      <div class="kpi"><small>Confirmed bookings</small><b>${k.confirmed}</b><i>Pending: ${k.pending} · Cancelled: ${k.cancelled}</i></div>
+      <div class="kpi"><small>Operating cost</small><b>${peso(k.expenses)}</b><i>${k.opexPct}% of revenue</i></div>
+      <div class="kpi"><small>Net proceeds</small><b style="color:${k.net < 0 ? 'var(--red)' : 'inherit'}">${peso(k.net)}</b><i>From ${k.unitCount} unit${k.unitCount === 1 ? '' : 's'}</i></div></div>
+    <div class="g"><div class="card"><h2>Booking Intake &amp; Trends</h2><div class="mute">Confirmed vs cancelled bookings by check-in month</div>
+        ${legend([{ name: 'Confirmed', color: 'var(--green)' }, { name: 'Cancelled', color: 'var(--red)' }])}
+        ${lineChart(lab, [{ name: 'Confirmed', color: '#34c38f', values: d.trend.map(t => t.confirmed) }, { name: 'Cancelled', color: '#f1556c', values: d.trend.map(t => t.cancelled) }])}</div>
+      <div class="card"><h2>Unit Occupancy Breakdown</h2><div class="mute">Share of confirmed nights in the period</div><div style="margin:10px 0">${donut(occ)}</div>
+        ${legend(occ.map(o => ({ name: o.label + ' · ' + o.pct + '%', color: o.color })))}
+        <div class="row" style="border-top:1px solid var(--line);padding-top:10px;margin-top:8px"><div class="mute">Peak unit<br><b style="color:var(--gold)">${esc(d.peak)}</b></div><div class="mute" style="text-align:right">Avg occupancy<br><b style="color:var(--gold)">${d.avgOccupancy}%</b></div></div></div></div>
+    <div class="card"><h2>Financial Statement &amp; Net Proceeds</h2><div class="mute">Monthly gross revenue, operating expenses and net profit</div>
+      ${legend([{ name: 'Gross revenue', color: '#d4a62a' }, { name: 'Operating cost', color: '#f1556c' }, { name: 'Net proceeds', color: '#34c38f' }])}
+      ${barChart(lab, [{ name: 'Gross revenue', color: '#d4a62a', values: d.finance.map(f => f.revenue) }, { name: 'Operating cost', color: '#f1556c', values: d.finance.map(f => f.expenses) }, { name: 'Net proceeds', color: '#34c38f', values: d.finance.map(f => f.net) }])}</div>`;
+}
+
+/* ---------- bookings ---------- */
+async function bookings() {
+  const all = await api('bookings'), list = bkFilter === 'All' ? all : all.filter(b => b.status === bkFilter);
+  $('#main').innerHTML = head('Bookings', `${all.length} total · confirm once payment is verified.`) +
+    `<div class="chips">${['All', 'Pending', 'Confirmed', 'Cancelled'].map(s => `<button class="pill" style="${s === bkFilter ? 'background:var(--gold);color:var(--onGold);font-weight:700' : ''}" onclick="bkFilter='${s}';load()">${s}</button>`).join('')}</div>` +
+    (list.map(b => `<div class="card"><div class="row"><b>${esc(b.guestName)}</b><span class="tag ${esc(b.status)}">${esc(b.status)}</span></div>
+    <div class="mute">${esc(b.unitName)} · ${esc(b.checkIn)} → ${esc(b.checkOut)} (${esc(b.nights)}n) · ${esc(b.guests)} guest(s)${b.pets === 'Yes' ? ' · pet' : ''}</div>
+    <div class="mute">${esc(b.email)} · ${esc(b.phone)}${b.addons ? ' · ' + esc(b.addons) : ''}</div>
+    <div class="row" style="margin-top:8px"><b>${peso(b.total)}</b><span>${b.proofUrl ? `<a href="${esc(String(b.proofUrl).replace('thumbnail?id=', 'file/d/').replace(/&sz=.*/, '/view'))}" target="_blank" rel="noopener"><button class="btn sec sm">Proof</button></a> ` : ''}
+    ${canAct() && b.status !== 'Confirmed' ? `<button class="btn ok sm" onclick="act('setStatus',{id:'${esc(b.id)}',status:'Confirmed'})">Confirm</button> ` : ''}
+    ${canAct() && b.status !== 'Cancelled' ? `<button class="btn bad sm" onclick="if(confirm('Cancel this booking and email the guest?'))act('setStatus',{id:'${esc(b.id)}',status:'Cancelled'})">Cancel</button>` : ''}</span></div>
+    <div class="mute" style="margin-top:4px">Ref ${esc(b.id)} · ${esc(b.createdAt)}</div></div>`).join('') || '<p class="mute">Nothing here.</p>');
+}
+
+/* ---------- expenses ---------- */
+async function expenses() {
+  const list = await api('expenses'), total = list.reduce((s, e) => s + Number(e.amount), 0);
+  $('#main').innerHTML = head('Expenses', 'Operating costs feed the dashboard.') +
+    `<div class="card"><div class="g2"><div><label>Date</label><input type="date" id="e_date" value="${ymd()}"></div>
+    <div><label>Category</label><select id="e_cat">${['Utilities', 'Cleaning', 'Supplies', 'Maintenance', 'Salary', 'Marketing', 'Other'].map(c => `<option>${c}</option>`).join('')}</select></div></div>
+    <div class="g2"><div><label>Amount (₱)</label><input type="number" id="e_amt"></div><div><label>Note</label><input id="e_note"></div></div>
+    <button class="btn" style="margin-top:12px" onclick="addExp()">Save expense</button></div>
+    <div class="row" style="margin:8px 0"><b>All expenses</b><b>${peso(total)}</b></div>` +
+    list.map(e => `<div class="card row"><div><b>${esc(e.category)}</b> <span class="mute">${esc(e.date)} ${esc(e.description)}</span></div><span><b>${peso(e.amount)}</b> <button class="btn sec sm" onclick="if(confirm('Delete?'))act('deleteExpense',{id:'${esc(e.id)}'})">✕</button></span></div>`).join('');
+}
+function addExp() { if (!$('#e_amt').value) return alert('Enter an amount'); act('addExpense', { date: $('#e_date').value, category: $('#e_cat').value, amount: $('#e_amt').value, description: $('#e_note').value }); }
+
+/* ---------- interactive calendar ---------- */
+async function calendar() {
+  CAL = await api('calendar');
+  if (!calUnit || !CAL.units.find(u => u.id === calUnit)) calUnit = CAL.units[0] ? CAL.units[0].id : '';
+  if (!calView) { const t = ymd().split('-'); calView = { y: +t[0], m: +t[1] - 1 }; }
+  drawCal();
+}
+function drawCal() {
+  const first = new Date(Date.UTC(calView.y, calView.m, 1)), dim = new Date(Date.UTC(calView.y, calView.m + 1, 0)).getUTCDate(), t = ymd();
+  const bks = CAL.bookings.filter(b => b.unitId === calUnit), blks = CAL.blocks.filter(k => k.unitId === calUnit || k.unitId === 'ALL'), hol = {}; CAL.holidays.forEach(h => hol[h.date] = h);
+  let cells = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(x => `<div class="dw">${x}</div>`).join('');
+  for (let i = 0; i < first.getUTCDay(); i++) cells += '<div></div>';
+  for (let d = 1; d <= dim; d++) {
+    const s = ds(calView.y, calView.m, d), bs = bks.filter(b => b.checkIn <= s && s < b.checkOut), ks = blks.filter(k => k.start <= s && s <= k.end);
+    cells += `<div class="cd ${s < t ? 'past' : ''} ${calSel === s ? 'sel' : ''}" onclick="calPick('${s}')"><div class="n">${d} ${hol[s] ? `<span class="hd" title="${esc(hol[s].name)}">★</span>` : ''}</div>` +
+      bs.map(b => `<div class="ev ${b.status === 'Confirmed' ? 'C' : 'P'}">${esc(b.guestName)}</div>`).join('') + ks.map(k => `<div class="ev K">Blocked</div>`).join('') + '</div>';
+  }
+  const label = first.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  $('#main').innerHTML = head('Interactive Calendar', 'Bookings, manual blocks and holidays per unit. Tap a day for details.',
+    `<select id="cu" style="width:auto" onchange="calUnit=this.value;calSel=null;drawCal()">${CAL.units.map(u => `<option value="${esc(u.id)}" ${u.id === calUnit ? 'selected' : ''}>${esc(u.name)}</option>`).join('')}</select>`) +
+    `<div class="card"><div class="row" style="margin-bottom:10px"><button class="pill" onclick="calMv(-1)">‹</button><b>${label}</b><button class="pill" onclick="calMv(1)">›</button></div><div class="cal">${cells}</div>
+    <div class="legend" style="margin-top:10px"><span><i style="background:var(--green)"></i>Confirmed</span><span><i style="background:#ffd666"></i>Pending</span><span><i style="background:#aab2c5"></i>Blocked</span><span style="color:var(--purple)">★ Holiday</span></div></div><div id="cdet"></div>`;
+  if (calSel) calDetail();
+}
+function calMv(n) { calView.m += n; if (calView.m < 0) { calView.m = 11; calView.y--; } if (calView.m > 11) { calView.m = 0; calView.y++; } calSel = null; drawCal(); }
+function calPick(s) { calSel = s; drawCal(); $('#cdet').scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+function calDetail() {
+  const s = calSel, bs = CAL.bookings.filter(b => b.unitId === calUnit && b.checkIn <= s && s < b.checkOut), ks = CAL.blocks.filter(k => (k.unitId === calUnit || k.unitId === 'ALL') && k.start <= s && s <= k.end), h = CAL.holidays.find(x => x.date === s);
+  $('#cdet').innerHTML = `<div class="card"><h2>${s}</h2>${h ? `<div class="mute">★ ${esc(h.name)} (+${esc(h.surcharge)}% rate)</div>` : ''}
+    ${bs.map(b => `<div style="margin:10px 0"><b>${esc(b.guestName)}</b> <span class="tag ${esc(b.status)}">${esc(b.status)}</span><div class="mute">${esc(b.checkIn)} → ${esc(b.checkOut)} · ${peso(b.total)} · ${esc(b.phone)}</div></div>`).join('')}
+    ${ks.map(k => `<div style="margin:10px 0"><b>Blocked</b> <span class="mute">${esc(k.start)} → ${esc(k.end)} ${esc(k.reason)}</span> <button class="btn sec sm" onclick="act('deleteBlock',{id:'${esc(k.id)}'},calendar)">Unblock</button></div>`).join('')}
+    ${!bs.length && !ks.length ? `<div class="mute">Free night.</div><button class="btn sm" style="margin-top:8px" onclick="act('addBlock',{unitId:'${esc(calUnit)}',start:'${s}',end:'${s}',reason:'Blocked from calendar'},calendar)">Block this night</button>` : ''}</div>`;
+}
+
+/* ---------- manual blocking ---------- */
+async function blocking() {
+  const [list, c] = await Promise.all([api('blocks'), api('calendar')]), nm = id => id === 'ALL' ? 'All units' : (c.units.find(u => u.id === id) || {}).name || id;
+  $('#main').innerHTML = head('Manual Blocking', 'Close dates for maintenance, owner use or offline bookings. Guests will see them as occupied.') +
+    `<div class="card"><label>Unit</label><select id="b_u"><option value="ALL">All units</option>${c.units.map(u => `<option value="${esc(u.id)}">${esc(u.name)}</option>`).join('')}</select>
+    <div class="g2"><div><label>First blocked night</label><input type="date" id="b_s" value="${ymd()}"></div><div><label>Last blocked night</label><input type="date" id="b_e" value="${ymd()}"></div></div>
+    <label>Reason</label><input id="b_r" placeholder="e.g. Maintenance"><button class="btn" style="margin-top:12px" onclick="act('addBlock',{unitId:$('#b_u').value,start:$('#b_s').value,end:$('#b_e').value,reason:$('#b_r').value})">Block dates</button></div>` +
+    (list.map(k => `<div class="card row"><div><b>${esc(nm(k.unitId))}</b><div class="mute">${esc(k.start)} → ${esc(k.end)} ${esc(k.reason)}</div></div><button class="btn sec sm" onclick="act('deleteBlock',{id:'${esc(k.id)}'})">Unblock</button></div>`).join('') || '<p class="mute">No manual blocks.</p>');
+}
+
+/* ---------- units ---------- */
+async function units() {
+  const [list, am] = await Promise.all([api('units'), api('amenities')]); AM = am;
+  $('#main').innerHTML = head('Unit Management', `${list.length} unit(s)`, `<button class="btn" onclick="editUnit(null)">+ Add unit</button>`) + '<div id="uf"></div>' +
+    list.map(u => `<div class="card row"><div><b>${esc(u.name)}</b><div class="mute">${esc(u.location)} · ${peso(u.price)}/night · ${esc(u.maxGuests)} guests</div></div>
+    <span><button class="btn sm" onclick="shareUnit('${esc(u.id)}','${esc(u.name).replace(/'/g, '')}')">🔗 Share</button> <button class="btn sec sm" onclick="shareQr('${esc(u.id)}','${esc(u.name).replace(/'/g, '')}')">QR</button> <button class="btn sec sm" onclick="editUnit(${esc(JSON.stringify(u))})">Edit</button> <button class="btn bad sm" onclick="if(confirm('Remove this unit from the site?'))act('deleteUnit',{id:'${esc(u.id)}'})">Remove</button></span></div>`).join('');
+}
+function qrMake(text) {
+  const data = Array.from(new TextEncoder().encode(text));
+  const T = [null, [26,10,[[1,16]]], [44,16,[[1,28]]], [70,26,[[1,44]]], [100,18,[[2,32]]], [134,24,[[2,43]]], [172,16,[[4,27]]], [196,18,[[4,31]]], [242,22,[[2,38],[2,39]]], [292,22,[[3,36],[2,37]]], [346,26,[[4,43],[1,44]]]];
+  const AP = [null, [], [6,18], [6,22], [6,26], [6,30], [6,34], [6,22,38], [6,24,42], [6,26,46], [6,28,50]];
+  let v = 1; const dcOf = k => T[k][2].reduce((s, g) => s + g[0] * g[1], 0);
+  while (v <= 10 && 4 + (v < 10 ? 8 : 16) + 8 * data.length > dcOf(v) * 8) v++;
+  if (v > 10) throw new Error('Link too long for QR');
+  const dc = dcOf(v), bits = [];
+  const put = (val, n) => { for (let i = n - 1; i >= 0; i--) bits.push((val >>> i) & 1); };
+  put(4, 4); put(data.length, v < 10 ? 8 : 16); data.forEach(b => put(b, 8));
+  for (let i = 0; i < 4 && bits.length < dc * 8; i++) bits.push(0);
+  while (bits.length % 8) bits.push(0);
+  const cw = []; for (let i = 0; i < bits.length; i += 8) { let b = 0; for (let j = 0; j < 8; j++) b = (b << 1) | bits[i + j]; cw.push(b); }
+  for (let p = 0xEC; cw.length < dc; p ^= 0xEC ^ 0x11) cw.push(p);
+  const EXP = [], LOG = []; for (let i = 0, x = 1; i < 255; i++) { EXP[i] = x; LOG[x] = i; x <<= 1; if (x & 256) x ^= 0x11d; }
+  const mul = (a, b) => (a && b) ? EXP[(LOG[a] + LOG[b]) % 255] : 0;
+  const ec = T[v][1]; let gen = [1];
+  for (let i = 0; i < ec; i++) { const n = new Array(gen.length + 1).fill(0); gen.forEach((c, j) => { n[j] ^= c; n[j + 1] ^= mul(c, EXP[i]); }); gen = n; }
+  const blocks = []; let pos = 0;
+  T[v][2].forEach(([cnt, len]) => { for (let k = 0; k < cnt; k++) { const d = cw.slice(pos, pos + len); pos += len; const r = d.concat(new Array(ec).fill(0));
+    for (let i = 0; i < len; i++) { const f = r[i]; if (f) for (let j = 0; j < gen.length; j++) r[i + j] ^= mul(gen[j], f); }
+    blocks.push({ d, e: r.slice(len) }); } });
+  const out = []; const maxd = Math.max(...blocks.map(b => b.d.length));
+  for (let i = 0; i < maxd; i++) blocks.forEach(b => { if (i < b.d.length) out.push(b.d[i]); });
+  for (let i = 0; i < ec; i++) blocks.forEach(b => out.push(b.e[i]));
+  const size = 17 + 4 * v, M = [], F = [];
+  for (let y = 0; y < size; y++) { M.push(new Array(size).fill(false)); F.push(new Array(size).fill(false)); }
+  const set = (x, y, d) => { M[y][x] = d; F[y][x] = true; };
+  for (let i = 0; i < size; i++) { set(6, i, i % 2 === 0); set(i, 6, i % 2 === 0); }
+  [[3,3],[size-4,3],[3,size-4]].forEach(([cx, cy]) => { for (let dy = -4; dy <= 4; dy++) for (let dx = -4; dx <= 4; dx++) { const x = cx + dx, y = cy + dy, d = Math.max(Math.abs(dx), Math.abs(dy)); if (x >= 0 && x < size && y >= 0 && y < size) set(x, y, d !== 2 && d !== 4); } });
+  const ap = AP[v], n = ap.length;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { if ((i === 0 && j === 0) || (i === 0 && j === n - 1) || (i === n - 1 && j === 0)) continue;
+    for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++) set(ap[i] + dx, ap[j] + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1); }
+  const fmt = mask => { const d = mask; let r = d; for (let i = 0; i < 10; i++) r = (r << 1) ^ ((r >>> 9) * 0x537); const b = ((d << 10) | r) ^ 0x5412, g = i => ((b >>> i) & 1) !== 0;
+    for (let i = 0; i <= 5; i++) set(8, i, g(i)); set(8, 7, g(6)); set(8, 8, g(7)); set(7, 8, g(8)); for (let i = 9; i < 15; i++) set(14 - i, 8, g(i));
+    for (let i = 0; i < 8; i++) set(size - 1 - i, 8, g(i)); for (let i = 8; i < 15; i++) set(8, size - 15 + i, g(i)); set(8, size - 8, true); };
+  fmt(0);
+  if (v >= 7) { let r = v; for (let i = 0; i < 12; i++) r = (r << 1) ^ ((r >>> 11) * 0x1F25); const b = (v << 12) | r;
+    for (let i = 0; i < 18; i++) { const bit = ((b >>> i) & 1) !== 0, a = size - 11 + i % 3, c = Math.floor(i / 3); set(a, c, bit); set(c, a, bit); } }
+  const base = M.map(r => r.slice()); let k = 0;
+  for (let right = size - 1; right >= 1; right -= 2) { if (right === 6) right = 5;
+    for (let vert = 0; vert < size; vert++) for (let j = 0; j < 2; j++) { const x = right - j, up = ((right + 1) & 2) === 0, y = up ? size - 1 - vert : vert;
+      if (!F[y][x] && k < out.length * 8) { base[y][x] = ((out[k >>> 3] >>> (7 - (k & 7))) & 1) !== 0; k++; } } }
+  const MF = [(x,y)=>(x+y)%2===0,(x,y)=>y%2===0,(x,y)=>x%3===0,(x,y)=>(x+y)%3===0,(x,y)=>(Math.floor(x/3)+Math.floor(y/2))%2===0,(x,y)=>x*y%2+x*y%3===0,(x,y)=>(x*y%2+x*y%3)%2===0,(x,y)=>((x+y)%2+x*y%3)%2===0];
+  const pen = G => { let s = 0;
+    for (let t = 0; t < 2; t++) for (let a = 0; a < size; a++) { let run = 1; for (let b = 1; b < size; b++) { const c = t ? G[b][a] : G[a][b], p = t ? G[b - 1][a] : G[a][b - 1]; if (c === p) { run++; if (run === 5) s += 3; else if (run > 5) s++; } else run = 1; } }
+    for (let y = 0; y < size - 1; y++) for (let x = 0; x < size - 1; x++) { const c = G[y][x]; if (c === G[y][x+1] && c === G[y+1][x] && c === G[y+1][x+1]) s += 3; }
+    const pat = [1,0,1,1,1,0,1]; const chk = (get) => { for (let a = 0; a < size; a++) for (let b = 0; b + 10 < size + 0 && b <= size - 11; b++) { let m1 = true, m2 = true; for (let i = 0; i < 7; i++) { if (get(a, b + i) !== !!pat[i]) m1 = false; if (get(a, b + 4 + i) !== !!pat[i]) m2 = false; }
+        if (m1) { let ok = true; for (let i = 7; i < 11; i++) if (get(a, b + i)) ok = false; if (ok) s += 40; }
+        if (m2) { let ok = true; for (let i = 0; i < 4; i++) if (get(a, b + i)) ok = false; if (ok) s += 40; } } };
+    chk((a, b) => G[a][b]); chk((a, b) => G[b][a]);
+    let dark = 0; G.forEach(r => r.forEach(c => { if (c) dark++; })); s += 10 * (Math.ceil(Math.abs(dark * 20 - size * size * 10) / (size * size)) - 1); return s; };
+  let best = null, bs = 1e9, bm = 0;
+  for (let m = 0; m < 8; m++) { const G = base.map(r => r.slice()); for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) if (!F[y][x] && MF[m](x, y)) G[y][x] = !G[y][x];
+    const sc = pen(G); if (sc < bs) { bs = sc; best = G; bm = m; } }
+  const MM = best; M.length = 0; best.forEach(r => M.push(r)); fmt(bm);
+  // fmt writes into M (which now is best rows); function modules already hold correct format bits
+  return M;
+}
+function qrShow(title, link) {
+  let m; try { m = qrMake(link); } catch (e) { return alert(e.message); }
+  const s = 10, q = 4, n = m.length, cv = document.createElement('canvas'); cv.width = cv.height = (n + 2 * q) * s;
+  const c = cv.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, cv.width, cv.height); c.fillStyle = '#000';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (m[y][x]) c.fillRect((x + q) * s, (y + q) * s, s, s);
+  const png = cv.toDataURL('image/png'), o = document.createElement('div');
+  o.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;z-index:99;padding:16px';
+  o.onclick = e => { if (e.target === o) o.remove(); };
+  o.innerHTML = `<div class="card" style="max-width:340px;width:100%;text-align:center"><h2 style="margin:0 0 4px">${esc(title)}</h2><p class="mute" style="margin:0 0 10px">Guests scan this with their phone camera.</p>
+    <img src="${png}" alt="QR code" style="width:100%;max-width:280px;image-rendering:pixelated;border-radius:8px;background:#fff">
+    <div class="mute" style="word-break:break-all;font-size:11px;margin:8px 0">${esc(link)}</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap"><a class="btn sm" download="${esc(title.replace(/[^\w-]+/g, '-'))}-QR.png" href="${png}">Download PNG</a><button class="btn sec sm" onclick="this.closest('.card').parentNode.remove()">Close</button></div>
+    <div class="mute" style="font-size:12px;margin-top:8px">If Download does nothing, press and hold the code to save it.</div></div>`;
+  document.body.appendChild(o);
+}
+function copyLink(l) { navigator.clipboard.writeText(l).then(() => toast('Link copied'), () => prompt('Copy this link:', l)); }
+async function fillShare() {
+  const box = $('#shr'); if (!box) return;
+  try {
+    const us = await api('units').catch(() => []), base = siteLink('guest', ME.role === 'admin' ? '' : { host: ME.ownerId });
+    const row = (t, l) => { const e = esc(l), q = encodeURIComponent(l); return `<div class="row" style="padding:8px 0;border-bottom:1px solid var(--line);gap:8px;flex-wrap:wrap"><div style="min-width:0"><b>${esc(t)}</b><div class="mute" style="word-break:break-all;font-size:12px">${e}</div></div>
+      <span style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn sm" data-l="${e}" onclick="copyLink(this.dataset.l)">Copy</button><button class="btn sec sm" data-l="${e}" data-t="${esc(t)}" onclick="qrShow(this.dataset.t,this.dataset.l)">QR code</button><a class="btn sec sm" target="_blank" rel="noopener" href="https://wa.me/?text=${q}">WhatsApp</a><a class="btn sec sm" target="_blank" rel="noopener" href="https://www.facebook.com/sharer/sharer.php?u=${q}">Facebook</a></span></div>`; };
+    box.innerHTML = '<h2>🔗 Share your site</h2><p class="mute">Send these links to guests. A unit link opens that property directly.</p>' + row('Whole website', base) + row('Host portal (sign in / sign up)', siteLink('admin')) + us.map(u => row(u.name, siteLink('guest', { unit: u.id }))).join('');
+  } catch (e) { box.innerHTML = '<h2>🔗 Share your site</h2><div class="err">' + esc(e.message) + '</div>'; }
+}
+async function shareQr(id, name) { try { qrShow(name, siteLink('guest', { unit: id })); } catch (e) { alert(e.message); } }
+async function shareUnit(id, name) {
+  let link; try { link = siteLink('guest', { unit: id }); } catch (e) { return alert(e.message); }
+  try { await navigator.clipboard.writeText(link); toast('Link copied: guests who open it land on ' + name); }
+  catch (e) { prompt('Copy this link and share it. Guests who open it land directly on ' + name + ':', link); }
+}
+function editUnit(u) {
+  u = u || { name: '', location: '', price: 0, baseGuests: 2, maxGuests: 4, extraGuestFee: 0, petsAllowed: false, petFee: 0, rating: 5, beds: 1, bedrooms: 1, bathrooms: 1, checkInTime: '14:00', checkOutTime: '11:00', description: '', images: '', amenities: '' };
+  editing = { ...u, images: String(u.images || '').split(',').map(s => s.trim()).filter(Boolean), amenities: String(u.amenities || '').split(',').filter(Boolean), petsAllowed: u.petsAllowed === true || String(u.petsAllowed).toUpperCase() === 'TRUE' };
+  const f = (id, label, type = 'text') => `<div><label>${label}</label><input id="f_${id}" type="${type}" value="${esc(editing[id])}"></div>`;
+  $('#uf').innerHTML = `<div class="card"><h2>${u.id ? 'Edit' : 'New'} unit</h2>
+    <div class="g2">${f('name', 'Name')}${f('location', 'Location')}</div>
+    <div class="g3">${f('price', 'Price / night (₱)', 'number')}${f('baseGuests', 'Guests included', 'number')}${f('maxGuests', 'Max guests', 'number')}</div>
+    <div class="g3">${f('extraGuestFee', 'Extra guest fee / night', 'number')}${f('petFee', 'Pet fee', 'number')}<div class="chk" style="margin-top:28px"><input id="f_petsAllowed" type="checkbox" ${editing.petsAllowed ? 'checked' : ''}><label>Pets allowed</label></div></div>
+    <div class="g3">${f('rating', 'Rating', 'number')}${f('beds', 'Beds', 'number')}${f('bedrooms', 'Bedrooms', 'number')}</div>
+    <div class="g3">${f('bathrooms', 'Bathrooms', 'number')}${f('checkInTime', 'Check-in time')}${f('checkOutTime', 'Check-out time')}</div>
+    <label>Amenities</label><div class="g3">${AM.map(a => `<div class="chk"><input type="checkbox" id="am_${esc(a.id)}" ${editing.amenities.includes(a.id) ? 'checked' : ''}><label for="am_${esc(a.id)}">${esc(a.icon)} ${esc(a.name)}</label></div>`).join('') || '<span class="mute">Add amenities in the Amenities tab first.</span>'}</div>
+    <label>Description</label><textarea id="f_description" rows="3">${esc(editing.description)}</textarea>
+    <label>Photos (you can pick several)</label><input type="file" id="f_files" accept="image/png,image/jpeg,image/webp,image/gif" multiple onchange="upImgs(this)"><div class="mute" id="upst"></div>
+    <div class="thumbs" id="thumbs"></div><div class="err" id="ue"></div>
+    <div style="margin-top:12px"><button class="btn" id="sv" onclick="saveUnit()">Save unit</button> <button class="btn sec" onclick="load()">Cancel</button></div></div>`;
+  drawThumbs(); $('#uf').scrollIntoView({ behavior: 'smooth' });
+}
+function drawThumbs() { $('#thumbs').innerHTML = editing.images.map((s, i) => `<div><img src="${esc(s)}" alt=""><button onclick="editing.images.splice(${i},1);drawThumbs()">×</button></div>`).join(''); }
+function resize(file, max = 1400) {
+  return new Promise((ok, no) => { const img = new Image(), r = new FileReader();
+    r.onload = () => { img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement('canvas'); cv.width = img.width * k; cv.height = img.height * k; cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); ok(cv.toDataURL('image/jpeg', .8)); }; img.onerror = () => no(new Error('Bad image')); img.src = r.result; };
+    r.onerror = () => no(new Error('Bad file')); r.readAsDataURL(file); });
+}
+async function upImgs(el) {
+  const files = [...el.files]; let n = 0;
+  for (const f of files) { $('#upst').textContent = `Uploading ${++n} of ${files.length}…`; try { editing.images.push(await api('uploadImage', { data: await resize(f) })); drawThumbs(); } catch (e) { $('#ue').textContent = e.message; } }
+  $('#upst').textContent = 'Uploaded ✓'; el.value = '';
+}
+async function saveUnit() {
+  const g = id => $('#f_' + id), p = { id: editing.id, images: editing.images, petsAllowed: g('petsAllowed').checked, description: g('description').value, amenities: AM.filter(a => $('#am_' + a.id).checked).map(a => a.id) };
+  ['name', 'location', 'price', 'baseGuests', 'maxGuests', 'extraGuestFee', 'petFee', 'rating', 'beds', 'bedrooms', 'bathrooms', 'checkInTime', 'checkOutTime'].forEach(k => p[k] = g(k).value);
+  $('#sv').disabled = true;
+  try { await api('saveUnit', p); load(); } catch (e) { $('#ue').textContent = e.message; $('#sv').disabled = false; }
+}
+
+/* ---------- add-ons / holidays / amenities ---------- */
+async function addons() {
+  const l = await api('addons');
+  $('#main').innerHTML = head('Add-ons', 'Optional extras guests can add to a booking.') + `<div class="card"><div class="g2"><input id="a_n" placeholder="Name (e.g. Breakfast)"><input id="a_p" type="number" placeholder="Price (₱)"></div>
+    <button class="btn" style="margin-top:10px" onclick="if($('#a_n').value)act('addAddon',{name:$('#a_n').value,price:$('#a_p').value})">Add add-on</button></div>` +
+    l.map(a => `<div class="card row"><span><b>${esc(a.name)}</b> · ${peso(a.price)}</span><button class="btn sec sm" onclick="act('deleteAddon',{id:'${esc(a.id)}'})">✕</button></div>`).join('');
+}
+async function holidays() {
+  const l = (await api('holidays')).sort((a, b) => a.date < b.date ? -1 : 1);
+  $('#main').innerHTML = head('Holiday Rates', 'Peak dates show in purple on the guest calendar. The surcharge % is added to the nightly rate for every night on that date.') +
+    `<div class="card"><div class="g3"><div><label>Date</label><input type="date" id="h_d"></div><div><label>Name</label><input id="h_n" placeholder="e.g. Christmas Eve"></div><div><label>Surcharge %</label><input id="h_s" type="number" value="20"></div></div>
+    <button class="btn" style="margin-top:10px" onclick="if($('#h_d').value)act('addHoliday',{date:$('#h_d').value,name:$('#h_n').value,surcharge:$('#h_s').value})">Add holiday rate</button></div>` +
+    l.map(h => `<div class="card row"><span><b>${esc(h.date)}</b> · ${esc(h.name)} · <span style="color:var(--purple)">+${esc(h.surcharge)}%</span></span><button class="btn sec sm" onclick="act('deleteHoliday',{date:'${esc(h.date)}'})">✕</button></div>`).join('');
+}
+async function amenities() {
+  const l = await api('amenities');
+  $('#main').innerHTML = head('Amenities', 'Create amenities once, then tick them per unit in Unit Management.') + `<div class="card"><div class="g2"><input id="m_i" placeholder="Emoji icon (e.g. 🏊)"><input id="m_n" placeholder="Name (e.g. Swimming pool)"></div>
+    <button class="btn" style="margin-top:10px" onclick="if($('#m_n').value)act('addAmenity',{name:$('#m_n').value,icon:$('#m_i').value})">Add amenity</button></div>` +
+    l.map(a => `<div class="card row"><span>${esc(a.icon)} <b>${esc(a.name)}</b></span><button class="btn sec sm" onclick="act('deleteAmenity',{id:'${esc(a.id)}'})">✕</button></div>`).join('');
+}
+
+/* ---------- settings ---------- */
+async function settings() {
+  SET = await api('settings'); const f = (k, l, t = 'text') => `<label>${l}</label><input id="s_${k}" type="${t}" value="${esc(SET[k])}">`;
+  $('#main').innerHTML = head('System Settings', 'Business details, booking rules and payment instructions.') +
+    `<div class="card">${f('brand', 'Business name')}${f('unlockPrice', 'Price to unlock one extra industry (₱)', 'number')}<label>Unlock instructions (how hosts pay you)</label><textarea id="s_unlockInstructions" rows="3">${esc(SET.unlockInstructions)}</textarea>${f('minNights', 'Minimum nights per booking', 'number')}
+    <label>Payment instructions (shown to guests before they upload proof)</label><textarea id="s_paymentInfo" rows="4" placeholder="GCash 09xx xxx xxxx · Name&#10;BPI acct …">${esc(SET.paymentInfo)}</textarea>
+    <label>Terms text (next to the agree checkbox)</label><textarea id="s_terms" rows="3">${esc(SET.terms)}</textarea><div class="err" id="se"></div>
+    <button class="btn" onclick="saveSet(['brand','unlockPrice','unlockInstructions','minNights','paymentInfo','terms'])">Save settings</button></div>
+    <div class="card"><h2>Change admin password</h2><label>New password (min 8 characters)</label><input type="password" id="np"><div class="err" id="pe"></div><button class="btn sec" onclick="chgPw()">Update password</button></div>`;
+}
+async function saveSet(keys) {
+  const p = {}; keys.forEach(k => p[k] = $('#s_' + k).value); try { await api('saveSettings', p); Object.assign(SET, p); $('#bn').textContent = (SET.brand || 'ADMIN').toUpperCase(); applyTheme(SET); alert('Saved ✓'); } catch (e) { (document.getElementById('se') || {}).textContent = e.message; alert(e.message); }
+}
+async function chgPw() {
+  try { await api('setPassword', { newPassword: $('#np').value }); $('#np').value = ''; alert('Password updated ✓'); } catch (e) { $('#pe').textContent = e.message; }
+}
+const stTag = s => `<span class="tag ${s === 'active' ? 'Confirmed' : s === 'pending' ? 'Pending' : 'Cancelled'}">${esc(s)}</span>`;
+async function users() {
+  const us = await api('users'); SET = await api('settings');
+  const f = (k, l) => `<div class="row" style="padding:8px 0"><span>${l}</span><input type="checkbox" id="g_${k}" ${isOn(SET[k]) ? 'checked' : ''} style="width:22px;height:22px;accent-color:var(--gold)"></div>`;
+  const grp = (role, title) => { const l = us.filter(u => u.role === role); return `<h2 style="margin:18px 0 8px">${title} (${l.length})</h2>` + (l.map(userCard).join('') || '<p class="mute">None yet.</p>'); };
+  $('#main').innerHTML = head('Users', 'Approve hosts, manage staff and guests, reset passwords.') +
+    `<div class="card"><h2>Sign-up settings</h2>${f('allowHostSignup', 'Allow new host sign-ups (you approve each one)')}${f('allowGuestSignup', 'Allow guest sign-ups')}<div class="err" id="ge"></div><button class="btn sm" onclick="saveSignup()">Save</button></div>` +
+    grp('host', 'Hosts') + grp('staff', 'Staff') + grp('guest', 'Guests');
+}
+function userCard(u) {
+  const id = esc(u.id);
+  return `<div class="card"><div class="row"><b>${esc(u.name)}${u.businessName ? ' · ' + esc(u.businessName) : ''}</b>${stTag(u.status)}</div>
+    <div class="mute">${esc(u.email)}${u.phone ? ' · ' + esc(u.phone) : ''} · joined ${esc(u.createdAt)}${u.role === 'host' ? ' · ' + (IND_NAME[u.businessType] || 'no industry') : ''}${u.role === 'staff' ? ' · ' + (u.perms === 'bookings' ? 'bookings access' : 'view only') + (u.ownerId && u.ownerId !== 'main' ? ' (host team)' : '') : ''}</div>
+    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+    ${u.status !== 'active' ? `<button class="btn ok sm" onclick="act('setUserStatus',{id:'${id}',status:'active'})">${u.status === 'pending' ? 'Approve' : 'Enable'}</button>` : `<button class="btn sec sm" onclick="act('setUserStatus',{id:'${id}',status:'disabled'})">Disable</button>`}
+    <button class="btn sec sm" onclick="resetPw('${id}')">Reset password</button>
+    <button class="btn bad sm" onclick="if(confirm('Delete this account${u.role === 'host' ? ' and unlist their units' : ''}? This cannot be undone.'))act('deleteUser',{id:'${id}'})">Delete</button></div></div>`;
+}
+async function saveSignup() { try { await api('saveSettings', { allowHostSignup: $('#g_allowHostSignup').checked ? 'true' : 'false', allowGuestSignup: $('#g_allowGuestSignup').checked ? 'true' : 'false' }); toast('Saved'); } catch (e) { $('#ge').textContent = e.message; } }
+async function resetPw(id) { const pw = prompt('New password for this user (min 8 characters). Tell them privately.'); if (!pw) return; try { await api('resetUserPassword', { id: id, newPassword: pw }); toast('Password reset'); } catch (e) { alert(e.message); } }
+async function team() {
+  const l = await api('team');
+  $('#main').innerHTML = head('Team', 'Add helpers who sign in on this admin page. They only see your own data.') +
+    `<div class="card"><h2>Add staff</h2><div class="g2"><div><label>Name</label><input id="t_n"></div><div><label>Email</label><input id="t_e" type="email"></div>
+    <div><label>Temporary password (min 8)</label><input id="t_p"></div><div><label>Access</label><select id="t_a"><option value="view">View only (dashboard, bookings, calendar)</option><option value="bookings">Bookings (confirm / cancel, block dates)</option></select></div></div>
+    <div class="err" id="te"></div><button class="btn" onclick="addStaff()">Add staff</button></div>` +
+    (l.map(u => { const id = esc(u.id); return `<div class="card"><div class="row"><b>${esc(u.name)}</b>${stTag(u.status)}</div><div class="mute">${esc(u.email)} · ${u.perms === 'bookings' ? 'Bookings access' : 'View only'}</div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+      <button class="btn sec sm" onclick="act('setStaff',{id:'${id}',perms:'${u.perms === 'bookings' ? 'view' : 'bookings'}'})">Make ${u.perms === 'bookings' ? 'view only' : 'bookings access'}</button>
+      <button class="btn sec sm" onclick="act('setStaff',{id:'${id}',status:'${u.status === 'active' ? 'disabled' : 'active'}'})">${u.status === 'active' ? 'Disable' : 'Enable'}</button>
+      <button class="btn sec sm" onclick="resetStaffPw('${id}')">Reset password</button>
+      <button class="btn bad sm" onclick="if(confirm('Remove this staff member?'))act('deleteStaff',{id:'${id}'})">Remove</button></div></div>`; }).join('') || '<p class="mute">No staff yet.</p>');
+}
+async function addStaff() { try { await api('addStaff', { name: $('#t_n').value, email: $('#t_e').value, password: $('#t_p').value, perms: $('#t_a').value }); toast('Staff added. Share the email and password privately.'); load(); } catch (e) { $('#te').textContent = e.message; } }
+async function resetStaffPw(id) { const pw = prompt('New password for this staff member (min 8 characters).'); if (!pw) return; try { await api('setStaff', { id: id, newPassword: pw }); toast('Password reset'); } catch (e) { alert(e.message); } }
+async function profile() {
+  const m = await api('me'); ME = Object.assign(ME, m); const host = ME.role === 'host';
+  $('#main').innerHTML = head('My Profile', host ? 'Your business details and the payment instructions your guests will see.' : 'Your account.') +
+    (host ? `<div class="card"><label>Your name</label><input id="p_n" value="${esc(m.name)}"><label>Business / property name</label><input id="p_b" value="${esc(m.businessName)}"><label>Phone</label><input id="p_p" value="${esc(m.phone)}">
+      <label>Payment instructions (shown to your guests before they upload proof)</label><textarea id="p_pay" rows="4" placeholder="GCash 09xx xxx xxxx · Name">${esc(m.paymentInfo)}</textarea>
+      <div class="mute" style="margin-top:6px">Sign-in email: ${esc(m.email)}</div><div class="err" id="pe1"></div><button class="btn" onclick="saveProfile()">Save profile</button></div>`
+      : `<div class="card"><b>${esc(m.name)}</b><div class="mute">${esc(m.email)}</div></div>`) +
+    `<div class="card"><h2>Change password</h2><label>Current password</label><input type="password" id="p_o"><label>New password (min 8 characters)</label><input type="password" id="p_w"><div class="err" id="pe2"></div><button class="btn sec" onclick="changePw()">Update password</button></div>`;
+}
+async function saveProfile() { try { await api('saveProfile', { name: $('#p_n').value, businessName: $('#p_b').value, phone: $('#p_p').value, paymentInfo: $('#p_pay').value }); ME.businessName = $('#p_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('Profile saved'); } catch (e) { $('#pe1').textContent = e.message; } }
+async function changePw() { try { await api('changePassword', { oldPassword: $('#p_o').value, newPassword: $('#p_w').value }); $('#p_o').value = ''; $('#p_w').value = ''; toast('Password updated'); } catch (e) { $('#pe2').textContent = e.message; } }
+let HERO = [], PROMO = [];
+const FONTS_H = ['Georgia', 'Playfair Display', 'Montserrat', 'Poppins', 'Inter', 'System'], FONTS_B = ['System', 'Poppins', 'Inter', 'Roboto', 'Montserrat'];
+const isOn = v => v === true || String(v).toLowerCase() === 'true';
+function toast(m) { const t = document.createElement('div'); t.textContent = '✔ ' + m; t.style.cssText = 'position:fixed;top:16px;right:16px;background:#1f9d6b;color:#fff;padding:12px 18px;border-radius:12px;z-index:99;font-weight:600;box-shadow:0 6px 20px rgba(0,0,0,.35)'; document.body.appendChild(t); setTimeout(() => t.remove(), 2600); }
+async function ux() {
+  SET = await api('settings'); HERO = String(SET.heroImages || '').split(',').filter(Boolean); PROMO = String(SET.promoBanners || '').split(',').filter(Boolean);
+  const col = (k, l, fb) => `<div><label>${l}</label><input type="color" id="u_${k}" value="${okHex(SET[k]) ? SET[k] : fb}" oninput="liveColor()"></div>`;
+  const tog = (k, l) => `<div class="row" style="padding:10px 0;border-bottom:1px solid var(--line)"><span>${l}</span><input type="checkbox" id="u_${k}" ${isOn(SET[k]) ? 'checked' : ''} style="width:22px;height:22px;accent-color:var(--gold)"></div>`;
+  const sel = (k, l, opts) => `<div><label>${l}</label><select id="u_${k}">${opts.map(o => `<option ${SET[k] === o ? 'selected' : ''}>${o}</option>`).join('')}</select></div>`;
+  const txt = (k, l, ph) => `<label>${l}</label><input id="u_${k}" value="${esc(SET[k])}" placeholder="${esc(ph || '')}">`;
+  setTimeout(fillShare, 0);
+  $('#main').innerHTML = head('UI / UX Control', 'Everything here changes the guest page. Colours preview live; press Save to publish.') +
+    `<div class="card" id="shr"><h2>🔗 Share your site</h2><p class="mute">Loading links…</p></div>` +
+    `<div class="g2" style="align-items:start"><div>
+      <div class="card"><h2>Brand colours</h2><div class="g2">${col('accent', 'Website main accent (primary button BG)', '#d4a62a')}${col('primaryText', 'Primary button text', '#1f1a05')}
+        ${col('secondaryBg', 'Secondary button BG', '#ffffff')}${col('secondaryText', 'Secondary button text', '#1f2328')}${col('errorColor', 'Error state alert', '#c0392b')}
+        <div><label>Guest page theme</label><select id="u_theme"><option value="light" ${SET.theme === 'light' ? 'selected' : ''}>Light</option><option value="dark" ${SET.theme === 'dark' ? 'selected' : ''}>Dark</option></select></div></div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><span class="btn" id="pv1">Book Now</span><span class="btn sec" id="pv2">Check my booking</span><span id="pv3" style="color:var(--red);align-self:center;font-weight:600">Error message</span></div>
+        <button class="btn sec sm" style="margin-top:10px" onclick="resetColors()">Reset secondary colours</button></div>
+      <div class="card"><h2>Branding</h2>${txt('logoUrl', 'Logo link (https:// image URL)', 'https://…/logo.png')}${txt('tagline', 'Tagline under the business name')}${txt('contact', 'Contact line (bottom of guest page)', 'Questions? Message us on Messenger…')}</div>
+      <div class="card"><h2>Typography</h2><div class="g2">${sel('headingFont', 'Heading font', FONTS_H)}${sel('bodyFont', 'Body font', FONTS_B)}</div><div class="mute" style="margin-top:6px">Fonts load from Google Fonts on the guest page.</div></div></div>
+    <div>
+      <div class="card"><h2>Guest page sections</h2><div class="mute">Switch sections on or off.</div>
+        ${tog('showHero', 'Hero cover images')}${tog('showPromo', 'Promotional banners')}${tog('showAmenities', 'Amenities featurette row')}${tog('showReviews', 'Guest review testimonials')}${tog('showUnits', 'Featured units listing card grid')}
+        <div class="mute" style="margin-top:8px">Keep the units grid on unless guests will book another way, or they won't see any units.</div></div>
+      <div class="card"><h2>Guest testimonials</h2><div class="mute">One per line: Name | what they said</div><textarea id="u_testimonials" rows="4" placeholder="Ana | Super clean and cozy!&#10;Mark | Great host, will book again.">${esc(SET.testimonials)}</textarea></div>
+      <div class="card"><h2>Hero section media</h2><label>Upload hero cover images (up to 8)</label><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onchange="upMedia(this,'hero')"><div class="mute" id="st_hero"></div><div class="thumbs" id="th_hero"></div>
+        <label style="margin-top:14px">Promotional banners (up to 6)</label><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple onchange="upMedia(this,'promo')"><div class="mute" id="st_promo"></div><div class="thumbs" id="th_promo"></div></div>
+      <div class="card"><h2>SEO settings</h2>${txt('seoTitle', 'Browser tab / page title', 'Luxury cabins in Puerto Galera')}${txt('seoKeywords', 'Meta keywords', 'cabin, staycation, resort')}${txt('seoOgImage', 'Open Graph cover image URL', 'https://domain.com/og.jpg')}
+        <label>Meta description</label><textarea id="u_seoDescription" rows="3">${esc(SET.seoDescription)}</textarea>
+        <div class="mute" style="margin-top:6px">Heads-up: the page title works. Google's Apps Script hosting ignores description, keywords and cover image for search engines, so those only help if you later move the page to your own website.</div></div></div></div>
+    <div class="err" id="ue"></div><div style="text-align:right"><button class="btn" onclick="saveUx()">🎨 Save design settings</button></div>`;
+  ['secondaryBg', 'secondaryText'].forEach(k => { if (!okHex(SET[k])) $('#u_' + k).dataset.off = '1'; });
+  drawMedia(); liveColor();
+}
+function drawMedia() { [['hero', HERO], ['promo', PROMO]].forEach(([k, l]) => { $('#th_' + k).innerHTML = l.map((u, i) => `<div><img src="${esc(u)}" alt=""><button onclick="${k === 'hero' ? 'HERO' : 'PROMO'}.splice(${i},1);drawMedia()">×</button></div>`).join('') || '<span class="mute">Nothing uploaded yet.</span>'; }); }
+async function upMedia(el, kind) {
+  const list = kind === 'hero' ? HERO : PROMO, max = kind === 'hero' ? 8 : 6, st = $('#st_' + kind); let n = 0; const files = [...el.files];
+  for (const f of files) { if (list.length >= max) { st.textContent = 'Limit reached (' + max + ').'; break; } st.textContent = `Uploading ${++n} of ${files.length}…`;
+    try { list.push(await api('uploadImage', { data: await resize(f, 1800) })); drawMedia(); } catch (e) { st.textContent = e.message; } }
+  if (n) st.textContent = 'Uploaded ✓ (press Save to publish)'; el.value = '';
+}
+function liveColor() {
+  const v = k => $('#u_' + k).value;
+  applyTheme({ accent: v('accent'), primaryText: v('primaryText'), errorColor: v('errorColor'), secondaryBg: $('#u_secondaryBg').dataset.off ? '' : v('secondaryBg'), secondaryText: $('#u_secondaryText').dataset.off ? '' : v('secondaryText') });
+}
+function resetColors() { ['secondaryBg', 'secondaryText'].forEach(k => { $('#u_' + k).dataset.off = '1'; }); liveColor(); toast('Secondary colours reset to default'); }
+['secondaryBg', 'secondaryText'].forEach(k => document.addEventListener('input', e => { if (e.target && e.target.id === 'u_' + k) delete e.target.dataset.off; }));
+async function saveUx() {
+  const p = {}; ['accent', 'primaryText', 'errorColor', 'theme', 'logoUrl', 'tagline', 'contact', 'headingFont', 'bodyFont', 'testimonials', 'seoTitle', 'seoKeywords', 'seoOgImage', 'seoDescription'].forEach(k => p[k] = $('#u_' + k).value);
+  ['secondaryBg', 'secondaryText'].forEach(k => p[k] = $('#u_' + k).dataset.off ? '' : $('#u_' + k).value);
+  ['showHero', 'showPromo', 'showAmenities', 'showReviews', 'showUnits'].forEach(k => p[k] = $('#u_' + k).checked ? 'true' : 'false');
+  p.heroImages = HERO.join(','); p.promoBanners = PROMO.join(',');
+  try { await api('saveSettings', p); Object.assign(SET, p); applyTheme(SET); toast('Design settings saved!'); } catch (e) { $('#ue').textContent = e.message; }
+}
+(function () {
+  const add = el => { if (el.dataset.eye) return; el.dataset.eye = '1';
+    const w = document.createElement('div'); w.style.position = 'relative'; el.parentNode.insertBefore(w, el); w.appendChild(el); el.style.paddingRight = '66px';
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Show'; b.setAttribute('aria-label', 'Show or hide password');
+    b.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:inherit;opacity:.8;cursor:pointer;font:600 13px sans-serif;padding:6px';
+    b.onclick = () => { const s = el.type === 'password'; el.type = s ? 'text' : 'password'; b.textContent = s ? 'Hide' : 'Show'; }; w.appendChild(b); };
+  const scan = () => document.querySelectorAll('input[type=password]').forEach(add);
+  new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true }); scan();
+})();
+/* ===== Industry model: picker, locks, unlock, per-industry menus ===== */
+const IND_ICON = { staycation: '🏠', real_estate: '🏘️', business: '💼' };
+const IND_DESC = { staycation: 'Nightly stays: units, calendar, bookings, add-ons, holiday rates.', real_estate: 'Property listings for sale or rent, with buyer / renter inquiries.', business: 'Services with prices, working hours and appointment booking.' };
+const siteBase = () => (typeof SITE_BASE === 'string' && SITE_BASE) ? SITE_BASE : location.origin + location.pathname.replace(/[^/]*$/, '');
+const siteLink = (kind, q) => { const b = siteBase(), gas = /script\.google\.com/.test(b), qs = q ? new URLSearchParams(q).toString() : '';
+  if (gas) { const p = kind === 'admin' ? 'page=admin' : ''; return b + (p || qs ? '?' + [p, qs].filter(Boolean).join('&') : ''); }
+  return b + (kind === 'admin' ? 'admin.html' : 'index.html') + (qs ? '?' + qs : ''); };
+function showIndustryPicker() {
+  const d = document.createElement('div'); d.id = 'indpick'; d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto';
+  d.innerHTML = `<div class="card" style="max-width:480px;width:100%"><h2>Choose your industry</h2><p class="mute">Pick what you will use this app for. The portal will match it. <b>This locks the other two</b>; you can unlock them later with a paid subscription.</p>
+    <label>Industry</label><select id="ip_s"><option value="">— Select —</option>${INDUSTRIES.map(i => `<option value="${i[0]}">${i[2]} ${esc(i[1])}</option>`).join('')}</select><div class="mute" id="ip_d" style="margin:8px 0"></div>
+    <div class="err" id="ip_e"></div><button class="btn" style="width:100%" onclick="pickIndustry()">Continue</button></div>`;
+  document.body.appendChild(d); $('#ip_s').onchange = e => { $('#ip_d').textContent = IND_DESC[e.target.value] || ''; };
+}
+async function pickIndustry() {
+  const v = $('#ip_s').value; if (!v) return $('#ip_e').textContent = 'Please choose one.';
+  if (!confirm('Choose "' + IND_NAME[v] + '"? The other two industries will be locked until you pay to unlock them.')) return;
+  try { await api('chooseIndustry', { type: v }); $('#indpick').remove(); Object.assign(ME, await api('me')); enter(); } catch (e) { $('#ip_e').textContent = e.message; }
+}
+async function industries() {
+  const m = await api('me'); Object.assign(ME, m); const S = await api('settings'), un = await api('myUnlocks').catch(() => []);
+  const price = S.unlockPrice ? '₱' + esc(S.unlockPrice) + ' per industry' : 'Ask the admin for the subscription price';
+  $('#main').innerHTML = head('My Industries', 'You can use the industries you own. Locked ones need a paid subscription.') + INDUSTRIES.map(([k, n, ic]) => {
+    const own = ME.industries.indexOf(k) >= 0, cur = ME.businessType === k, pend = un.find(u => u.industry === k && u.status === 'pending');
+    return `<div class="card"><div class="row"><b>${ic} ${esc(n)}</b>${own ? (cur ? '<span class="tag Confirmed">In use</span>' : '<span class="tag Pending">Owned</span>') : '<span class="tag Cancelled">🔒 Locked</span>'}</div>
+      <div class="mute">${esc(IND_DESC[k])}</div>
+      ${own ? (cur ? '' : `<button class="btn sm" style="margin-top:8px" onclick="switchInd('${k}')">Switch to this</button>`)
+      : pend ? '<div class="mute" style="margin-top:8px">⏳ Unlock request sent. You will be unlocked once your payment is verified.</div>'
+      : `<button class="btn sec sm" style="margin-top:8px" onclick="unlockForm('${k}')">🔓 Unlock · ${price}</button><div id="uf_${k}"></div>`}</div>`;
+  }).join('') + (un.length ? '<h2 style="margin:16px 0 6px">Requests</h2>' + un.map(u => `<div class="card row"><span>${esc(IND_NAME[u.industry])} · ${esc(String(u.created_at).slice(0, 10))}</span>${stTag(u.status === 'approved' ? 'active' : u.status === 'pending' ? 'pending' : 'declined')}</div>`).join('') : '');
+}
+async function switchInd(t) { try { await api('switchIndustry', { type: t }); Object.assign(ME, await api('me')); TABS = tabsFor(); go('dashboard'); } catch (e) { alert(e.message); } }
+async function unlockForm(k) {
+  const S = await api('settings');
+  $('#uf_' + k).innerHTML = `<div style="margin-top:10px"><div class="sum" style="white-space:pre-wrap">${esc(S.unlockInstructions || 'Send payment to the admin, then upload your proof here.')}</div>
+    <label>Note (optional)</label><input id="un_n_${k}"><label>Proof of payment (photo)</label><input type="file" accept="image/*" id="un_f_${k}"><div class="err" id="un_e_${k}"></div><button class="btn" onclick="sendUnlock('${k}')">Send unlock request</button></div>`;
+}
+async function sendUnlock(k) {
+  try { const f = $('#un_f_' + k).files[0]; if (!f) throw new Error('Please attach your proof of payment.'); await api('requestUnlock', { type: k, note: $('#un_n_' + k).value, proof: await resize(f) }); toast('Request sent'); load(); } catch (e) { $('#un_e_' + k).textContent = e.message; }
+}
+async function unlocks() {
+  const l = await api('unlockRequests');
+  $('#main').innerHTML = head('Unlock Requests', 'Verify the payment proof, then approve to open that industry for the host.') +
+    (l.map(r => `<div class="card"><div class="row"><b>${esc(r.name || '')} · ${esc(r.businessName || '')}</b>${stTag(r.status === 'approved' ? 'active' : r.status === 'pending' ? 'pending' : 'declined')}</div>
+      <div class="mute">${esc(r.email || '')} · wants ${esc(IND_NAME[r.industry])} · ${esc(r.createdAt)}</div>${r.note ? `<div>${esc(r.note)}</div>` : ''}
+      ${r.proofUrl ? `<a href="${esc(r.proofUrl)}" target="_blank" rel="noopener"><button class="btn sec sm" style="margin-top:6px">View proof</button></a>` : ''}
+      ${r.status === 'pending' ? `<div style="margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap"><input type="number" id="mo_${esc(r.id)}" value="1" min="1" max="36" style="width:70px"> month(s)
+      <button class="btn ok sm" onclick="act('resolveUnlock',{id:'${esc(r.id)}',approve:true,months:$('#mo_${esc(r.id)}').value})">Approve</button><button class="btn bad sm" onclick="act('resolveUnlock',{id:'${esc(r.id)}',approve:false})">Decline</button></div>` : ''}</div>`).join('') || '<p class="mute">No requests yet.</p>');
+}
+
+/* ===== Storefront: logo, company name, subtitle, about, owner photo, contacts, socials, testimonials ===== */
+let SF = null;
+async function storefront() {
+  const m = await api('me'); Object.assign(ME, m); SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', testimonials: (m.testimonials || []).slice() }; const so = m.socials || {};
+  $('#main').innerHTML = head('My Storefront', 'What guests see at the top of your page and in the About section.') +
+    `<div class="card"><h2>Header</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo')"></div>
+    <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}"><label>Subtitle</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes"></div>
+    <div class="card"><h2>About the owner</h2><label>Owner photo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_ph" style="height:80px;width:80px;border-radius:50%;object-fit:cover;display:${SF.ownerPhotoUrl ? 'block' : 'none'}" src="${esc(SF.ownerPhotoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'ownerPhotoUrl','sf_ph')"></div>
+    <label>About you / your business</label><textarea id="sf_a" rows="5">${esc(m.about)}</textarea>
+    <div class="g2"><div><label>Contact phone</label><input id="sf_cp" value="${esc(m.contactPhone)}"></div><div><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}"></div></div>
+    <div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
+    <div class="card"><h2>Testimonials</h2><div id="sf_tm"></div><button class="btn sec sm" onclick="sfTm()">+ Add testimonial</button></div>
+    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save storefront</button>`;
+  drawTm();
+}
+async function sfUp(el, key, img) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
+function drawTm() { $('#sf_tm').innerHTML = SF.testimonials.map((t, i) => `<div class="g2" style="margin-bottom:8px"><input placeholder="Guest name" value="${esc(t.name)}" oninput="SF.testimonials[${i}].name=this.value"><div style="display:flex;gap:6px"><input placeholder="What they said" value="${esc(t.text)}" oninput="SF.testimonials[${i}].text=this.value"><button class="btn sec sm" onclick="SF.testimonials.splice(${i},1);drawTm()">✕</button></div></div>`).join('') || '<p class="mute">No testimonials yet.</p>'; }
+function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '' }); drawTm(); }
+async function saveSf() {
+  const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value);
+  try {
+    await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
+    await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials });
+    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('Storefront saved');
+  } catch (e) { $('#sf_e').textContent = e.message; }
+}
+
+/* ===== Property listings ===== */
+let LE = null;
+async function listings() {
+  const l = await api('listings');
+  $('#main').innerHTML = head('Property Listings', 'Homes, condos and lots you are selling or renting.', '<button class="btn" onclick="editListing()">+ New listing</button>') + '<div id="lf"></div>' +
+    (l.map(x => `<div class="card"><div class="row"><b>${esc(x.title)}</b><span class="tag ${x.status === 'available' ? 'Confirmed' : 'Pending'}">${esc(x.status)}</span></div><div class="mute">${esc(x.location)} · ${x.listingType === 'rent' ? 'For rent' : 'For sale'} · ${esc(x.propertyType)} · ${esc(x.bedrooms)}🛏 ${esc(x.bathrooms)}🚿</div>
+      <div class="row" style="margin-top:6px"><b>${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b><span><button class="btn sec sm" onclick='editListing(${JSON.stringify(x).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove listing?'))act('deleteListing',{id:'${esc(x.id)}'})">✕</button></span></div></div>`).join('') || '<p class="mute">No listings yet.</p>');
+}
+function editListing(x) {
+  x = x || { title: '', location: '', listingType: 'sale', propertyType: 'House', price: 0, bedrooms: 0, bathrooms: 0, floorArea: 0, lotArea: 0, description: '', images: [], status: 'available' }; LE = { ...x, images: (x.images || []).slice() };
+  const f = (id, l, t = 'text') => `<div><label>${l}</label><input id="l_${id}" type="${t}" value="${esc(LE[id])}"></div>`;
+  $('#lf').innerHTML = `<div class="card"><h2>${x.id ? 'Edit' : 'New'} listing</h2><div class="g2">${f('title', 'Title')}${f('location', 'Location')}</div>
+    <div class="g3"><div><label>Type</label><select id="l_listingType"><option value="sale" ${LE.listingType === 'sale' ? 'selected' : ''}>For sale</option><option value="rent" ${LE.listingType === 'rent' ? 'selected' : ''}>For rent (monthly)</option></select></div>${f('propertyType', 'Property type (House, Condo, Lot…)')}${f('price', 'Price (₱)', 'number')}</div>
+    <div class="g3">${f('bedrooms', 'Bedrooms', 'number')}${f('bathrooms', 'Bathrooms', 'number')}<div><label>Status</label><select id="l_status">${['available', 'reserved', 'sold', 'rented'].map(s => `<option ${LE.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div></div>
+    <div class="g2">${f('floorArea', 'Floor area (sqm)', 'number')}${f('lotArea', 'Lot area (sqm)', 'number')}</div><label>Description</label><textarea id="l_description" rows="4">${esc(LE.description)}</textarea>
+    <label>Photos</label><div id="l_th" class="row" style="justify-content:flex-start;gap:6px;flex-wrap:wrap"></div><input type="file" accept="image/*" multiple onchange="lsUp(this)"><div class="err" id="l_e"></div>
+    <button class="btn" onclick="saveListingForm()">Save listing</button> <button class="btn sec" onclick="load()">Cancel</button></div>`; drawLTh(); $('#lf').scrollIntoView();
+}
+function drawLTh() { $('#l_th').innerHTML = LE.images.map((s, i) => `<div><img src="${esc(s)}" style="height:60px;border-radius:8px"><br><a href="#" onclick="LE.images.splice(${i},1);drawLTh();return false">remove</a></div>`).join(''); }
+async function lsUp(el) { for (const f of [...el.files]) { try { LE.images.push(await api('uploadImage', { data: await resize(f) })); drawLTh(); } catch (e) { $('#l_e').textContent = e.message; } } el.value = ''; }
+async function saveListingForm() { const p = { id: LE.id, images: LE.images }; ['title', 'location', 'listingType', 'propertyType', 'price', 'bedrooms', 'bathrooms', 'status', 'floorArea', 'lotArea', 'description'].forEach(k => p[k] = $('#l_' + k).value); try { await api('saveListing', p); load(); } catch (e) { $('#l_e').textContent = e.message; } }
+async function inquiries() {
+  const l = await api('inquiries');
+  $('#main').innerHTML = head('Inquiries', `${l.length} total · people who asked about your listings.`) +
+    (l.map(q => `<div class="card"><div class="row"><b>${esc(q.name)}</b><select onchange="act('setInquiry',{id:'${esc(q.id)}',status:this.value})">${['New', 'Contacted', 'Viewing', 'Closed'].map(s => `<option ${q.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+      <div class="mute">${esc(q.listing)} · ${esc(q.email)} · ${esc(q.phone)}${q.date ? ' · wants to view ' + esc(q.date) : ''}</div>${q.message ? `<div>${esc(q.message)}</div>` : ''}<div class="mute">Ref ${esc(q.id)} · ${esc(q.createdAt)}</div></div>`).join('') || '<p class="mute">No inquiries yet.</p>');
+}
+
+/* ===== Other business: services, hours, appointments ===== */
+let SE = null;
+async function services() {
+  const l = await api('services');
+  $('#main').innerHTML = head('Services', 'What you offer. Guests pick one, choose a time and book.', '<button class="btn" onclick="editService()">+ New service</button>') + '<div id="sf"></div>' +
+    (l.map(s => `<div class="card"><div class="row"><b>${esc(s.name)}</b><b>${peso(s.price)}</b></div><div class="mute">${esc(s.duration)} min · ${esc(s.description)}</div>
+      <div style="margin-top:6px"><button class="btn sec sm" onclick='editService(${JSON.stringify(s).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove service?'))act('deleteService',{id:'${esc(s.id)}'})">✕</button></div></div>`).join('') || '<p class="mute">No services yet.</p>');
+}
+function editService(s) {
+  s = s || { name: '', description: '', price: 0, duration: 60, images: [] }; SE = { ...s, images: (s.images || []).slice() };
+  $('#sf').innerHTML = `<div class="card"><h2>${s.id ? 'Edit' : 'New'} service</h2><label>Name</label><input id="sv_name" value="${esc(SE.name)}"><div class="g2"><div><label>Price (₱)</label><input id="sv_price" type="number" value="${esc(SE.price)}"></div><div><label>Duration (minutes)</label><input id="sv_duration" type="number" value="${esc(SE.duration)}"></div></div>
+    <label>Description</label><textarea id="sv_description" rows="3">${esc(SE.description)}</textarea><label>Photo</label><div id="sv_th"></div><input type="file" accept="image/*" onchange="svUp(this)"><div class="err" id="sv_e"></div><button class="btn" onclick="saveSvc()">Save service</button> <button class="btn sec" onclick="load()">Cancel</button></div>`;
+  $('#sv_th').innerHTML = SE.images.map(u => `<img src="${esc(u)}" style="height:60px;border-radius:8px">`).join('');
+}
+async function svUp(el) { if (!el.files[0]) return; try { SE.images = [await api('uploadImage', { data: await resize(el.files[0]) })]; $('#sv_th').innerHTML = `<img src="${esc(SE.images[0])}" style="height:60px;border-radius:8px">`; } catch (e) { $('#sv_e').textContent = e.message; } el.value = ''; }
+async function saveSvc() { try { await api('saveService', { id: SE.id, images: SE.images, name: $('#sv_name').value, price: $('#sv_price').value, duration: $('#sv_duration').value, description: $('#sv_description').value }); load(); } catch (e) { $('#sv_e').textContent = e.message; } }
+async function hours() {
+  const h = await api('hours'), D = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  $('#main').innerHTML = head('Working Hours', 'Leave a day empty if you are closed.') + '<div class="card">' + D.map((d, i) => `<div class="row" style="padding:6px 0"><b style="width:110px">${d}</b><span><input type="time" id="wh_o${i}" value="${esc((h[i] || {}).open || '')}"> to <input type="time" id="wh_c${i}" value="${esc((h[i] || {}).close || '')}"></span></div>`).join('') + '<div class="err" id="wh_e"></div><button class="btn" onclick="saveHrs()">Save hours</button></div>';
+}
+async function saveHrs() { const o = {}; for (let i = 0; i < 7; i++) o[i] = { open: $('#wh_o' + i).value, close: $('#wh_c' + i).value }; try { await api('saveHours', { hours: o }); toast('Hours saved'); } catch (e) { $('#wh_e').textContent = e.message; } }
+async function appointments() {
+  const l = await api('appointments');
+  $('#main').innerHTML = head('Appointments', `${l.length} total`) + (l.map(a => `<div class="card"><div class="row"><b>${esc(a.name)}</b><select onchange="act('setAppointment',{id:'${esc(a.id)}',status:this.value})">${['Pending', 'Confirmed', 'Done', 'Cancelled'].map(s => `<option ${a.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
+    <div class="mute">${esc(a.service)} · ${esc(new Date(a.start).toLocaleString('en-PH', { timeZone: 'Asia/Manila' }))}</div><div class="mute">${esc(a.email)} · ${esc(a.phone)}</div>${a.notes ? `<div>${esc(a.notes)}</div>` : ''}<div class="mute">Ref ${esc(a.id)} · ${peso(a.total)}</div></div>`).join('') || '<p class="mute">No appointments yet.</p>');
+}
+async function dashOther() {
+  const d = await api('dashboardOther'), tile = (n, l) => `<div class="card" style="text-align:center"><div style="font-size:30px;font-weight:800">${n}</div><div class="mute">${l}</div></div>`;
+  const t = ME.businessType === 'real_estate' ? [[d.listings, 'Active listings'], [d.inquiries.length, 'Inquiries'], [d.inquiries.filter(q => q.status === 'New').length, 'New inquiries'], [d.inquiries.filter(q => q.status === 'Viewing').length, 'Viewings']]
+    : [[d.services, 'Services'], [d.appointments.length, 'Appointments'], [d.appointments.filter(a => a.status === 'Pending').length, 'Pending'], [d.appointments.filter(a => a.status === 'Done').length, 'Done']];
+  $('#main').innerHTML = head('Dashboard', IND_NAME[ME.businessType] || '') + '<div class="g3" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">' + t.map(x => tile(x[0], x[1])).join('') + '</div>';
+}
+
+</script>
+</body>
+</html>

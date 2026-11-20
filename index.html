@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<base target="_top">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Booking</title>
+<style>
+:root{--ink:#1f2328;--mute:#6b7280;--line:#e7e2d6;--bg:#faf8f3;--panel:#fff;--gold:#d4a62a;--gold2:#b98b12;--ok:#2e8b57;--bad:#c0392b;--hol:#7b5ea7;--free:#eef7f1;--occ:#f3d9d6;--holb:#ece4f6;--mid:#f6e6ad;--chip:#eee}
+[data-theme=dark]{--ink:#e8ecf5;--mute:#8d99b5;--line:#1f2a44;--bg:#070b16;--panel:#0d1424;--free:#12301f;--occ:#3a1a1f;--holb:#2a1f45;--mid:#4a3b0b;--chip:#16213a;--hol:#b79cf5}
+*{box-sizing:border-box}
+body{margin:0;font-family:var(--bf,system-ui,-apple-system,Segoe UI,Roboto,sans-serif);color:var(--ink);background:var(--bg)}
+h1,h2,h3{font-family:var(--hf,inherit)}
+header{padding:18px 16px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:20px}
+main{max-width:980px;margin:0 auto;padding:16px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer}
+.card img,.ph{width:100%;height:190px;object-fit:cover;display:block;background:#e9e4d6}
+.card .b{padding:12px 14px}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mute{color:var(--mute);font-size:13px}
+.price{font-weight:700}
+.btn{background:var(--gold);color:var(--onGold,#1f1a05);border:0;border-radius:12px;padding:14px 18px;font-weight:700;font-size:16px;width:100%;cursor:pointer}
+.btn:hover{background:var(--gold2)}.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.sec{background:var(--secBg,var(--panel));border:1px solid var(--line);color:var(--secText,var(--ink))}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;z-index:20;align-items:flex-end;justify-content:center}
+.overlay.on{display:flex}
+.sheet{background:var(--panel);width:100%;max-width:560px;max-height:94vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px}
+@media(min-width:700px){.overlay{align-items:center}.sheet{border-radius:18px}}
+.x{float:right;background:var(--chip);border:0;border-radius:50%;width:34px;height:34px;font-size:18px;cursor:pointer}
+.car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:8px;margin:8px 0}
+.car img{flex:0 0 100%;height:230px;object-fit:cover;border-radius:12px;scroll-snap-align:start}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}
+.stat{background:var(--bg);border-radius:10px;padding:10px;text-align:center;font-size:13px}.stat b{display:block;font-size:16px}
+.cal{margin:10px 0}.cal .h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.cal button.n{background:var(--chip);border:0;border-radius:8px;width:36px;height:36px;font-size:16px;cursor:pointer}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;text-align:center}
+.dow{font-size:11px;color:var(--mute);padding:4px 0}
+.d{padding:10px 0;border-radius:8px;font-size:14px;border:1px solid transparent;background:var(--panel);cursor:pointer}
+.d.free{background:var(--free)}
+.d.occ{background:var(--occ);color:#a33;text-decoration:line-through;cursor:not-allowed}
+.d.hol{background:var(--holb);color:var(--hol)}
+.d.past{color:var(--mute);opacity:.5;cursor:not-allowed}
+.d.sel{background:var(--gold);color:var(--onGold,#1f1a05);font-weight:700}
+.d.mid{background:var(--mid)}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--mute);margin:6px 0}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 4px}
+input[type=text],input[type=email],input[type=tel],input[type=number]{background:var(--panel);color:var(--ink);width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px}
+.chk{display:flex;gap:8px;align-items:center;margin:8px 0;font-size:14px;color:var(--ink)}
+.sum{background:var(--bg);border-radius:12px;padding:12px;margin:12px 0;font-size:14px}
+.sum .row{margin:3px 0}.sum .t{font-weight:800;font-size:17px;border-top:1px solid var(--line);padding-top:8px;margin-top:6px}
+.err{color:var(--bad);font-size:14px;margin:8px 0}
+.stepper{display:flex;align-items:center;gap:12px}.stepper button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--panel);font-size:18px;cursor:pointer}
+.empty{text-align:center;color:var(--mute);padding:40px}
+#hero{position:relative;height:260px;border-radius:16px;overflow:hidden;margin-bottom:16px;background:#222}
+#hero .s{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .8s}
+#hero .s.on{opacity:1}
+#hero .t{position:absolute;left:0;right:0;bottom:0;padding:40px 18px 16px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+#hero .t h2{margin:0;font-size:26px}
+#promo{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;margin-bottom:16px}
+#promo img{flex:0 0 88%;max-width:520px;height:130px;object-fit:cover;border-radius:12px;scroll-snap-align:start}
+#amstrip{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 0 16px}
+#amstrip span{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:8px 14px;font-size:14px}
+#reviews{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));margin-top:24px}
+#reviews .q{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;font-size:14px}
+#reviews .q b{display:block;margin-top:8px;font-size:13px;color:var(--mute)}
+header{background:#0b1226;color:#fff;border-bottom:1px solid rgba(255,255,255,.08)}
+header h1{font-size:19px;letter-spacing:1px;text-transform:uppercase}
+header .mute{color:#aab4cf;font-size:12px}
+header .btn.sec{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.35)}
+#hero{position:relative;min-height:440px;height:auto;border-radius:0;margin:0 0 8px;overflow:hidden;background:linear-gradient(160deg,#070b16,#14203d);display:flex;align-items:center;justify-content:center;text-align:center}
+#hero .s{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .9s}
+#hero .s.on{opacity:1}
+#hero .shade{position:absolute;inset:0;background:linear-gradient(rgba(7,11,22,.35),rgba(7,11,22,.72))}
+#hero .t{position:relative;padding:40px 22px;color:#fff;max-width:640px;background:none}
+#hero .t small{display:block;letter-spacing:4px;font-size:12px;color:var(--gold);margin-bottom:12px}
+#hero .t h2{margin:0 0 10px;font-size:38px;line-height:1.15}
+#hero .t p{margin:0 0 26px;color:#e2e6f2;font-size:16px}
+#hero .cta{display:inline-block;background:var(--gold);color:var(--onGold,#1f1a05);border:0;border-radius:40px;padding:15px 44px;font-weight:700;letter-spacing:2px;font-size:14px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.coll{text-align:center;margin:26px 0 18px}
+.coll small{display:block;letter-spacing:4px;font-size:11px;color:var(--gold)}
+.coll h2{margin:6px 0 0;font-size:28px}
+.card{cursor:default;border-radius:16px}
+.imgw{position:relative}
+.imgw .pb{position:absolute;top:12px;right:12px;background:rgba(7,11,22,.88);color:#fff;border:1px solid var(--gold);border-radius:12px;padding:6px 12px;text-align:right;font-weight:700;font-size:18px;line-height:1.1}
+.imgw .pb i{display:block;font-style:normal;font-size:10px;font-weight:400;color:#c9d0e4;letter-spacing:1px}
+.loc{font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--gold);margin:2px 0 4px}
+.mini{display:flex;gap:14px;font-size:13px;color:var(--mute);margin:8px 0 12px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts .btn{padding:11px 10px;font-size:14px;border-radius:12px}
+</style>
+</head>
+<body>
+<header class="row"><div style="display:flex;align-items:center;gap:10px"><img id="logo" alt="" style="display:none;height:38px;border-radius:8px"><div><h1 id="brand">Booking</h1><div class="mute" id="tag"></div></div></div><button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openLookup()">Check my booking</button><span id="acct" style="margin-left:8px"></span></header>
+<div id="hero" style="display:none"></div>
+<main><div id="promo" style="display:none"></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="empty" class="empty" style="display:none">No units available yet.</div><div id="reviews"></div><section id="about" style="display:none"></section><div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
+
+<div id="ov" class="overlay"><div class="sheet" id="sheet"></div></div>
+
+<script>
+// ===== Supabase connection (plain fetch, no library). Publishable key is safe in the browser: row-level security protects the data. =====
+const SBX = (() => {
+  const BASE = 'https://wqngwiagcoehytfbexil.supabase.co', KEY = 'sb_publishable_Gb7BwZtFLVt5pnZ4chSccA_XuenGpK6';
+  function make(skey) {
+    let sess = null;
+    try { sess = JSON.parse(sessionStorage.getItem(skey) || 'null'); } catch (e) {}
+    const save = s => { sess = s; try { s ? sessionStorage.setItem(skey, JSON.stringify(s)) : sessionStorage.removeItem(skey); } catch (e) {} };
+    const take = j => { if (j && j.access_token) { save({ access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600), user: j.user }); return true; } return false; };
+    const msg = (j, st) => (j && (j.message || j.msg || j.error_description || (typeof j.error === 'string' && j.error) || j.hint)) || ('Request failed (' + st + ')');
+    const nice = m => /Invalid login credentials/i.test(m) ? 'Wrong email or password.'
+      : /already (been )?registered/i.test(m) ? 'That email already has an account. Sign in instead.'
+      : /at least \d+ char/i.test(m) ? 'Password must be at least 8 characters.'
+      : /rate limit|too many/i.test(m) ? 'Too many attempts. Please wait a few minutes and try again.'
+      : /JWT expired/i.test(m) ? 'Session expired. Please sign in again.' : m;
+    let refreshing = null;
+    const refresh = () => refreshing || (refreshing = (async () => {
+      try {
+        if (!sess || !sess.refresh_token) return false;
+        const r = await fetch(BASE + '/auth/v1/token?grant_type=refresh_token', { method: 'POST', headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ refresh_token: sess.refresh_token }) });
+        const j = await r.json().catch(() => null);
+        if (r.ok && take(j)) return true;
+        save(null); return false;
+      } finally { refreshing = null; }
+    })());
+    async function raw(path, o = {}, retry = true) {
+      if (!o.anon && sess && sess.expires_at - 60 < Date.now() / 1000) await refresh();
+      const h = Object.assign({ apikey: KEY }, o.headers || {});
+      h.Authorization = 'Bearer ' + ((!o.anon && sess && sess.access_token) || KEY);
+      let body = o.body;
+      if (body !== undefined && typeof body !== 'string' && !(typeof Blob !== 'undefined' && body instanceof Blob)) { h['Content-Type'] = 'application/json'; body = JSON.stringify(body); }
+      const r = await fetch(BASE + path, { method: o.method || (body !== undefined ? 'POST' : 'GET'), headers: h, body });
+      const t = await r.text(); let j = null; try { j = t ? JSON.parse(t) : null; } catch (e) {}
+      if (r.status === 401 && retry && !o.anon && sess && sess.refresh_token) { if (await refresh()) return raw(path, o, false); throw new Error('Session expired. Please sign in again.'); }
+      if (!r.ok) throw new Error(nice(msg(j, r.status)));
+      return j;
+    }
+    const enc = p => p.split('/').map(encodeURIComponent).join('/');
+    return {
+      raw, BASE,
+      get session() { return sess; }, get uid() { return sess && sess.user && sess.user.id; },
+      async signIn(email, password) {
+        const j = await raw('/auth/v1/token?grant_type=password', { anon: true, body: { email: String(email || '').trim(), password: String(password || '') } });
+        take(j); return j.user;
+      },
+      async signUp(email, password, data) {
+        const j = await raw('/auth/v1/signup', { anon: true, body: { email: String(email || '').trim(), password: String(password || ''), data: data || {} } });
+        return take(j) ? j.user : null;     // null = email confirmation is switched on in Supabase
+      },
+      async signOut() { try { await raw('/auth/v1/logout', { method: 'POST' }); } catch (e) {} save(null); },
+      async setPassword(pw) { return raw('/auth/v1/user', { method: 'PUT', body: { password: pw } }); },
+      rpc: (fn, args) => raw('/rest/v1/rpc/' + fn, { body: args || {} }),
+      sel: (table, q) => raw('/rest/v1/' + table + (q ? '?' + q : '')),
+      ins: (table, row) => raw('/rest/v1/' + table, { method: 'POST', body: row, headers: { Prefer: 'return=representation' } }),
+      upd: (table, q, patch) => raw('/rest/v1/' + table + '?' + q, { method: 'PATCH', body: patch, headers: { Prefer: 'return=representation' } }),
+      ups: (table, row, conflict) => raw('/rest/v1/' + table + (conflict ? '?on_conflict=' + conflict : ''), { method: 'POST', body: row, headers: { Prefer: 'resolution=merge-duplicates,return=representation' } }),
+      del: (table, q) => raw('/rest/v1/' + table + '?' + q, { method: 'DELETE', headers: { Prefer: 'return=representation' } }),
+      upload: (bucket, path, blob) => raw('/storage/v1/object/' + bucket + '/' + enc(path), { method: 'POST', body: blob, headers: { 'Content-Type': blob.type || 'application/octet-stream', 'x-upsert': 'false' } }),
+      publicUrl: (bucket, path) => BASE + '/storage/v1/object/public/' + bucket + '/' + enc(path),
+      async signed(bucket, paths) {
+        if (!paths.length) return {};
+        const j = await raw('/storage/v1/object/sign/' + bucket, { body: { expiresIn: 3600, paths } });
+        const m = {}; (j || []).forEach(x => { if (x.signedURL) m[x.path] = BASE + '/storage/v1' + x.signedURL; }); return m;
+      },
+      fn: (name, body) => raw('/functions/v1/' + name, { body })
+    };
+  }
+  return { make };
+})();
+const manilaToday = () => new Date(Date.now() + 8 * 3600e3).toISOString().slice(0, 10);
+const dataUrlBlob = async d => { const m = String(d).match(/^data:([\w\/+.-]+);base64,/); if (!m) throw new Error('Invalid image.'); const r = await fetch(d); return r.blob(); };
+
+// ===== Guest adapter: same run(name,...args) interface the page already uses, backed by Supabase =====
+// ===== Guest adapter: same run(name,...args) interface the page already uses, backed by Supabase =====
+const SITE_BASE = '';  // set only if hosted on Apps Script: your /exec address. Leave empty for normal hosting.
+const G = SBX.make('sb_guest');
+const PROOF_BUCKET = 'payment-proofs';
+const HANDLERS = {
+  publicData: () => G.rpc('public_data'),
+  hostStorefronts: () => G.rpc('host_storefronts'),
+  getBlocked: id => G.rpc('blocked_dates', { p_unit: id }),
+  webUrl: async () => SITE_BASE || (location.origin + location.pathname),
+  async lookupBooking(ref, email) {
+    const r = await G.rpc('lookup_booking', { p_ref: ref, p_email: email });
+    if (!r) throw new Error('No booking found. Check your reference and email.');
+    return r;
+  },
+  async authLogin(email, pw) { await G.signIn(email, pw); return { token: 'sb' }; },
+  async signupGuest(d) {
+    if (!d.name || !String(d.name).trim()) throw new Error('Please enter your name.');
+    const u = await G.signUp(d.email, d.password, { role: 'guest', name: String(d.name).trim(), phone: String(d.phone || '').trim() });
+    if (!u) throw new Error('Account created. Please confirm your email, then sign in.');
+    return { token: 'sb' };
+  },
+  async guestMe() {
+    if (!G.uid) throw new Error('Please sign in.');
+    const m = (G.session.user || {}).user_metadata || {};
+    return { name: m.name || (G.session.user.email || '').split('@')[0], email: G.session.user.email, phone: m.phone || '' };
+  },
+  guestBookings: () => G.rpc('my_bookings'),
+  async logout() { await G.signOut(); return true; },
+  async createBooking(d) {
+    let path = '';
+    if (d.proof) {
+      const blob = await dataUrlBlob(d.proof);
+      const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '');
+      path = 'p/' + Date.now() + '-' + Math.random().toString(36).slice(2, 8) + '.' + ext;
+      await G.upload(PROOF_BUCKET, path, blob);
+    }
+    const r = await G.rpc('create_booking', { p_unit: d.unitId, p_check_in: d.checkIn, p_check_out: d.checkOut, p_guests: d.guests, p_pets: !!d.pets,
+      p_addon_ids: d.addonIds || [], p_name: d.guestName, p_email: d.email, p_phone: d.phone, p_proof_path: path });
+    return { id: r.id, total: r.total };
+  },
+  createInquiry: d => G.rpc('create_inquiry', { p_listing: d.listingId, p_name: d.name, p_email: d.email, p_phone: d.phone, p_message: d.message || '', p_preferred_date: d.date || null }),
+  availableSlots: (service, date) => G.rpc('available_slots', { p_service: service, p_date: date }),
+  createAppointment: d => G.rpc('create_appointment', { p_service: d.serviceId, p_start: d.start, p_name: d.name, p_email: d.email, p_phone: d.phone, p_notes: d.notes || '' })
+};
+const run = async (fn, ...a) => { if (!HANDLERS[fn]) throw new Error('Unknown action ' + fn); return HANDLERS[fn](...a); };
+
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const peso = n => '₱' + Number(n).toLocaleString('en-US');
+
+let DATA, unit, blocked = new Set(), hol = {}, start = null, end = null, view = null, proof = null, GTOK = G.session ? 'sb' : '', GME = null;
+
+let guests = 1, pets = false, addonIds = new Set();
+
+init();
+async function init() {
+  try { DATA = await run('publicData'); } catch (e) { $('#list').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; return; }
+  const HS = await run('hostStorefronts').catch(() => ({})); const qh = new URLSearchParams(location.search).get('host');
+  const hid = qh && HS[qh] ? qh : (Object.keys(HS).length === 1 ? Object.keys(HS)[0] : ''); const H = hid ? HS[hid] : null;
+  if (hid) DATA.units = DATA.units.filter(u => String(u.ownerId) === hid);
+  if (H) { if (H.businessName) DATA.settings.brand = H.businessName; if (H.tagline) DATA.settings.tagline = H.tagline; if (/^https:\/\//.test(H.logoUrl || '')) DATA.settings.logoUrl = H.logoUrl; }
+  const S = DATA.settings, on = k => String(S[k]).toLowerCase() === 'true', ok = c => /^#[0-9a-fA-F]{6}$/.test(c || ''), rs = document.documentElement.style;
+  document.title = S.seoTitle || S.brand; $('#brand').textContent = S.brand; $('#tag').textContent = S.tagline || ''; $('#foot').textContent = S.contact || '';
+  if (/^https:\/\//.test(S.logoUrl || '')) { const lg = $('#logo'); lg.src = S.logoUrl; lg.style.display = 'block'; }
+  document.documentElement.setAttribute('data-theme', S.theme === 'dark' ? 'dark' : 'light');
+  if (ok(S.accent)) rs.setProperty('--gold', S.accent);
+  if (ok(S.primaryText)) rs.setProperty('--onGold', S.primaryText);
+  if (ok(S.errorColor)) rs.setProperty('--bad', S.errorColor);
+  if (ok(S.secondaryBg)) rs.setProperty('--secBg', S.secondaryBg);
+  if (ok(S.secondaryText)) rs.setProperty('--secText', S.secondaryText);
+  const font = (f, v) => { if (!f || f === 'System') return; if (['Georgia'].indexOf(f) < 0) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + f.replace(/ /g, '+') + ':wght@400;600;700&display=swap'; document.head.appendChild(l); } rs.setProperty(v, "'" + f + "', " + (f === 'Georgia' || f === 'Playfair Display' ? 'serif' : 'sans-serif')); };
+  font(S.headingFont, '--hf'); font(S.bodyFont, '--bf');
+  if (GTOK) { run('guestMe', GTOK).then(m => { GME = m; drawAcct(); }).catch(() => { GTOK = ''; try { sessionStorage.removeItem('gtok'); } catch (e) {} drawAcct(); }); } else drawAcct();
+  if (S.allowHostSignup) run('webUrl').then(u => { $('#foot').insertAdjacentHTML('afterend', `<div style="text-align:center;margin:0 0 24px"><a href="${esc(/script\.google\.com/.test(u) ? u + '?page=admin' : u.replace(/[^\/]*$/, '') + 'admin.html')}" target="_top" style="color:var(--gold);font-size:14px">List your property as a host →</a></div>`); }).catch(() => {});
+  const urls = v => String(v || '').split(',').map(x => x.trim()).filter(x => /^https:\/\//.test(x));
+  const heroes = urls(S.heroImages), promos = urls(S.promoBanners);
+  if (on('showHero')) {
+    const h = $('#hero'); h.style.display = 'flex';
+    h.innerHTML = heroes.map((u, i) => `<div class="s ${i ? '' : 'on'}" style="background-image:url('${esc(u)}')"></div>`).join('') + (heroes.length ? '<div class="shade"></div>' : '') + `<div class="t"><small>WELCOME TO</small><h2>${esc(S.brand)}</h2><p>${esc(S.tagline || 'Find your perfect stay')}</p><button class="cta" onclick="document.getElementById('coll').scrollIntoView({behavior:'smooth'})">BOOK NOW</button></div>`;
+    if (heroes.length > 1) { let n = 0; setInterval(() => { const sl = h.querySelectorAll('.s'); sl[n].classList.remove('on'); n = (n + 1) % sl.length; sl[n].classList.add('on'); }, 5000); }
+  }
+  if (on('showPromo') && promos.length) { const p = $('#promo'); p.style.display = 'flex'; p.innerHTML = promos.map(u => `<img src="${esc(u)}" alt="">`).join(''); }
+  if (on('showAmenities')) { const used = new Set(); DATA.units.forEach(u => u.amenities.forEach(id => used.add(id))); $('#amstrip').innerHTML = DATA.amenities.filter(a => used.has(a.id)).map(a => `<span>${esc(a.icon)} ${esc(a.name)}</span>`).join(''); }
+  const quotes = String(S.testimonials || '').split('\n').map(l => l.split('|')).filter(p => p[0] && p[1]);
+  if (on('showReviews') && quotes.length && !(H && (H.testimonials||[]).length)) $('#reviews').innerHTML = quotes.map(p => `<div class="q">“${esc(p.slice(1).join('|').trim())}”<b>— ${esc(p[0].trim())}</b></div>`).join('');
+  { const T = H && Array.isArray(H.testimonials) ? H.testimonials.filter(t => t && t.text) : [];
+    if (T.length) $('#reviews').innerHTML = '<div class="coll"><small>TESTIMONIALS</small><h2>What guests say</h2></div>' + T.map(t => `<div class="q">“${esc(t.text)}”<b>— ${esc(t.name || 'Guest')}</b></div>`).join('');
+    if (H && (H.about || H.ownerPhotoUrl || H.contactPhone || H.contactEmail || Object.values(H.socials || {}).some(Boolean))) {
+      const so = H.socials || {}, L = [['facebook','Facebook'],['instagram','Instagram'],['tiktok','TikTok'],['youtube','YouTube'],['website','Website']].filter(x => /^https:\/\//.test(so[x[0]] || ''));
+      const a = $('#about'); a.style.display = 'block';
+      a.innerHTML = '<div class="coll"><small>ABOUT</small><h2>Meet your host</h2></div><div class="sum" style="text-align:center">' +
+        (/^https:\/\//.test(H.ownerPhotoUrl || '') ? `<img src="${esc(H.ownerPhotoUrl)}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;margin-bottom:8px">` : '') +
+        `<h3 style="margin:4px 0">${esc(H.hostName || H.businessName || '')}</h3>` + (H.about ? `<p style="white-space:pre-wrap">${esc(H.about)}</p>` : '') +
+        (H.contactPhone ? `<div>📞 <a href="tel:${esc(H.contactPhone)}">${esc(H.contactPhone)}</a></div>` : '') + (H.contactEmail ? `<div>✉️ <a href="mailto:${esc(H.contactEmail)}">${esc(H.contactEmail)}</a></div>` : '') +
+        (L.length ? '<div style="margin-top:8px">' + L.map(x => `<a href="${esc(so[x[0]])}" target="_blank" rel="noopener" style="margin:0 8px;color:var(--gold)">${x[1]}</a>`).join('') + '</div>' : '') + '</div>';
+    } }
+  drawExtras(hid);
+  if (!DATA.units.length && !(DATA.listings || []).length && !(DATA.services || []).length) $('#empty').style.display = 'block';
+  if (!DATA.units.length) { $('#list').style.display = 'none'; $('#coll').style.display = 'none'; return; }
+  if (!(String(DATA.settings.showUnits).toLowerCase() === 'true')) { $('#list').style.display = 'none'; $('#coll').style.display = 'none'; return; }
+  $('#list').innerHTML = DATA.units.map((u, i) => `
+    <div class="card">
+      <div class="imgw">${u.images[0] ? `<img src="${esc(u.images[0])}" alt="" onclick="openUnit(${i})" style="cursor:pointer">` : '<div class="ph"></div>'}<div class="pb">${peso(u.price)}<i>/ NIGHT</i></div></div>
+      <div class="b"><div class="row"><b style="font-size:18px">${esc(u.name)}</b><span class="mute">★ ${esc(u.rating)}</span></div>
+      <div class="loc">📍 ${esc(u.location)}</div>${u.hostName ? `<div class="mute" style="margin-top:-2px">Hosted by ${esc(u.hostName)}</div>` : ''}
+      <div class="mini"><span>🛏 ${esc(u.beds)}</span><span>🚿 ${esc(u.bathrooms)}</span><span>👥 ${esc(u.maxGuests)}</span></div>
+      <div class="acts"><button class="btn sec" onclick="openUnit(${i})">👁 View</button><button class="btn" onclick="unit=DATA.units[${i}];startBooking()">📅 Book Now</button></div></div>
+    </div>`).join('');
+  try { if (window.google && google.script && google.script.url) google.script.url.getLocation(l => { const id = l && l.parameter && l.parameter.unit; const k = id ? DATA.units.findIndex(x => x.id === String(id)) : -1; if (k >= 0) openUnit(k); }); } catch (e) {}
+  { const qp = new URLSearchParams(location.search), id = qp.get('unit'); const k = id ? DATA.units.findIndex(x => x.id === String(id)) : -1; if (k >= 0) openUnit(k); }
+}
+
+function show(html) { $('#sheet').innerHTML = '<button class="x" onclick="closeSheet()">×</button>' + html; $('#ov').classList.add('on'); $('#sheet').scrollTop = 0; }
+function openLookup(res, err) {
+  show(`<h3 style="margin:4px 0">Check my booking</h3><div class="mute">Enter your booking reference (from your email) and the email you booked with.</div>
+    <label>Booking reference</label><input type="text" id="lk_r" placeholder="e.g. B1A2B3C4D" autocapitalize="characters">
+    <label>Email</label><input type="email" id="lk_e">
+    <div class="err" id="lk_er">${esc(err || '')}</div>
+    <button class="btn" id="lk_go" onclick="doLookup()">Look up</button>` +
+    (res ? `<div class="sum" style="margin-top:14px"><div class="row"><b>${esc(res.unitName)}</b><b>${esc(res.status)}</b></div>
+      <div class="row"><span>${esc(res.checkIn)} → ${esc(res.checkOut)}</span><span>${esc(res.nights)} night(s)</span></div>
+      <div class="row"><span>${esc(res.guests)} guest(s)</span><span>${peso(res.total)}</span></div>
+      <div class="mute" style="margin-top:6px">${res.status === 'Pending' ? 'We are verifying your payment. You will get an email once confirmed.' : res.status === 'Confirmed' ? 'Your stay is confirmed. See you soon!' : 'This booking was cancelled.'}</div></div>` : ''));
+}
+async function doLookup() {
+  const r = $('#lk_r').value, e = $('#lk_e').value, b = $('#lk_go'); b.disabled = true; b.textContent = 'Searching…';
+  try { openLookup(await run('lookupBooking', r, e)); } catch (x) { openLookup(null, x.message); $('#lk_r').value = r; $('#lk_e').value = e; }
+}
+const UA = () => DATA.addons.filter(a => a.ownerId === (unit && unit.ownerId));
+const stCol = s => s === 'Confirmed' ? '#2e8b57' : s === 'Cancelled' ? '#c0392b' : '#b98b12';
+function drawAcct() {
+  const a = $('#acct'); if (!a) return;
+  a.innerHTML = GME ? `<button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openMine()">👤 ${esc(String(GME.name).split(' ')[0])}</button>`
+    : `<button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openAuth('in')">Sign in</button>`;
+}
+function openAuth(mode, err) {
+  const up = mode === 'up', can = DATA.settings.allowGuestSignup;
+  show(`<h3 style="margin:4px 0">${up ? 'Create your account' : 'Sign in'}</h3><div class="mute">${up ? 'Book faster and see all your bookings in one place.' : 'Welcome back!'}</div>
+    ${up ? '<label>Full name</label><input type="text" id="au_n" autocomplete="name"><label>Phone</label><input type="tel" id="au_p" autocomplete="tel">' : ''}
+    <label>Email</label><input type="email" id="au_e" autocomplete="${up ? 'email' : 'username'}">
+    <label>Password${up ? ' (min 8 characters)' : ''}</label><input type="password" id="au_w" autocomplete="${up ? 'new-password' : 'current-password'}" onkeydown="if(event.key==='Enter')doAuth('${mode}')">
+    <div class="err" id="au_er">${esc(err || '')}</div>
+    <button class="btn" id="au_go" onclick="doAuth('${mode}')">${up ? 'Sign up' : 'Sign in'}</button>
+    ${up ? '<p class="mute" style="text-align:center">Have an account? <a href="#" onclick="openAuth(\'in\');return false" style="color:var(--gold)">Sign in</a></p>'
+      : (can ? '<p class="mute" style="text-align:center">New here? <a href="#" onclick="openAuth(\'up\');return false" style="color:var(--gold)">Create an account</a></p>' : '')}`);
+}
+async function doAuth(mode) {
+  const b = $('#au_go'); b.disabled = true; const em = $('#au_e').value, pw = $('#au_w').value;
+  try {
+    const r = mode === 'up' ? await run('signupGuest', { name: $('#au_n').value, phone: $('#au_p').value, email: em, password: pw }) : await run('authLogin', em, pw, 'guest');
+    GTOK = r.token; try { sessionStorage.setItem('gtok', GTOK); } catch (e) {}
+    GME = await run('guestMe', GTOK); drawAcct(); openMine();
+  } catch (e) { openAuth(mode, e.message); $('#au_e').value = em; }
+}
+async function openMine() {
+  show('<p class="mute">Loading…</p>');
+  try {
+    const l = await run('guestBookings', GTOK);
+    show(`<h3 style="margin:4px 0">Hi, ${esc(GME.name)}</h3><div class="mute">${esc(GME.email)}</div><h4 style="margin:16px 0 6px">My bookings</h4>` +
+      (l.map(b => `<div class="sum"><div class="row"><b>${esc(b.unitName)}</b><b style="color:${stCol(b.status)}">${esc(b.status)}</b></div>
+        <div class="row"><span>${esc(b.checkIn)} → ${esc(b.checkOut)}</span><span>${esc(b.nights)} night(s)</span></div>
+        <div class="row"><span class="mute">Ref ${esc(b.id)}</span><span>${peso(b.total)}</span></div></div>`).join('') || '<p class="mute">No bookings yet.</p>') +
+      '<button class="btn sec" style="margin-top:10px" onclick="gLogout()">Sign out</button>');
+  } catch (e) { GTOK = ''; GME = null; try { sessionStorage.removeItem('gtok'); } catch (x) {} drawAcct(); openAuth('in', 'Please sign in again.'); }
+}
+function gLogout() { run('logout', GTOK).catch(() => {}); GTOK = ''; GME = null; try { sessionStorage.removeItem('gtok'); } catch (e) {} drawAcct(); closeSheet(); }
+function closeSheet() { $('#ov').classList.remove('on'); }
+$('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeSheet(); });
+
+async function shareThis() {
+  let link; try { link = (await run('webUrl')) + '?unit=' + encodeURIComponent(unit.id); } catch (e) { return; }
+  try { if (navigator.share) { await navigator.share({ title: unit.name, url: link }); return; } } catch (e) { return; }
+  try { await navigator.clipboard.writeText(link); alert('Link copied!'); } catch (e) { prompt('Copy this link:', link); }
+}
+function openUnit(i) {
+  unit = DATA.units[i];
+  show(`<h2 style="margin:4px 0">${esc(unit.name)}</h2><div class="mute">${esc(unit.location)} · ★ ${esc(unit.rating)}</div>
+    <div class="car">${unit.images.map(s => `<img src="${esc(s)}" alt="">`).join('') || '<div class="ph" style="flex:0 0 100%;border-radius:12px"></div>'}</div>
+    <div class="stats">
+      <div class="stat"><b>${esc(unit.maxGuests)}</b>Guests</div><div class="stat"><b>${esc(unit.beds)}</b>Beds</div><div class="stat"><b>${esc(unit.bedrooms)}</b>Bedrooms</div>
+      <div class="stat"><b>${esc(unit.bathrooms)}</b>Baths</div><div class="stat"><b>${esc(unit.checkInTime)}</b>Check-in</div><div class="stat"><b>${esc(unit.checkOutTime)}</b>Check-out</div></div>
+    <p>${esc(unit.description).replace(/\n/g, '<br>')}</p>
+    ${unit.amenities.length ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin:8px 0">' + unit.amenities.map(id => { const a = DATA.amenities.find(x => x.id === id); return a ? `<span class="stat" style="padding:6px 10px">${esc(a.icon)} ${esc(a.name)}</span>` : ''; }).join('') + '</div>' : ''}
+    <p class="mute">Extra guest beyond ${esc(unit.baseGuests)}: ${peso(unit.extraGuestFee)}/night · Pets: ${unit.petsAllowed ? 'allowed (' + peso(unit.petFee) + ')' : 'not allowed'}</p>
+    <button class="btn" onclick="startBooking()">Book Now · ${peso(unit.price)}/night</button>
+    <button class="btn sec" style="margin-top:8px" onclick="shareThis()">🔗 Share this place</button>`);
+}
+
+async function startBooking() {
+  start = end = null; proof = null; guests = Math.min(2, unit.maxGuests) || 1; pets = false; addonIds = new Set();
+  hol = {}; DATA.holidays.filter(h => h.ownerId === unit.ownerId).forEach(h => hol[h.date] = { name: h.name, pct: Number(h.surcharge) || 0 });
+  const t = DATA.today.split('-'); view = { y: +t[0], m: +t[1] - 1 };
+  show('<p class="mute">Loading availability…</p>');
+  try { blocked = new Set(await run('getBlocked', unit.id)); } catch (e) { show('<div class="err">' + esc(e.message) + '</div>'); return; }
+  renderBooking();
+}
+
+const ds = (y, m, d) => y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+const addD = (s, n) => { const d = new Date(s + 'T00:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const nightsBetween = (a, b) => Math.round((new Date(b + 'T00:00:00Z') - new Date(a + 'T00:00:00Z')) / 864e5);
+const rangeFree = (a, b) => { for (let d = a; d < b; d = addD(d, 1)) if (blocked.has(d)) return false; return true; };
+
+function calendarHTML() {
+  const first = new Date(Date.UTC(view.y, view.m, 1)), dim = new Date(Date.UTC(view.y, view.m + 1, 0)).getUTCDate();
+  const label = first.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  let cells = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(x => `<div class="dow">${x}</div>`).join('');
+  for (let i = 0; i < first.getUTCDay(); i++) cells += '<div></div>';
+  for (let d = 1; d <= dim; d++) {
+    const s = ds(view.y, view.m, d); let c = 'free', title = '';
+    if (s < DATA.today) c = 'past'; else if (blocked.has(s)) c = 'occ'; else if (hol[s]) { c = 'hol'; title = hol[s].name + (hol[s].pct ? ' (+' + hol[s].pct + '%)' : ''); }
+    if (start && s === start) c = 'sel'; else if (end && s === end) c = 'sel'; else if (start && end && s > start && s < end) c = 'mid';
+    cells += `<div class="d ${c}" title="${esc(title)}" onclick="pick('${s}')">${d}</div>`;
+  }
+  return `<div class="cal"><div class="h"><button class="n" onclick="mv(-1)">‹</button><b>${label}</b><button class="n" onclick="mv(1)">›</button></div><div class="days">${cells}</div>
+    <div class="legend"><span><i style="background:var(--free)"></i>Available</span><span><i style="background:var(--occ)"></i>Occupied</span><span><i style="background:var(--holb)"></i>Holiday</span><span><i style="background:var(--gold)"></i>Selected</span></div></div>`;
+}
+function mv(n) { view.m += n; if (view.m < 0) { view.m = 11; view.y--; } if (view.m > 11) { view.m = 0; view.y++; } renderBooking(true); }
+function pick(s) {
+  if (s < DATA.today) return;
+  if (start && !end && s > start && rangeFree(start, s)) { end = s; }
+  else if (!blocked.has(s)) { start = s; end = null; }
+  else return;
+  renderBooking(true);
+}
+
+function calc() {
+  if (!start || !end) return null;
+  const n = nightsBetween(start, end), base = n * unit.price, extra = Math.max(0, guests - unit.baseGuests) * unit.extraGuestFee * n;
+  let holx = 0; for (let d = start; d < end; d = addD(d, 1)) if (hol[d]) holx += unit.price * hol[d].pct / 100;
+  holx = Math.round(holx);
+  const pet = pets ? Number(unit.petFee) : 0, ad = UA().filter(a => addonIds.has(a.id));
+  return { n, base, holx, extra, pet, ad, total: base + holx + extra + pet + ad.reduce((s, a) => s + Number(a.price), 0) };
+}
+
+function renderBooking(keep) {
+  const f = keep ? { name: $('#gn')?.value, email: $('#em')?.value, phone: $('#ph')?.value } : {};
+  const st = keep ? $('#sheet').scrollTop : 0;
+  const c = calc();
+  show(`<h3 style="margin:4px 0">Book ${esc(unit.name)}</h3><div class="mute">Pick your check-in, then your check-out date.${DATA.settings.minNights > 1 ? ' Minimum stay: ' + DATA.settings.minNights + ' nights.' : ''}</div>
+    ${calendarHTML()}
+    <label>Guests (max ${esc(unit.maxGuests)})</label>
+    <div class="stepper"><button onclick="gs(-1)">−</button><b>${guests}</b><button onclick="gs(1)">+</button></div>
+    ${unit.petsAllowed ? `<div class="chk"><input type="checkbox" id="pt" ${pets ? 'checked' : ''} onchange="pets=this.checked;renderBooking(true)"><label for="pt" style="margin:0;color:inherit">Bringing a pet (+${peso(unit.petFee)})</label></div>` : ''}
+    ${UA().length ? '<label>Add-ons</label>' + UA().map(a => `<div class="chk"><input type="checkbox" id="ad${esc(a.id)}" ${addonIds.has(a.id) ? 'checked' : ''} onchange="ta('${esc(a.id)}',this.checked)"><label for="ad${esc(a.id)}" style="margin:0;color:inherit">${esc(a.name)} (+${peso(a.price)})</label></div>`).join('') : ''}
+    <label>Full name</label><input type="text" id="gn" value="${esc(f.name || (GME && GME.name) || '')}" autocomplete="name">
+    <label>Email</label><input type="email" id="em" value="${esc(f.email || (GME && GME.email) || '')}" autocomplete="email">
+    <label>Phone</label><input type="tel" id="ph" value="${esc(f.phone || (GME && GME.phone) || '')}" autocomplete="tel">
+    <div class="sum">${c ? `<div class="row"><span>${peso(unit.price)} × ${c.n} night${c.n > 1 ? 's' : ''}</span><span>${peso(c.base)}</span></div>
+      ${c.holx ? `<div class="row"><span>Holiday rates</span><span>${peso(c.holx)}</span></div>` : ''}
+      ${c.extra ? `<div class="row"><span>Extra guests</span><span>${peso(c.extra)}</span></div>` : ''}${c.pet ? `<div class="row"><span>Pet fee</span><span>${peso(c.pet)}</span></div>` : ''}
+      ${c.ad.map(a => `<div class="row"><span>${esc(a.name)}</span><span>${peso(a.price)}</span></div>`).join('')}
+      <div class="row t"><span>Total</span><span>${peso(c.total)}</span></div><div class="mute" style="margin-top:4px">${start} → ${end}</div>` : '<span class="mute">Select your dates to see the total.</span>'}</div>
+    <div class="sum"><b>How to pay</b><div style="white-space:pre-wrap;margin-top:4px">${unit.payInfo ? esc(unit.payInfo) : 'Your host has not posted payment details yet. Message them for payment instructions, then upload your proof below.'}</div></div>
+    <label>Proof of payment (photo / screenshot)</label><input type="file" id="pf" accept="image/png,image/jpeg,image/webp,image/gif" onchange="onProof(this)">
+    <div class="chk"><input type="checkbox" id="ag"><label for="ag" style="margin:0;color:inherit">${esc(DATA.settings.terms)}</label></div>
+    <div class="err" id="er"></div>
+    <button class="btn" id="go" onclick="submitBooking()">Confirm Booking</button>`);
+  if (proof) $('#pf').insertAdjacentHTML('afterend', '<div class="mute">Photo attached ✓ (choose again to replace)</div>');
+  $('#sheet').scrollTop = st;
+}
+function gs(n) { guests = Math.max(1, Math.min(unit.maxGuests, guests + n)); renderBooking(true); }
+function ta(id, on) { on ? addonIds.add(id) : addonIds.delete(id); renderBooking(true); }
+
+function resize(file, max = 1200) {
+  return new Promise((ok, no) => {
+    const img = new Image(), r = new FileReader();
+    r.onload = () => { img.onload = () => { const k = Math.min(1, max / Math.max(img.width, img.height)), cv = document.createElement('canvas'); cv.width = img.width * k; cv.height = img.height * k; cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height); ok(cv.toDataURL('image/jpeg', .8)); }; img.onerror = () => no(new Error('Could not read image.')); img.src = r.result; };
+    r.onerror = () => no(new Error('Could not read file.')); r.readAsDataURL(file);
+  });
+}
+async function onProof(el) { if (el.files[0]) { try { proof = await resize(el.files[0]); } catch (e) { $('#er').textContent = e.message; } } }
+
+async function submitBooking() {
+  const er = $('#er'); er.textContent = '';
+  const name = $('#gn').value.trim(), email = $('#em').value.trim(), phone = $('#ph').value.trim();
+  if (!start || !end) return er.textContent = 'Please select your check-in and check-out dates.';
+  if (!name || !/^\S+@\S+\.\S+$/.test(email) || !phone) return er.textContent = 'Please enter your name, a valid email and phone number.';
+  if (nightsBetween(start, end) < DATA.settings.minNights) return er.textContent = 'Minimum stay is ' + DATA.settings.minNights + ' night(s).';
+  if (!proof) return er.textContent = 'Please upload your proof of payment.';
+  if (!$('#ag').checked) return er.textContent = 'Please agree to the terms to continue.';
+  const b = $('#go'); b.disabled = true; b.textContent = 'Submitting…';
+  try {
+    const r = await run('createBooking', { unitId: unit.id, checkIn: start, checkOut: end, guests, pets, addonIds: [...addonIds], guestName: name, email, phone, proof, token: GTOK });
+    show(`<div style="text-align:center;padding:24px 8px"><div style="font-size:48px">✅</div><h2>Booking submitted</h2>
+      <p>Your booking is <b>pending confirmation</b>. We sent an email to <b>${esc(email)}</b>.</p>
+      <p class="mute">Reference: ${esc(r.id)} · Total ${peso(r.total)}</p><button class="btn sec" onclick="closeSheet()">Done</button></div>`);
+  } catch (e) { er.textContent = e.message; b.disabled = false; b.textContent = 'Confirm Booking'; }
+}
+(function () {
+  const add = el => { if (el.dataset.eye) return; el.dataset.eye = '1';
+    const w = document.createElement('div'); w.style.position = 'relative'; el.parentNode.insertBefore(w, el); w.appendChild(el); el.style.paddingRight = '66px';
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Show'; b.setAttribute('aria-label', 'Show or hide password');
+    b.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:0;color:inherit;opacity:.8;cursor:pointer;font:600 13px sans-serif;padding:6px';
+    b.onclick = () => { const s = el.type === 'password'; el.type = s ? 'text' : 'password'; b.textContent = s ? 'Hide' : 'Show'; }; w.appendChild(b); };
+  const scan = () => document.querySelectorAll('input[type=password]').forEach(add);
+  new MutationObserver(scan).observe(document.documentElement, { childList: true, subtree: true }); scan();
+})();
+
+/* ===== Property listings (inquiry) and services (appointments) ===== */
+function drawExtras(hid) {
+  const L = (DATA.listings || []).filter(x => !hid || String(x.ownerId) === hid), V = (DATA.services || []).filter(x => !hid || String(x.ownerId) === hid);
+  DATA.listings = L; DATA.services = V;
+  if (L.length) $('#lst').innerHTML = '<div class="coll"><small>PROPERTIES</small><h2>Properties for sale &amp; rent</h2></div><div class="grid">' + L.map((x, i) => `<div class="card"><div class="imgw">${x.images[0] ? `<img src="${esc(x.images[0])}" alt="" onclick="openListing(${i})" style="cursor:pointer">` : '<div class="ph"></div>'}</div>
+    <div class="b"><div class="row"><b style="font-size:18px">${esc(x.title)}</b><span class="mute">${x.listingType === 'rent' ? 'For rent' : 'For sale'}</span></div><div class="loc">📍 ${esc(x.location)}</div>
+    <div class="mini"><span>🛏 ${esc(x.bedrooms)}</span><span>🚿 ${esc(x.bathrooms)}</span>${x.floorArea ? `<span>📐 ${esc(x.floorArea)} sqm</span>` : ''}</div><b style="font-size:18px">${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b>
+    <div class="acts" style="margin-top:8px"><button class="btn sec" onclick="openListing(${i})">👁 View</button><button class="btn" onclick="inquire(${i})">✉️ Inquire</button></div></div></div>`).join('') + '</div>';
+  if (V.length) $('#svc').innerHTML = '<div class="coll"><small>SERVICES</small><h2>Book an appointment</h2></div><div class="grid">' + V.map((x, i) => `<div class="card">${x.images[0] ? `<div class="imgw"><img src="${esc(x.images[0])}" alt=""></div>` : ''}<div class="b"><div class="row"><b style="font-size:18px">${esc(x.name)}</b><b>${peso(x.price)}</b></div>
+    <div class="mute">⏱ ${esc(x.durationMinutes)} min</div><div style="margin:6px 0">${esc(x.description)}</div><button class="btn" onclick="bookService(${i})">📅 Book now</button></div></div>`).join('') + '</div>';
+  try { const q = new URLSearchParams(location.search), l = q.get('listing'), sv = q.get('service'); if (l) { const k = L.findIndex(x => x.id === l); if (k >= 0) openListing(k); } if (sv) { const k = V.findIndex(x => x.id === sv); if (k >= 0) bookService(k); } } catch (e) {}
+}
+function openListing(i) {
+  const x = DATA.listings[i];
+  show(`${x.images.map(u => `<img src="${esc(u)}" alt="" style="width:100%;border-radius:12px;margin-bottom:8px">`).join('')}<h3 style="margin:6px 0">${esc(x.title)}</h3><div class="mute">📍 ${esc(x.location)} · ${esc(x.propertyType)} · ${x.listingType === 'rent' ? 'For rent' : 'For sale'}</div>
+    <div class="mini"><span>🛏 ${esc(x.bedrooms)}</span><span>🚿 ${esc(x.bathrooms)}</span>${x.floorArea ? `<span>📐 ${esc(x.floorArea)} sqm</span>` : ''}${x.lotArea ? `<span>🌳 ${esc(x.lotArea)} sqm lot</span>` : ''}</div>
+    <b style="font-size:20px">${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b><p style="white-space:pre-wrap">${esc(x.description)}</p><button class="btn" onclick="inquire(${i})">✉️ Inquire about this property</button>`);
+}
+function inquire(i, msg, err) {
+  const x = DATA.listings[i];
+  show(`<h3 style="margin:4px 0">Inquire: ${esc(x.title)}</h3>${err ? `<div class="err">${esc(err)}</div>` : ''}<label>Your name</label><input id="iq_n"><label>Email</label><input id="iq_e" type="email"><label>Phone</label><input id="iq_p" type="tel">
+    <label>Preferred viewing date (optional)</label><input id="iq_d" type="date"><label>Message</label><textarea id="iq_m" rows="3"></textarea><button class="btn" id="iq_go" style="margin-top:10px" onclick="sendInquiry(${i})">Send inquiry</button>`);
+}
+async function sendInquiry(i) {
+  const x = DATA.listings[i], g = id => $('#' + id).value.trim(); if (!g('iq_n') || !/^\S+@\S+\.\S+$/.test(g('iq_e')) || !g('iq_p')) return alert('Please fill in your name, a valid email and phone.');
+  $('#iq_go').disabled = true;
+  try { const r = await run('createInquiry', { listingId: x.id, name: g('iq_n'), email: g('iq_e'), phone: g('iq_p'), message: g('iq_m'), date: g('iq_d') });
+    show(`<h3>Inquiry sent ✓</h3><p>Reference <b>${esc((r && (r.id || r.ref)) || '')}</b>. ${esc(x.hostName || 'The owner')} will contact you soon.</p><button class="btn" onclick="closeSheet()">Done</button>`); }
+  catch (e) { $('#iq_go').disabled = false; alert(e.message); }
+}
+function bookService(i) {
+  const x = DATA.services[i]; const t = manilaToday();
+  show(`<h3 style="margin:4px 0">${esc(x.name)}</h3><div class="mute">${peso(x.price)} · ${esc(x.durationMinutes)} min</div><label>Pick a date</label><input id="ap_d" type="date" min="${t}" value="${t}" onchange="loadSlots(${i})"><div id="ap_s" style="margin:8px 0"></div><div id="ap_f"></div>`);
+  loadSlots(i);
+}
+let APS = null;
+async function loadSlots(i) {
+  const x = DATA.services[i], d = $('#ap_d').value; APS = null; $('#ap_f').innerHTML = ''; $('#ap_s').innerHTML = '<span class="mute">Loading times…</span>';
+  try { const l = await run('availableSlots', x.id, d);
+    $('#ap_s').innerHTML = (l || []).map(t => `<button class="btn sec sm" style="margin:3px" onclick="pickSlot(${i},'${esc(t)}',this)">${new Date(t).toLocaleTimeString('en-PH', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' })}</button>`).join('') || '<span class="mute">No open times that day. Try another date.</span>'; }
+  catch (e) { $('#ap_s').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
+}
+function pickSlot(i, t, el) {
+  APS = t; document.querySelectorAll('#ap_s .btn').forEach(b => { b.classList.add('sec'); }); el.classList.remove('sec');
+  $('#ap_f').innerHTML = `<label>Your name</label><input id="ap_n"><label>Email</label><input id="ap_e" type="email"><label>Phone</label><input id="ap_p" type="tel"><label>Notes (optional)</label><textarea id="ap_m" rows="2"></textarea><button class="btn" id="ap_go" style="margin-top:10px" onclick="sendAppt(${i})">Confirm appointment</button>`;
+}
+async function sendAppt(i) {
+  const x = DATA.services[i], g = id => $('#' + id).value.trim(); if (!APS) return alert('Pick a time first.'); if (!g('ap_n') || !/^\S+@\S+\.\S+$/.test(g('ap_e')) || !g('ap_p')) return alert('Please fill in your name, a valid email and phone.');
+  $('#ap_go').disabled = true;
+  try { const r = await run('createAppointment', { serviceId: x.id, start: APS, name: g('ap_n'), email: g('ap_e'), phone: g('ap_p'), notes: g('ap_m') });
+    show(`<h3>Appointment requested ✓</h3><p>Reference <b>${esc((r && (r.id || r.ref)) || '')}</b>.</p>${x.payInfo ? `<div class="sum"><b>How to pay</b><div style="white-space:pre-wrap">${esc(x.payInfo)}</div></div>` : ''}<button class="btn" onclick="closeSheet()">Done</button>`); }
+  catch (e) { $('#ap_go').disabled = false; alert(e.message); }
+}
+</script>
+</body>
+</html>

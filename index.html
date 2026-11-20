@@ -90,12 +90,39 @@ header .btn.sec{background:transparent;color:#fff;border:1px solid rgba(255,255,
 .mini{display:flex;gap:14px;font-size:13px;color:var(--mute);margin:8px 0 12px}
 .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .acts .btn{padding:11px 10px;font-size:14px;border-radius:12px}
+
+:root{--c2:#0b1226}
+header{background:var(--c2)}
+.cband{margin:34px 0;border-radius:22px;padding:34px 22px;text-align:center;color:#fff;background:linear-gradient(135deg,var(--c2),color-mix(in srgb,var(--c2) 55%,var(--gold)))}
+.cband h3{margin:0 0 6px;font-size:24px}.cband p{margin:0 0 18px;opacity:.85}
+.cband .btn{width:auto;display:inline-block;padding:15px 44px;border-radius:40px;letter-spacing:1px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.steps{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px 20px;text-align:center}
+.step i{display:flex;align-items:center;justify-content:center;width:52px;height:52px;margin:0 auto 12px;border-radius:50%;background:var(--gold);color:var(--onGold,#1f1a05);font:700 22px var(--hf,inherit);font-style:normal}
+.step b{display:block;font-size:17px;margin-bottom:6px;font-family:var(--hf,inherit)}.step span{color:var(--mute);font-size:14px;line-height:1.5}
+.mv{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:34px}
+.mv>div{border-radius:20px;padding:28px 24px;background:var(--c2);color:#fff}
+.mv small{display:block;letter-spacing:4px;font-size:11px;color:var(--gold);margin-bottom:8px}
+.mv h3{margin:0 0 10px;font-size:22px}.mv p{margin:0;line-height:1.65;opacity:.9;white-space:pre-wrap}
+#reviews .q{border-radius:18px;padding:20px;position:relative}
+#reviews .q img{width:54px;height:54px;border-radius:50%;object-fit:cover;margin-bottom:10px;border:2px solid var(--gold)}
+#reviews .q:before{content:"\201C";position:absolute;right:16px;top:2px;font:700 54px/1 var(--hf,serif);color:var(--gold);opacity:.35}
+.owner{display:grid;gap:22px;grid-template-columns:200px 1fr;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:26px;margin-top:8px}
+.owner>img,.owner .nophoto{width:200px;height:200px;border-radius:50%;object-fit:cover;border:4px solid var(--gold)}
+.owner h3{margin:0;font-size:28px}.owner .sub{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--gold);font-weight:600;font-size:13px;letter-spacing:1px;text-transform:uppercase;margin:6px 0 12px}
+.owner p{white-space:pre-wrap;line-height:1.65;margin:0 0 14px}
+.soc{display:flex;gap:10px;flex-wrap:wrap}
+.soc a{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--c2);color:#fff;transition:transform .15s,background .15s}
+.soc a:hover{transform:translateY(-2px);background:var(--gold);color:var(--onGold,#1f1a05)}.soc svg{width:20px;height:20px}
+@media(max-width:640px){.owner{grid-template-columns:1fr;text-align:center}.owner>img,.owner .nophoto{margin:0 auto}.owner .sub,.soc{justify-content:center}}
+.card{transition:transform .2s,box-shadow .2s}.card:hover{transform:translateY(-3px);box-shadow:0 14px 34px rgba(0,0,0,.12)}
+html{scroll-behavior:smooth}
 </style>
 </head>
 <body>
 <header class="row"><div style="display:flex;align-items:center;gap:10px"><img id="logo" alt="" style="display:none;height:38px;border-radius:8px"><div><h1 id="brand">Booking</h1><div class="mute" id="tag"></div></div></div><button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openLookup()">Check my booking</button><span id="acct" style="margin-left:8px"></span></header>
 <div id="hero" style="display:none"></div>
-<main><div id="promo" style="display:none"></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">No units available yet.</div><div id="reviews"></div><section id="about" style="display:none"></section><div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
+<main><div id="promo" style="display:none"></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">No units available yet.</div><div id="cta1"></div><div id="why"></div><div id="mv"></div><div id="cta2"></div><div id="reviews"></div><section id="about" style="display:none"></section><div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
 
 <div id="ov" class="overlay"><div class="sheet" id="sheet"></div></div>
 
@@ -243,13 +270,14 @@ async function init() {
   if (ok(S.errorColor)) rs.setProperty('--bad', S.errorColor);
   if (ok(S.secondaryBg)) rs.setProperty('--secBg', S.secondaryBg);
   if (ok(S.secondaryText)) rs.setProperty('--secText', S.secondaryText);
+  { const SI = (H && H.site) || {}; if (ok(SI.color1)) { rs.setProperty('--gold', SI.color1); rs.setProperty('--gold2', SI.color1); const x = parseInt(SI.color1.slice(1), 16), lum = (0.299 * (x >> 16) + 0.587 * ((x >> 8) & 255) + 0.114 * (x & 255)); rs.setProperty('--onGold', lum > 150 ? '#1f1a05' : '#ffffff'); } if (ok(SI.color2)) rs.setProperty('--c2', SI.color2); }
   const font = (f, v) => { if (!f || f === 'System') return; if (['Georgia'].indexOf(f) < 0) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + f.replace(/ /g, '+') + ':wght@400;600;700&display=swap'; document.head.appendChild(l); } rs.setProperty(v, "'" + f + "', " + (f === 'Georgia' || f === 'Playfair Display' ? 'serif' : 'sans-serif')); };
-  font(S.headingFont, '--hf'); font(S.bodyFont, '--bf');
+  font(S.headingFont, '--hf'); font(S.bodyFont, '--bf'); { const SI = (H && H.site) || {}; if (SI.font1) font(SI.font1, '--hf'); if (SI.font2) font(SI.font2, '--bf'); }
   if (GTOK) { run('guestMe', GTOK).then(m => { GME = m; drawAcct(); }).catch(() => { GTOK = ''; try { sessionStorage.removeItem('gtok'); } catch (e) {} drawAcct(); }); } else drawAcct();
   if (S.allowHostSignup) run('webUrl').then(u => { $('#foot').insertAdjacentHTML('afterend', `<div style="text-align:center;margin:0 0 24px"><a href="${esc(/script\.google\.com/.test(u) ? u + '?page=admin' : u.replace(/[^\/]*$/, '') + 'admin.html')}" target="_top" style="color:var(--gold);font-size:14px">List your property as a host →</a></div>`); }).catch(() => {});
   const urls = v => String(v || '').split(',').map(x => x.trim()).filter(x => /^https:\/\//.test(x));
-  const heroes = urls(S.heroImages), promos = urls(S.promoBanners);
-  if (on('showHero')) {
+  const HSITE = (H && H.site) || {}, heroes = /^https:\/\//.test(HSITE.bgUrl || '') ? [HSITE.bgUrl] : urls(S.heroImages), promos = urls(S.promoBanners);
+  if (on('showHero') || heroes.length && /^https:\/\//.test(HSITE.bgUrl || '')) {
     const h = $('#hero'); h.style.display = 'flex';
     h.innerHTML = heroes.map((u, i) => `<div class="s ${i ? '' : 'on'}" style="background-image:url('${esc(u)}')"></div>`).join('') + (heroes.length ? '<div class="shade"></div>' : '') + `<div class="t"><small>WELCOME TO</small><h2>${esc(S.brand)}</h2><p>${esc(S.tagline || 'Find your perfect stay')}</p><button class="cta" onclick="document.getElementById('coll').scrollIntoView({behavior:'smooth'})">BOOK NOW</button></div>`;
     if (heroes.length > 1) { let n = 0; setInterval(() => { const sl = h.querySelectorAll('.s'); sl[n].classList.remove('on'); n = (n + 1) % sl.length; sl[n].classList.add('on'); }, 5000); }
@@ -258,17 +286,7 @@ async function init() {
   if (on('showAmenities')) { const used = new Set(); DATA.units.forEach(u => u.amenities.forEach(id => used.add(id))); $('#amstrip').innerHTML = DATA.amenities.filter(a => used.has(a.id)).map(a => `<span>${esc(a.icon)} ${esc(a.name)}</span>`).join(''); }
   const quotes = String(S.testimonials || '').split('\n').map(l => l.split('|')).filter(p => p[0] && p[1]);
   if (on('showReviews') && quotes.length && !(H && (H.testimonials||[]).length)) $('#reviews').innerHTML = quotes.map(p => `<div class="q">“${esc(p.slice(1).join('|').trim())}”<b>— ${esc(p[0].trim())}</b></div>`).join('');
-  { const T = H && Array.isArray(H.testimonials) ? H.testimonials.filter(t => t && t.text) : [];
-    if (T.length) $('#reviews').innerHTML = '<div class="coll"><small>TESTIMONIALS</small><h2>What guests say</h2></div>' + T.map(t => `<div class="q">“${esc(t.text)}”<b>— ${esc(t.name || 'Guest')}</b></div>`).join('');
-    if (H && (H.about || H.ownerPhotoUrl || H.contactPhone || H.contactEmail || Object.values(H.socials || {}).some(Boolean))) {
-      const so = H.socials || {}, L = [['facebook','Facebook'],['instagram','Instagram'],['tiktok','TikTok'],['youtube','YouTube'],['website','Website']].filter(x => /^https:\/\//.test(so[x[0]] || ''));
-      const a = $('#about'); a.style.display = 'block';
-      a.innerHTML = '<div class="coll"><small>ABOUT</small><h2>Meet your host</h2></div><div class="sum" style="text-align:center">' +
-        (/^https:\/\//.test(H.ownerPhotoUrl || '') ? `<img src="${esc(H.ownerPhotoUrl)}" alt="" style="width:110px;height:110px;border-radius:50%;object-fit:cover;margin-bottom:8px">` : '') +
-        `<h3 style="margin:4px 0">${esc(H.hostName || H.businessName || '')}</h3>` + (H.about ? `<p style="white-space:pre-wrap">${esc(H.about)}</p>` : '') +
-        (H.contactPhone ? `<div>📞 <a href="tel:${esc(H.contactPhone)}">${esc(H.contactPhone)}</a></div>` : '') + (H.contactEmail ? `<div>✉️ <a href="mailto:${esc(H.contactEmail)}">${esc(H.contactEmail)}</a></div>` : '') +
-        (L.length ? '<div style="margin-top:8px">' + L.map(x => `<a href="${esc(so[x[0]])}" target="_blank" rel="noopener" style="margin:0 8px;color:var(--gold)">${x[1]}</a>`).join('') + '</div>' : '') + '</div>';
-    } }
+  drawSite(H, hid);
   drawExtras(hid);
   if (!DATA.units.length && !(DATA.listings || []).length && !(DATA.services || []).length && !(DATA.products || []).length) $('#empty').style.display = 'block';
   if (!DATA.units.length) { $('#list').style.display = 'none'; $('#coll').style.display = 'none'; return; }
@@ -472,6 +490,45 @@ async function submitBooking() {
 })();
 
 /* ===== Property listings (inquiry) and services (appointments) ===== */
+const ICO = {
+  facebook: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/></svg>',
+  instagram: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>',
+  tiktok: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8A4.3 4.3 0 0 1 15.5 3h-3.1v12.4a2.6 2.6 0 1 1-2.6-2.6c.3 0 .5 0 .8.1V9.7a5.7 5.7 0 1 0 4.9 5.7V9a7.4 7.4 0 0 0 4.3 1.4V7.3a4.3 4.3 0 0 1-3.2-1.5z"/></svg>',
+  youtube: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23 7.2a3 3 0 0 0-2.1-2.1C19 4.6 12 4.6 12 4.6s-7 0-8.9.5A3 3 0 0 0 1 7.2C.6 8.8.5 10.4.5 12s.1 3.2.5 4.8a3 3 0 0 0 2.1 2.1c1.9.5 8.9.5 8.9.5s7 0 8.9-.5a3 3 0 0 0 2.1-2.1c.4-1.6.5-3.2.5-4.8s-.1-3.2-.5-4.8zM9.8 15.1V8.9l5.4 3.1z"/></svg>',
+  website: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
+  phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg>'
+};
+function drawSite(H, hid) {
+  const SI = (H && H.site) || {}, https = u => /^https:\/\//.test(u || '');
+  const hasL = (DATA.listings || []).some(x => !hid || String(x.ownerId) === hid), hasS = (DATA.services || []).some(x => !hid || String(x.ownerId) === hid), hasP = (DATA.products || []).some(x => !hid || String(x.ownerId) === hid);
+  const bt = (H && H.businessType) || (DATA.units.length ? 'staycation' : hasL ? 'real_estate' : 'business');
+  const label = SI.ctaText || (bt === 'real_estate' ? 'Inquire Now' : bt === 'business' ? (hasP && !hasS ? 'Buy Now' : hasS && !hasP ? 'Book Now' : 'Buy / Book Now') : 'Book Now');
+  const target = bt === 'real_estate' ? 'lst' : bt === 'business' ? (hasS ? 'svc' : 'prd') : 'coll';
+  window.CTA_GO = () => { const el = document.getElementById(target); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
+  const sub = bt === 'real_estate' ? 'Tell us what you are looking for.' : bt === 'business' ? 'Pick what you need and we will take it from here.' : 'Pick your dates and secure your stay.';
+  const cta = '<div class="cband"><h3>Ready when you are</h3><p>' + esc(sub) + '</p><button class="btn" onclick="CTA_GO()">' + esc(label) + '</button></div>';
+  const hc = document.querySelector('#hero .cta'); if (hc) { hc.textContent = label.toUpperCase(); hc.setAttribute('onclick', 'CTA_GO()'); }
+  if (!H) return;
+  const W = (SI.why || []).filter(w => w && (w.title || w.text));
+  if (hasL || hasS || hasP || DATA.units.length) $('#cta1').innerHTML = cta;
+  if (W.length) $('#why').innerHTML = '<div class="coll"><small>WHY US</small><h2>' + esc(SI.whyTitle || 'Why choose us') + '</h2></div><div class="steps">' + W.map((w, i) => `<div class="step"><i>${i + 1}</i><b>${esc(w.title)}</b><span>${esc(w.text)}</span></div>`).join('') + '</div>';
+  if (SI.mission || SI.vision) { $('#mv').innerHTML = '<div class="mv">' + (SI.mission ? `<div><small>OUR MISSION</small><h3>Mission</h3><p>${esc(SI.mission)}</p></div>` : '') + (SI.vision ? `<div><small>OUR VISION</small><h3>Vision</h3><p>${esc(SI.vision)}</p></div>` : '') + '</div>'; if (hasL || hasS || hasP || DATA.units.length) $('#cta2').innerHTML = cta; }
+  const T = Array.isArray(H.testimonials) ? H.testimonials.filter(t => t && t.text) : [];
+  if (T.length) $('#reviews').innerHTML = '<div class="coll" style="grid-column:1/-1"><small>TESTIMONIALS</small><h2>What our customers say</h2></div>' + T.map(t => `<div class="q">${https(t.photo) ? `<img src="${esc(t.photo)}" alt="">` : ''}“${esc(t.text)}”<b>— ${esc(t.name || 'Customer')}</b></div>`).join('');
+  const so = H.socials || {}, L = ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].filter(k => https(so[k]));
+  const name = SI.ownerName || H.hostName || H.businessName || '';
+  if (H.about || H.ownerPhotoUrl || H.contactPhone || H.contactEmail || L.length || SI.salutation || SI.license || SI.ownerName) {
+    const a = $('#about'); a.style.display = 'block';
+    const subs = [SI.salutation, SI.license, H.contactPhone ? `<a href="tel:${esc(H.contactPhone)}" style="color:inherit">${esc(H.contactPhone)}</a>` : ''].filter(Boolean);
+    a.innerHTML = '<div class="coll"><small>THE OWNER</small><h2>Meet the owner</h2></div><div class="owner">' +
+      (https(H.ownerPhotoUrl) ? `<img src="${esc(H.ownerPhotoUrl)}" alt="">` : '<div class="nophoto" style="background:var(--c2)"></div>') +
+      `<div><h3>${esc(name)}</h3>${subs.length ? '<div class="sub">' + subs.map((x, i) => (x === SI.salutation ? esc(x) : x === SI.license ? esc(x) : x)).map(x => `<span>${x}</span>`).join('') + '</div>' : ''}` +
+      (H.about ? `<p>${esc(H.about)}</p>` : '') +
+      `<div class="soc">${L.map(k => `<a href="${esc(so[k])}" target="_blank" rel="noopener" aria-label="${k}">${ICO[k]}</a>`).join('')}${H.contactPhone ? `<a href="tel:${esc(H.contactPhone)}" aria-label="Call">${ICO.phone}</a>` : ''}${H.contactEmail ? `<a href="mailto:${esc(H.contactEmail)}" aria-label="Email">${ICO.mail}</a>` : ''}</div></div></div>`;
+  }
+}
+
 function drawExtras(hid) {
   const L = (DATA.listings || []).filter(x => !hid || String(x.ownerId) === hid), V = (DATA.services || []).filter(x => !hid || String(x.ownerId) === hid);
   const P = (DATA.products || []).filter(x => !hid || String(x.ownerId) === hid); DATA.products = P; DATA.listings = L; DATA.services = V;

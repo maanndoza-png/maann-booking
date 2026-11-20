@@ -175,7 +175,7 @@ async function loadMe() {
   _me = { id: p.id, role: p.role, name: p.name, email: p.email, phone: p.phone, businessName: p.business_name, paymentInfo: nz(p.payment_info), perms: p.perms,
     ownerId: p.role === 'staff' ? p.owner_id : p.id, businessType: p.business_type, industries: inds, needsIndustry: p.role === 'host' && !acc.length,
     logoUrl: p.logo_url, tagline: p.tagline, about: p.about, ownerPhotoUrl: p.owner_photo_url, contactPhone: p.contact_phone, contactEmail: p.contact_email,
-    socials: p.socials || {}, testimonials: p.testimonials || [], token: 'sb' };
+    socials: p.socials || {}, testimonials: p.testimonials || [], site: p.site || {}, token: 'sb' };
   if (p.role === 'staff') { const [o] = await A.sel('profiles', 'id=eq.' + p.owner_id + '&select=business_type,business_name'); _me.businessType = o && o.business_type; _me.businessName = o && o.business_name; }
   return _me;
 }
@@ -267,8 +267,13 @@ const H = {
   },
   async saveStorefront(p) {
     const so = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => { const v = clean((p.socials || {})[k], 300); if (v && !/^https:\/\/\S+$/.test(v)) throw new Error(k + ' link must start with https://'); so[k] = v; });
-    const tm = (p.testimonials || []).map(t => ({ name: clean(t.name, 60), text: clean(t.text, 400) })).filter(t => t.text).slice(0, 12);
-    await A.upd('profiles', 'id=eq.' + A.uid, { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm });
+    const url = v => { v = clean(v, 500); return /^https:\/\//.test(v) ? v : ''; };
+    const tm = (p.testimonials || []).map(t => ({ name: clean(t.name, 60), text: clean(t.text, 400), photo: url(t.photo) })).filter(t => t.text).slice(0, 12);
+    const st = p.site || {}, col = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '', FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System'];
+    const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '',
+      ctaText: clean(st.ctaText, 30), why: (st.why || []).slice(0, 3).map(w => ({ title: clean(w.title, 60), text: clean(w.text, 240) })), whyTitle: clean(st.whyTitle, 60),
+      mission: clean(st.mission, 600), vision: clean(st.vision, 600), ownerName: clean(st.ownerName, 80), salutation: clean(st.salutation, 40), license: clean(st.license, 80) };
+    await A.upd('profiles', 'id=eq.' + A.uid, { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm, site });
     _me = null; return true;
   },
   async team() { return ((await A.fn('manage-staff', { action: 'list' })).staff || []).map(s => ({ id: s.id, name: s.name, email: s.email, perms: s.perms, status: s.status, createdAt: s.created_at })); },
@@ -872,30 +877,55 @@ async function unlocks() {
       <button class="btn ok sm" onclick="act('resolveUnlock',{id:'${esc(r.id)}',approve:true,months:$('#mo_${esc(r.id)}').value})">Approve</button><button class="btn bad sm" onclick="act('resolveUnlock',{id:'${esc(r.id)}',approve:false})">Decline</button></div>` : ''}</div>`).join('') || '<p class="mute">No requests yet.</p>');
 }
 
-/* ===== Storefront: logo, company name, subtitle, about, owner photo, contacts, socials, testimonials ===== */
+/* ===== My Website: one-page site designer ===== */
 let SF = null;
+const SF_FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System'];
+const SF_PALETTES = [['#d4a62a', '#0b1226'], ['#c2185b', '#2b1b2e'], ['#2e8b57', '#10281d'], ['#1e6fd9', '#0a1f3d'], ['#e4572e', '#2d1a14'], ['#7b5ea7', '#1e1633']];
+const sfCta = bt => bt === 'real_estate' ? 'Inquire Now' : bt === 'business' ? 'Buy / Book Now' : 'Book Now';
 async function storefront() {
-  const m = await api('me'); Object.assign(ME, m); SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', testimonials: (m.testimonials || []).slice() }; const so = m.socials || {};
-  $('#main').innerHTML = head('My Storefront', 'What guests see at the top of your page and in the About section.') +
-    `<div class="card"><h2>Header</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo')"></div>
-    <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}"><label>Subtitle</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes"></div>
-    <div class="card"><h2>About the owner</h2><label>Owner photo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_ph" style="height:80px;width:80px;border-radius:50%;object-fit:cover;display:${SF.ownerPhotoUrl ? 'block' : 'none'}" src="${esc(SF.ownerPhotoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'ownerPhotoUrl','sf_ph')"></div>
-    <label>About you / your business</label><textarea id="sf_a" rows="5">${esc(m.about)}</textarea>
-    <div class="g2"><div><label>Contact phone</label><input id="sf_cp" value="${esc(m.contactPhone)}"></div><div><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}"></div></div>
-    <div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
-    <div class="card"><h2>Testimonials</h2><div id="sf_tm"></div><button class="btn sec sm" onclick="sfTm()">+ Add testimonial</button></div>
-    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save storefront</button>`;
+  const m = await api('me'); Object.assign(ME, m); const st = m.site || {};
+  SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', bgUrl: st.bgUrl || '', testimonials: (m.testimonials || []).map(t => ({ name: t.name || '', text: t.text || '', photo: t.photo || '' })), why: [0, 1, 2].map(i => (st.why || [])[i] || { title: '', text: '' }) };
+  const so = m.socials || {}, sel = (id, v) => `<select id="${id}"><option value="">Default</option>${SF_FONTS.map(f => `<option ${v === f ? 'selected' : ''} style="font-family:'${f}'">${f}</option>`).join('')}</select>`;
+  const c1 = /^#[0-9a-fA-F]{6}$/.test(st.color1 || '') ? st.color1 : '#d4a62a', c2 = /^#[0-9a-fA-F]{6}$/.test(st.color2 || '') ? st.color2 : '#0b1226';
+  $('#main').innerHTML = head('My Website', 'Your one-page website. Fill in each part, then press Save My Website.') +
+    `<div class="card"><h2>1 · Header &amp; background</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
+    <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}"><label>Subtitle</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes">
+    <label>Background photo (top of your website)</label><div class="mute">Best size: <b>1920 × 1080 px</b> (landscape), JPG or PNG. Choose a bright, sharp photo.</div>
+    <div class="row" style="justify-content:flex-start;gap:10px;margin-top:6px"><img id="sf_bg" style="height:70px;border-radius:8px;display:${SF.bgUrl ? 'block' : 'none'}" src="${esc(SF.bgUrl)}"><input type="file" accept="image/*" onchange="sfBg(this)"></div><div class="mute" id="sf_bgn"></div></div>
+    <div class="card"><h2>2 · Brand colors &amp; fonts</h2><div class="mute">Pick a ready-made pair or choose your own.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${SF_PALETTES.map(p => `<button type="button" class="btn sec sm" onclick="sfPal('${p[0]}','${p[1]}')" style="display:flex;gap:4px;align-items:center"><i style="width:18px;height:18px;border-radius:50%;background:${p[0]}"></i><i style="width:18px;height:18px;border-radius:50%;background:${p[1]}"></i></button>`).join('')}</div>
+    <div class="g2"><div><label>Main brand color (buttons, highlights)</label><input type="color" id="sf_c1" value="${c1}" style="height:44px;padding:2px"></div><div><label>Second brand color (header, dark sections)</label><input type="color" id="sf_c2" value="${c2}" style="height:44px;padding:2px"></div></div>
+    <div class="g2"><div><label>Heading font</label>${sel('sf_f1', st.font1)}</div><div><label>Body font</label>${sel('sf_f2', st.font2)}</div></div></div>
+    <div class="card"><h2>3 · Call to action</h2><div class="mute">Shown under your listings and again after Mission &amp; Vision. Default: <b>${sfCta(ME.businessType)}</b>.</div><label>Button text (optional)</label><input id="sf_cta" maxlength="30" value="${esc(st.ctaText || '')}" placeholder="${sfCta(ME.businessType)}"></div>
+    <div class="card"><h2>4 · Why Us — your 3 signature steps</h2><div class="mute">Three simple steps that show customers how you work and why you stand out.</div><label>Section title</label><input id="sf_wt" maxlength="60" value="${esc(st.whyTitle || '')}" placeholder="Why choose us">
+    ${[0, 1, 2].map(i => `<div class="g2" style="margin-top:8px"><div><label>Step ${i + 1} title</label><input id="sf_w${i}t" maxlength="60" value="${esc(SF.why[i].title)}" placeholder="${['Tell us what you need', 'We take care of everything', 'Enjoy the result'][i]}"></div><div><label>Step ${i + 1} description</label><input id="sf_w${i}d" maxlength="240" value="${esc(SF.why[i].text)}"></div></div>`).join('')}</div>
+    <div class="card"><h2>5 · Mission &amp; Vision</h2><label>Mission</label><textarea id="sf_mi" rows="3" maxlength="600">${esc(st.mission || '')}</textarea><label>Vision</label><textarea id="sf_vi" rows="3" maxlength="600">${esc(st.vision || '')}</textarea></div>
+    <div class="card"><h2>6 · Testimonials</h2><div class="mute">Add a photo of the customer for more trust.</div><div id="sf_tm"></div><button class="btn sec sm" onclick="sfTm()">+ Add testimonial</button></div>
+    <div class="card"><h2>7 · Meet the owner</h2><label>Owner photo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_ph" style="height:80px;width:80px;border-radius:50%;object-fit:cover;display:${SF.ownerPhotoUrl ? 'block' : 'none'}" src="${esc(SF.ownerPhotoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'ownerPhotoUrl','sf_ph',900)"></div>
+    <label>Owner name (heading)</label><input id="sf_on" maxlength="80" value="${esc(st.ownerName || m.name || '')}">
+    <div class="g3"><div><label>Salutation / title</label><input id="sf_sa" maxlength="40" value="${esc(st.salutation || '')}" placeholder="e.g. Licensed Broker"></div><div><label>License no.</label><input id="sf_li" maxlength="80" value="${esc(st.license || '')}" placeholder="e.g. PRC Lic. 12345"></div><div><label>Contact number</label><input id="sf_cp" value="${esc(m.contactPhone)}"></div></div>
+    <label>About you / your business</label><textarea id="sf_a" rows="5">${esc(m.about)}</textarea><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}">
+    <h3 style="margin:14px 0 0">Social media accounts</h3><div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
+    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: ME.ownerId }))}">👁 Preview my website</a>`;
   drawTm();
 }
-async function sfUp(el, key, img) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
-function drawTm() { $('#sf_tm').innerHTML = SF.testimonials.map((t, i) => `<div class="g2" style="margin-bottom:8px"><input placeholder="Guest name" value="${esc(t.name)}" oninput="SF.testimonials[${i}].name=this.value"><div style="display:flex;gap:6px"><input placeholder="What they said" value="${esc(t.text)}" oninput="SF.testimonials[${i}].text=this.value"><button class="btn sec sm" onclick="SF.testimonials.splice(${i},1);drawTm()">✕</button></div></div>`).join('') || '<p class="mute">No testimonials yet.</p>'; }
-function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '' }); drawTm(); }
+function sfPal(a, b) { $('#sf_c1').value = a; $('#sf_c2').value = b; }
+async function sfUp(el, key, img, max) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], max || 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
+function sfBg(el) {
+  const f = el.files[0]; if (!f) return; const u = URL.createObjectURL(f), im = new Image();
+  im.onload = async () => { URL.revokeObjectURL(u); $('#sf_bgn').textContent = im.width < 1280 ? `⚠ This photo is ${im.width}×${im.height}px. It may look blurry — 1920×1080 is best.` : `✓ ${im.width}×${im.height}px — good size (saved as max 1920px wide).`; await sfUp(el, 'bgUrl', 'sf_bg', 1920); };
+  im.onerror = () => { $('#sf_e').textContent = 'That file is not a picture.'; }; im.src = u;
+}
+function drawTm() { $('#sf_tm').innerHTML = SF.testimonials.map((t, i) => `<div class="card" style="margin:8px 0"><div class="row" style="justify-content:flex-start;gap:10px"><img src="${esc(t.photo)}" style="height:48px;width:48px;border-radius:50%;object-fit:cover;display:${t.photo ? 'block' : 'none'}"><input type="file" accept="image/*" onchange="tmUp(this,${i})"></div><div class="g2" style="margin-top:6px"><input placeholder="Customer name" value="${esc(t.name)}" oninput="SF.testimonials[${i}].name=this.value"><div style="display:flex;gap:6px"><input placeholder="What they said" value="${esc(t.text)}" oninput="SF.testimonials[${i}].text=this.value"><button class="btn sec sm" onclick="SF.testimonials.splice(${i},1);drawTm()">✕</button></div></div></div>`).join('') || '<p class="mute">No testimonials yet.</p>'; }
+async function tmUp(el, i) { if (!el.files[0]) return; try { SF.testimonials[i].photo = await api('uploadImage', { data: await resize(el.files[0], 300) }); drawTm(); } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
+function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '', photo: '' }); drawTm(); }
 async function saveSf() {
-  const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value);
+  const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value); $('#sf_e').textContent = '';
+  const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, ctaText: $('#sf_cta').value, whyTitle: $('#sf_wt').value,
+    why: [0, 1, 2].map(i => ({ title: $('#sf_w' + i + 't').value, text: $('#sf_w' + i + 'd').value })), mission: $('#sf_mi').value, vision: $('#sf_vi').value, ownerName: $('#sf_on').value, salutation: $('#sf_sa').value, license: $('#sf_li').value };
   try {
     await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
-    await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials });
-    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('Storefront saved');
+    await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials, site });
+    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('My Website saved ✓');
   } catch (e) { $('#sf_e').textContent = e.message; }
 }
 

@@ -346,15 +346,18 @@ let ME = {}, PW = '', tab = 'dashboard', editing = null, period = 'm12', SET = {
 PW = A.session ? 'sb' : ''; try { ME = JSON.parse(sessionStorage.getItem('me') || '{}'); } catch (e) {}
 const canAct = () => ME.role !== 'staff' || ME.perms === 'bookings';
 
-const ALLTABS = [['dashboard','📈','Dashboard'],['bookings','🗓️','Bookings'],['expenses','🧾','Expenses'],['calendar','📅','Interactive Calendar'],['blocking','⛔','Manual Blocking'],['units','🏠','Unit Management'],['addons','➕','Add-ons'],['holidays','🎉','Holiday Rates'],['listings','🏘️','Property Listings'],['inquiries','📨','Inquiries'],['services','🛎️','Services'],['hours','🕒','Working Hours'],['appointments','📆','Appointments'],['storefront','🏪','My Storefront'],['industries','🔓','My Industries'],['amenities','🛋️','Amenities'],['settings','⚙️','System Settings'],['ux','🎨','UI / UX Control'],['users','👥','Users'],['unlocks','🔑','Unlock Requests'],['team','🧑‍🤝‍🧑','Team'],['profile','👤','My Profile']];
+const ALLTABS = [['dashboard','📈','Dashboard'],['bookings','🗓️','Bookings'],['expenses','🧾','Expenses'],['calendar','📅','Interactive Calendar'],['blocking','⛔','Manual Blocking'],['units','🏠','Unit Management'],['addons','➕','Add-ons'],['holidays','🎉','Holiday Rates'],['listings','🏘️','Property Listings'],['inquiries','📨','Inquiries'],['services','🛎️','Services'],['hours','🕒','Working Hours'],['appointments','📆','Appointments'],['storefront','🌐','My Website'],['industries','🔓','My Industries'],['amenities','🛋️','Amenities'],['settings','⚙️','System Settings'],['ux','🎨','UI / UX Control'],['users','👥','Users'],['unlocks','🔑','Unlock Requests'],['team','🧑‍🤝‍🧑','Team'],['profile','👤','My Profile']];
 let TABS = ALLTABS;
 function tabsFor() {
-  const bt = ME.businessType, byInd = { staycation: ['dashboard','bookings','expenses','calendar','blocking','units','addons','holidays'], real_estate: ['dashboard','inquiries','listings'], business: ['dashboard','appointments','services','hours'] };
-  const base = byInd[bt] || ['dashboard'];
-  const allow = { admin: ['dashboard','bookings','expenses','calendar','blocking','units','addons','holidays','amenities','settings','ux','users','unlocks','team','profile'],
-    host: base.concat(['storefront','industries','team','profile']),
-    staff: (ME.perms === 'bookings' && bt === 'staycation') ? ['dashboard','bookings','calendar','blocking','profile'] : bt === 'staycation' ? ['dashboard','bookings','calendar','profile'] : base.filter(t => t !== 'dashboard' || true).slice(0, 2).concat(['profile']) }[ME.role] || ['dashboard'];
-  return ALLTABS.filter(t => allow.indexOf(t[0]) >= 0);
+  const bt = ME.businessType;
+  const byInd = { staycation: ['storefront','dashboard','bookings','expenses','calendar','blocking','units','addons','holidays','profile','team','industries'],
+    real_estate: ['storefront','listings','dashboard','inquiries','profile','team','industries'],
+    business: ['storefront','dashboard','appointments','services','hours','profile','team','industries'] };
+  const stfBase = { staycation: ['dashboard','bookings','calendar'], real_estate: ['dashboard','inquiries'], business: ['dashboard','appointments'] }[bt] || ['dashboard'];
+  const order = ME.role === 'admin' ? ['dashboard','bookings','expenses','calendar','blocking','units','addons','holidays','amenities','settings','ux','users','unlocks','team','profile']
+    : ME.role === 'host' ? (byInd[bt] || ['dashboard','storefront','industries','team','profile'])
+    : (ME.perms === 'bookings' && bt === 'staycation') ? ['dashboard','bookings','calendar','blocking','profile'] : stfBase.concat(['profile']);
+  return order.map(k => ALLTABS.find(t => t[0] === k)).filter(Boolean);
 }
 
 /* theme + clock */
@@ -382,7 +385,7 @@ function showSignup(ev) { if (ev) ev.preventDefault(); $('#lform').style.display
 function showLogin(ev) { if (ev) ev.preventDefault(); location.reload(); }
 async function doSignup() {
   const d = { name: $('#sn').value, businessName: $('#sb').value, phone: $('#sp').value, businessType: $('#si').value, email: $('#se').value, password: $('#sw').value };
-  try { await rpc('signupHost', d); $('#sform').innerHTML = '<p>Thanks! Your host account is waiting for approval. You will get an email when it is approved, then you can sign in here.</p><button class="btn" onclick="location.reload()">Back to sign in</button>'; }
+  try { await rpc('signupHost', d); $('#sform').innerHTML = '<p>Your host account is ready. Sign in below with your email and password.</p><button class="btn" onclick="location.reload()">Back to sign in</button>'; }
   catch (e) { $('#sx').textContent = e.message; }
 }
 async function enter() {
@@ -867,7 +870,7 @@ async function unlocks() {
 let SF = null;
 async function storefront() {
   const m = await api('me'); Object.assign(ME, m); SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', testimonials: (m.testimonials || []).slice() }; const so = m.socials || {};
-  $('#main').innerHTML = head('My Storefront', 'What guests see at the top of your page and in the About section.') +
+  $('#main').innerHTML = head('My Website', 'What guests see at the top of your page and in the About section.') +
     `<div class="card"><h2>Header</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo')"></div>
     <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}"><label>Subtitle</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes"></div>
     <div class="card"><h2>About the owner</h2><label>Owner photo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_ph" style="height:80px;width:80px;border-radius:50%;object-fit:cover;display:${SF.ownerPhotoUrl ? 'block' : 'none'}" src="${esc(SF.ownerPhotoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'ownerPhotoUrl','sf_ph')"></div>
@@ -875,7 +878,7 @@ async function storefront() {
     <div class="g2"><div><label>Contact phone</label><input id="sf_cp" value="${esc(m.contactPhone)}"></div><div><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}"></div></div>
     <div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
     <div class="card"><h2>Testimonials</h2><div id="sf_tm"></div><button class="btn sec sm" onclick="sfTm()">+ Add testimonial</button></div>
-    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save storefront</button>`;
+    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save website</button>`;
   drawTm();
 }
 async function sfUp(el, key, img) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
@@ -886,7 +889,7 @@ async function saveSf() {
   try {
     await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
     await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials });
-    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('Storefront saved');
+    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('Website saved');
   } catch (e) { $('#sf_e').textContent = e.message; }
 }
 

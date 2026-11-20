@@ -160,6 +160,7 @@ const nz = v => v == null ? '' : v;
 const unitOut = u => ({ id: u.id, ownerId: u.owner_id, name: u.name, location: u.location, price: u.price, baseGuests: u.base_guests, maxGuests: u.max_guests, extraGuestFee: u.extra_guest_fee,
   petsAllowed: u.pets_allowed, petFee: u.pet_fee, rating: u.rating, beds: u.beds, bedrooms: u.bedrooms, bathrooms: u.bathrooms, checkInTime: String(u.check_in_time || '14:00').slice(0, 5),
   checkOutTime: String(u.check_out_time || '11:00').slice(0, 5), description: u.description, images: (u.images || []).join(','), amenities: (u.amenities || []).join(',') });
+const msgName = v => { v = String(v || '').trim(); if (!v) return ''; try { if (/^(https?:\/\/)?([a-z]+\.)?(facebook|fb|m)\.(com|me)\//i.test(v)) { const u = new URL(/^https?:/i.test(v) ? v : 'https://' + v); const id = u.searchParams.get('id'); v = id || u.pathname.split('/').filter(Boolean)[0] || ''; } } catch (e) { return ''; } v = v.replace(/^@/, '').replace(/[^A-Za-z0-9._\-]/g, ''); return v.slice(0, 80); };
 const num = v => Number(v) || 0, clean = (v, n = 200) => String(v == null ? '' : v).trim().slice(0, n);
 const dd = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 864e5);
 let _me = null;
@@ -174,7 +175,7 @@ async function loadMe() {
   const now = Date.now(), inds = acc.filter(x => !x.paid_until || Date.parse(x.paid_until) > now).map(x => x.industry);
   _me = { id: p.id, role: p.role, name: p.name, email: p.email, phone: p.phone, businessName: p.business_name, paymentInfo: nz(p.payment_info), perms: p.perms,
     ownerId: p.role === 'staff' ? p.owner_id : p.id, businessType: p.business_type, industries: inds, needsIndustry: p.role === 'host' && !acc.length,
-    logoUrl: p.logo_url, tagline: p.tagline, about: p.about, ownerPhotoUrl: p.owner_photo_url, contactPhone: p.contact_phone, contactEmail: p.contact_email,
+    logoUrl: p.logo_url, tagline: p.tagline, about: p.about, ownerPhotoUrl: p.owner_photo_url, contactPhone: p.contact_phone, contactEmail: p.contact_email, inquiryEmail: p.inquiry_email || '',
     socials: p.socials || {}, testimonials: p.testimonials || [], site: p.site || {}, token: 'sb' };
   if (p.role === 'staff') { const [o] = await A.sel('profiles', 'id=eq.' + p.owner_id + '&select=business_type,business_name'); _me.businessType = o && o.business_type; _me.businessName = o && o.business_name; }
   return _me;
@@ -270,11 +271,11 @@ const H = {
     const so = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => { const v = clean((p.socials || {})[k], 300); if (v && !/^https:\/\/\S+$/.test(v)) throw new Error(k + ' link must start with https://'); so[k] = v; });
     const url = v => { v = clean(v, 500); return /^https:\/\//.test(v) ? v : ''; };
     const tm = (p.testimonials || []).map(t => ({ name: clean(t.name, 60), text: clean(t.text, 400), photo: url(t.photo) })).filter(t => t.text).slice(0, 12);
-    const st = p.site || {}, col = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '', FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System', 'Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura'];
-    const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '', font3: FONTS.indexOf(st.font3) >= 0 ? st.font3 : '', heroStyle: ['soft', 'warm', 'moody', 'bright'].indexOf(st.heroStyle) >= 0 ? st.heroStyle : 'soft', fbUrl: /^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//.test(st.fbUrl || '') ? clean(st.fbUrl, 300) : '',
+    const st = p.site || {}, col = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '', FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System', 'Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura', 'Sacramento'];
+    const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '', font3: FONTS.indexOf(st.font3) >= 0 ? st.font3 : '', heroStyle: ['soft', 'warm', 'moody', 'bright'].indexOf(st.heroStyle) >= 0 ? st.heroStyle : 'soft', chatMessenger: msgName(st.chatMessenger), chatMobile: !!st.chatMobile, fbUrl: /^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//.test(st.fbUrl || '') ? clean(st.fbUrl, 300) : '',
       ctaText: clean(st.ctaText, 30), hook: clean(st.hook, 140), hookSub: clean(st.hookSub, 200), why: (st.why || []).slice(0, 3).map(w => ({ title: clean(w.title, 60), text: clean(w.text, 240) })), whyTitle: clean(st.whyTitle, 60),
       mission: clean(st.mission, 600), vision: clean(st.vision, 600), ownerName: clean(st.ownerName, 80), salutation: clean(st.salutation, 40), license: clean(st.license, 80) };
-    await A.upd('profiles', 'id=eq.' + A.uid, { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm, site });
+    await A.upd('profiles', 'id=eq.' + A.uid, { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm, site, inquiry_email: (/^\S+@\S+\.\S+$/.test(clean(p.inquiryEmail, 160)) ? clean(p.inquiryEmail, 160) : '') });
     _me = null; return true;
   },
   async team() { return ((await A.fn('manage-staff', { action: 'list' })).staff || []).map(s => ({ id: s.id, name: s.name, email: s.email, perms: s.perms, status: s.status, createdAt: s.created_at })); },
@@ -640,9 +641,9 @@ async function fillShare() {
     box.innerHTML = '<h2>🔗 Share your site</h2><p class="mute">Send these links to guests. A unit link opens that property directly.</p>' + row('Whole website', base) + row('Host portal (sign in / sign up)', siteLink('admin')) + us.map(u => row(u.name, siteLink('guest', { unit: u.id }))).join('');
   } catch (e) { box.innerHTML = '<h2>🔗 Share your site</h2><div class="err">' + esc(e.message) + '</div>'; }
 }
-async function shareQr(id, name) { try { qrShow(name, siteLink('guest', { unit: id })); } catch (e) { alert(e.message); } }
+async function shareQr(id, name) { try { qrShow(name, siteLink('guest', ME.role === 'admin' ? { unit: id } : { host: ME.ownerId, unit: id })); } catch (e) { alert(e.message); } }
 async function shareUnit(id, name) {
-  let link; try { link = siteLink('guest', { unit: id }); } catch (e) { return alert(e.message); }
+  let link; try { link = siteLink('guest', ME.role === 'admin' ? { unit: id } : { host: ME.ownerId, unit: id }); } catch (e) { return alert(e.message); }
   try { await navigator.clipboard.writeText(link); toast('Link copied: guests who open it land on ' + name); }
   catch (e) { prompt('Copy this link and share it. Guests who open it land directly on ' + name + ':', link); }
 }
@@ -880,7 +881,8 @@ async function unlocks() {
 
 /* ===== My Website: one-page site designer ===== */
 let SF = null;
-const SF_FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System', 'Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura'];
+const SF_FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System'];
+const SF_SCRIPT = ['Dancing Script', 'Caveat', 'Satisfy', 'Great Vibes', 'Sacramento'];
 const SF_HOOKS = {
   staycation: { pain: ['Tired of crowded resorts and *hidden fees*?', "Booking a getaway shouldn't feel like *a second job*.", "You deserve a break that doesn't start with *stress*.", 'Why spend your weekend *stuck in traffic* instead of relaxing?'],
     result: ['Wake up *rested*, in a place that feels like yours.', 'Your private escape, ready in *minutes*. Just show up and unwind.', 'A few days away that feel like *a full reset*.', 'Come home feeling like you *actually* went somewhere.'],
@@ -900,15 +902,16 @@ function drawHooks() {
 }
 function sfPickHook(k) { const set = SF_HOOKS[ME.businessType] || SF_HOOKS.business; $('#sf_hk').value = set[k][HK_N % set[k].length]; drawHooks(); }
 /* font picker with live previews */
-function fontPick(id, val) {
+function fontPick(id, val, list) {
+  list = list || SF_FONTS;
   const fam = f => f ? (f === 'System' ? 'system-ui' : `'${f}'`) : 'inherit';
   return `<div class="fp" style="position:relative"><input type="hidden" id="${id}" value="${esc(val || '')}"><button type="button" class="btn sec" id="fpb_${id}" onclick="fpToggle('${id}')" style="width:100%;text-align:left;display:flex;justify-content:space-between;font-family:${fam(val)};font-size:18px"><span>${esc(val || 'Default')}</span><span>▾</span></button>
-    <div id="fpm_${id}" style="display:none;position:absolute;z-index:30;left:0;right:0;max-height:280px;overflow:auto;background:var(--panel,#fff);border:1px solid var(--line,#ddd);border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.25)">${['', ...SF_FONTS].map(f => `<div onclick="fpSet('${id}','${f}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line,#eee);font-family:${fam(f)};font-size:20px">${f || 'Default'} <span style="opacity:.55;font-size:15px">· Aa Bb Cc 123</span></div>`).join('')}</div></div>`;
+    <div id="fpm_${id}" style="display:none;position:absolute;z-index:30;left:0;right:0;max-height:280px;overflow:auto;background:var(--panel,#fff);border:1px solid var(--line,#ddd);border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.25)">${['', ...list].map(f => `<div onclick="fpSet('${id}','${f}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line,#eee);font-family:${fam(f)};font-size:20px">${f || 'Default'} <span style="opacity:.55;font-size:15px">· Aa Bb Cc 123</span></div>`).join('')}</div></div>`;
 }
 function fpToggle(id) { const m = $('#fpm_' + id), on = m.style.display === 'none'; document.querySelectorAll('[id^=fpm_]').forEach(x => x.style.display = 'none'); m.style.display = on ? 'block' : 'none'; }
 function fpSet(id, f) { $('#' + id).value = f; const b = $('#fpb_' + id); b.firstChild.textContent = f || 'Default'; b.style.fontFamily = f ? (f === 'System' ? 'system-ui' : `'${f}'`) : 'inherit'; $('#fpm_' + id).style.display = 'none'; }
 document.addEventListener('click', e => { if (!e.target.closest('.fp')) document.querySelectorAll('[id^=fpm_]').forEach(x => x.style.display = 'none'); });
-function loadAdminFonts() { if (document.getElementById('gfonts')) return; const l = document.createElement('link'); l.id = 'gfonts'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?' + SF_FONTS.filter(f => f !== 'Georgia' && f !== 'System').map(f => 'family=' + f.replace(/ /g, '+')).join('&') + '&display=swap'; document.head.appendChild(l); }
+function loadAdminFonts() { if (document.getElementById('gfonts')) return; const l = document.createElement('link'); l.id = 'gfonts'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?' + SF_FONTS.concat(SF_SCRIPT).filter(f => f !== 'Georgia' && f !== 'System').map(f => 'family=' + f.replace(/ /g, '+')).join('&') + '&display=swap'; document.head.appendChild(l); }
 /* Facebook sync */
 let SYNC_NOTE = '';
 function fbNorm(u) { u = String(u || '').trim(); if (!u) return ''; if (!/^https?:\/\//i.test(u)) u = 'https://' + u; return u.replace(/^http:/i, 'https:'); }
@@ -930,7 +933,8 @@ function showSyncStep() {
   document.body.appendChild(d);
 }
 async function doSync() { $('#sy_e').textContent = ''; $('#sy_go').disabled = true; try { await fbSyncRun($('#sy_u').value, t => $('#sy_m').textContent = t); $('#syncstep').remove(); go('storefront'); } catch (e) { $('#sy_e').textContent = e.message; $('#sy_m').textContent = ''; $('#sy_go').disabled = false; } }
-function skipSync() { $('#syncstep').remove(); go('storefront'); }
+function skipSync() { $('#syncstep').remove(); noPageYet(); }
+function noPageYet() { SYNC_NOTE = 'No Facebook Page? No problem. Below are <b>3 ready-made hooks</b> for your industry (Pain, Desired result, Myth). Pick one or write your own.'; go('storefront'); setTimeout(() => { const e = $('#sf_hkc'); if (e) e.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 700); }
 async function sfResync() { $('#sf_fe').textContent = ''; try { await fbSyncRun($('#sf_fu').value, t => $('#sf_fm').textContent = t); storefront(); } catch (e) { $('#sf_fe').textContent = e.message; $('#sf_fm').textContent = ''; } }
 const SF_PALETTES = [['#d4a62a', '#0b1226'], ['#c2185b', '#2b1b2e'], ['#2e8b57', '#10281d'], ['#1e6fd9', '#0a1f3d'], ['#e4572e', '#2d1a14'], ['#7b5ea7', '#1e1633']];
 const sfCta = bt => bt === 'real_estate' ? 'Inquire Now' : bt === 'business' ? 'Buy / Book Now' : 'Book Now';
@@ -940,20 +944,20 @@ async function storefront() {
   const so = m.socials || {}; loadAdminFonts(); const note = SYNC_NOTE; SYNC_NOTE = '';
   const c1 = /^#[0-9a-fA-F]{6}$/.test(st.color1 || '') ? st.color1 : '#d4a62a', c2 = /^#[0-9a-fA-F]{6}$/.test(st.color2 || '') ? st.color2 : '#0b1226';
   $('#main').innerHTML = head('My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') +
-    `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
+    `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button><button class="btn sec sm" style="width:auto;white-space:nowrap" onclick="noPageYet()">No Page yet</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
     `+
     `<div class="card"><h2>1 · Logo, hero &amp; hook</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
     <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}">
+    <label>Tagline statement</label><div class="mute">Shows in the <b>upper right</b> of your website, a little smaller than your company name, in tagline style. Use *stars* for your accent font.</div><input id="sf_t" maxlength="90" value="${esc(m.tagline)}" placeholder="e.g. Your *calm* corner of Tagaytay">
     <label>Hero photo (big picture at the top of your website)</label><div class="mute">Best size: <b>1920 × 1080 px</b> (landscape), JPG or PNG. Choose a bright, sharp photo.</div>
     <div class="row" style="justify-content:flex-start;gap:10px;margin-top:6px"><img id="sf_bg" style="height:70px;border-radius:8px;display:${SF.bgUrl ? 'block' : 'none'}" src="${esc(SF.bgUrl)}"><input type="file" accept="image/*" onchange="sfBg(this)"></div><div class="mute" id="sf_bgn"></div>
     <label>Photo style</label><select id="sf_hst">${[['soft', 'Soft & dreamy'], ['warm', 'Warm golden glow'], ['moody', 'Dark & moody'], ['bright', 'Fresh & bright']].map(([k, l]) => `<option value="${k}" ${(st.heroStyle || 'soft') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
-    <label>Subtitle / tagline</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes">
     <label>Strong hook statement</label><div class="mute">Pick one of the 3 angles below, or write your own. Put <b>*stars*</b> around a word to show it in your accent font.</div><div id="sf_hkc"></div>
     <label>Your hook (edit it or write your own)</label><textarea id="sf_hk" rows="2" maxlength="140" oninput="drawHooks()" placeholder="e.g. The calmest escape, *45 minutes* from the city">${esc(st.hook || '')}</textarea>
     <label>Supporting line (optional)</label><input id="sf_hs" maxlength="200" value="${esc(st.hookSub || '')}" placeholder="One short sentence that backs up the hook"></div>
     <div class="card"><h2>2 · Brand colors &amp; fonts</h2><div class="mute">Your whole website background uses your <b>main color</b>, with a touch of your <b>second color</b>. Pick a ready-made pair or choose your own.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${SF_PALETTES.map(p => `<button type="button" class="btn sec sm" onclick="sfPal('${p[0]}','${p[1]}')" style="display:flex;gap:4px;align-items:center"><i style="width:18px;height:18px;border-radius:50%;background:${p[0]}"></i><i style="width:18px;height:18px;border-radius:50%;background:${p[1]}"></i></button>`).join('')}</div>
     <div class="g2"><div><label>Main brand color (buttons, highlights)</label><input type="color" id="sf_c1" value="${c1}" style="height:44px;padding:2px"></div><div><label>Second brand color (header, dark sections)</label><input type="color" id="sf_c2" value="${c2}" style="height:44px;padding:2px"></div></div>
-    <div class="g2"><div><label>Heading font (titles)</label>${fontPick('sf_f1', st.font1)}</div><div><label>Second font (hook heading &amp; body text)</label>${fontPick('sf_f2', st.font2)}</div></div><label>Accent font (for words you want to emphasise, written like *this*)</label>${fontPick('sf_f3', st.font3)}</div>
+    <div class="g2"><div><label>Heading font (titles)</label>${fontPick('sf_f1', st.font1)}</div><div><label>Second font (hook heading &amp; body text)</label>${fontPick('sf_f2', st.font2)}</div></div><label>Accent font · simple cursive (for words you want to emphasise, written like *this*)</label>${fontPick('sf_f3', st.font3, SF_SCRIPT)}</div>
     <div class="card"><h2>3 · Call to action</h2><div class="mute">Shown under your listings and again after Mission &amp; Vision. Default: <b>${sfCta(ME.businessType)}</b>.</div><label>Button text (optional)</label><input id="sf_cta" maxlength="30" value="${esc(st.ctaText || '')}" placeholder="${sfCta(ME.businessType)}"></div>
     <div class="card"><h2>4 · Why Us — your 3 signature steps</h2><div class="mute">Three simple steps that show customers how you work and why you stand out.</div><label>Section title</label><input id="sf_wt" maxlength="60" value="${esc(st.whyTitle || '')}" placeholder="Why choose us">
     ${[0, 1, 2].map(i => `<div class="g2" style="margin-top:8px"><div><label>Step ${i + 1} title</label><input id="sf_w${i}t" maxlength="60" value="${esc(SF.why[i].title)}" placeholder="${['Tell us what you need', 'We take care of everything', 'Enjoy the result'][i]}"></div><div><label>Step ${i + 1} description</label><input id="sf_w${i}d" maxlength="240" value="${esc(SF.why[i].text)}"></div></div>`).join('')}</div>
@@ -963,10 +967,15 @@ async function storefront() {
     <label>Owner name (heading)</label><input id="sf_on" maxlength="80" value="${esc(st.ownerName || m.name || '')}">
     <div class="g3"><div><label>Salutation / title</label><input id="sf_sa" maxlength="40" value="${esc(st.salutation || '')}" placeholder="e.g. Licensed Broker"></div><div><label>License no.</label><input id="sf_li" maxlength="80" value="${esc(st.license || '')}" placeholder="e.g. PRC Lic. 12345"></div><div><label>Contact number</label><input id="sf_cp" value="${esc(m.contactPhone)}"></div></div>
     <label>About you / your business</label><textarea id="sf_a" rows="5">${esc(m.about)}</textarea><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}">
+    <h3 style="margin:14px 0 0">Live chat with customers</h3><div class="mute">Customers get a chat button on your website to talk to you in real time.</div>
+    <label>Messenger: your Facebook Page link or username</label><input id="sf_msg" placeholder="facebook.com/yourpage" value="${esc(st.chatMessenger || (st.fbUrl ? msgFrom(st.fbUrl) : '') || msgFrom(so.facebook || ''))}">
+    <label class="chk" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="sf_mob" ${st.chatMobile ? 'checked' : ''} style="width:auto"> Also let customers call, text or Viber my contact number (above)</label>
     <h3 style="margin:14px 0 0">Social media accounts</h3><div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
+    <div class="card"><h2>8 · Inquiry email</h2><div class="mute">The email where you want to receive customer inquiries. Every inquiry also shows in your <b>Inquiries</b> tab.</div><label>Email for inquiries</label><input id="sf_iq" type="email" value="${esc(m.inquiryEmail || m.email || '')}" placeholder="you@email.com"></div>
     <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: ME.ownerId }))}">👁 Preview my website</a>`;
   drawTm(); drawHooks();
 }
+function msgFrom(v) { return msgName(v); }
 function sfPal(a, b) { $('#sf_c1').value = a; $('#sf_c2').value = b; }
 async function sfUp(el, key, img, max) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], max || 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
 function sfBg(el) {
@@ -979,11 +988,11 @@ async function tmUp(el, i) { if (!el.files[0]) return; try { SF.testimonials[i].
 function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '', photo: '' }); drawTm(); }
 async function saveSf() {
   const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value); $('#sf_e').textContent = '';
-  const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, font3: $('#sf_f3').value, heroStyle: $('#sf_hst').value, fbUrl: ($('#sf_fu') || {}).value || '', ctaText: $('#sf_cta').value, hook: $('#sf_hk').value, hookSub: $('#sf_hs').value, whyTitle: $('#sf_wt').value,
+  const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, font3: $('#sf_f3').value, chatMessenger: $('#sf_msg').value, chatMobile: $('#sf_mob').checked, heroStyle: $('#sf_hst').value, fbUrl: ($('#sf_fu') || {}).value || '', ctaText: $('#sf_cta').value, hook: $('#sf_hk').value, hookSub: $('#sf_hs').value, whyTitle: $('#sf_wt').value,
     why: [0, 1, 2].map(i => ({ title: $('#sf_w' + i + 't').value, text: $('#sf_w' + i + 'd').value })), mission: $('#sf_mi').value, vision: $('#sf_vi').value, ownerName: $('#sf_on').value, salutation: $('#sf_sa').value, license: $('#sf_li').value };
   try {
     await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
-    await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials, site });
+    await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials, site, inquiryEmail: $('#sf_iq').value });
     ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('My Website saved ✓');
   } catch (e) { $('#sf_e').textContent = e.message; }
 }
@@ -994,7 +1003,7 @@ async function listings() {
   const l = await api('listings');
   $('#main').innerHTML = head('Property Listings', 'Homes, condos and lots you are selling or renting.', '<button class="btn" onclick="editListing()">+ New listing</button>') + '<div id="lf"></div>' +
     (l.map(x => `<div class="card"><div class="row"><b>${esc(x.title)}</b><span class="tag ${x.status === 'available' ? 'Confirmed' : 'Pending'}">${esc(x.status)}</span></div><div class="mute">${esc(x.location)} · ${x.listingType === 'rent' ? 'For rent' : 'For sale'} · ${esc(x.propertyType)} · ${esc(x.bedrooms)}🛏 ${esc(x.bathrooms)}🚿</div>
-      <div class="row" style="margin-top:6px"><b>${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b><span><button class="btn sec sm" onclick='editListing(${JSON.stringify(x).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove listing?'))act('deleteListing',{id:'${esc(x.id)}'})">✕</button></span></div></div>`).join('') || '<p class="mute">No listings yet.</p>');
+      <div class="row" style="margin-top:6px"><b>${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b><span><button class="btn sec sm" onclick="copyLink(siteLink('guest',{host:ME.ownerId,listing:'${esc(x.id)}'}))">🔗 Link</button> <button class="btn sec sm" onclick='editListing(${JSON.stringify(x).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove listing?'))act('deleteListing',{id:'${esc(x.id)}'})">✕</button></span></div></div>`).join('') || '<p class="mute">No listings yet.</p>');
 }
 function editListing(x) {
   x = x || { title: '', location: '', listingType: 'sale', propertyType: 'House', price: 0, bedrooms: 0, bathrooms: 0, floorArea: 0, lotArea: 0, description: '', images: [], status: 'available' }; LE = { ...x, images: (x.images || []).slice() };
@@ -1022,7 +1031,7 @@ async function services() {
   const l = await api('services');
   $('#main').innerHTML = head('Services', 'What you offer. Guests pick one, choose a time and book.', '<button class="btn" onclick="editService()">+ New service</button>') + '<div id="sf"></div>' +
     (l.map(s => `<div class="card"><div class="row"><b>${esc(s.name)}</b><b>${peso(s.price)}</b></div><div class="mute">${esc(s.duration)} min · ${esc(s.description)}</div>
-      <div style="margin-top:6px"><button class="btn sec sm" onclick='editService(${JSON.stringify(s).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove service?'))act('deleteService',{id:'${esc(s.id)}'})">✕</button></div></div>`).join('') || '<p class="mute">No services yet.</p>');
+      <div style="margin-top:6px"><button class="btn sec sm" onclick="copyLink(siteLink('guest',{host:ME.ownerId,service:'${esc(s.id)}'}))">🔗 Link</button> <button class="btn sec sm" onclick='editService(${JSON.stringify(s).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove service?'))act('deleteService',{id:'${esc(s.id)}'})">✕</button></div></div>`).join('') || '<p class="mute">No services yet.</p>');
 }
 function editService(s) {
   s = s || { name: '', description: '', price: 0, duration: 60, images: [] }; SE = { ...s, images: (s.images || []).slice() };
@@ -1056,7 +1065,7 @@ async function products() {
   $('#main').innerHTML = head('My Products', 'Things you sell. Guests see them on your website and contact you to order.', '<button class="btn" onclick="editProduct()">+ New product</button>') + '<div id="pf"></div>' +
     (l.map(x => `<div class="card"><div class="row"><b>${esc(x.name)}</b><b>${peso(x.price)}</b></div><div class="mute">${x.stock === '' ? 'Always available' : esc(x.stock) + ' in stock'} · ${esc(x.description)}</div>
       ${x.images[0] ? `<img src="${esc(x.images[0])}" alt="" style="height:60px;border-radius:8px;margin-top:6px">` : ''}
-      <div style="margin-top:6px"><button class="btn sec sm" onclick='editProduct(${JSON.stringify(x).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove product?'))act('deleteProduct',{id:'${esc(x.id)}'})">✕</button></div></div>`).join('') || '<p class="mute">No products yet.</p>');
+      <div style="margin-top:6px"><button class="btn sec sm" onclick="copyLink(siteLink('guest',{host:ME.ownerId,product:'${esc(x.id)}'}))">🔗 Link</button> <button class="btn sec sm" onclick='editProduct(${JSON.stringify(x).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove product?'))act('deleteProduct',{id:'${esc(x.id)}'})">✕</button></div></div>`).join('') || '<p class="mute">No products yet.</p>');
 }
 function editProduct(x) {
   x = x || { name: '', description: '', price: 0, stock: '', images: [] }; PE = { ...x, images: (x.images || []).slice() };

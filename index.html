@@ -144,12 +144,30 @@ body.themed #foot a,body.themed main>div>a{color:var(--bgInk)!important}
 #hero .t p{font-family:var(--bf,inherit);font-size:18px;line-height:1.55}
 #hero:after{content:"\2304";position:absolute;left:50%;bottom:14px;transform:translateX(-50%);color:#fff;font-size:26px;opacity:.7;z-index:2;animation:cue 1.8s ease-in-out infinite}
 @keyframes cue{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,8px)}}
+
+header.row{gap:14px}
+header .tagl{margin-left:auto;text-align:right;font:italic 400 15px/1.3 var(--bf,inherit);letter-spacing:.6px;color:#e6ebf7;max-width:340px}
+header .tagm{display:none;font:italic 12px var(--bf,inherit);color:#aab4cf}
+header .tagl .ac,header .tagm .ac{font-style:normal;color:var(--gold)}
+@media(max-width:760px){header .tagl{display:none}header .tagm{display:block}}
+#hero .t p{display:none}
+
+.shr{margin-top:8px;padding:10px;font-size:14px;border-radius:12px}
+.chatsec{margin:26px 0 8px;border-radius:22px;padding:28px 22px;text-align:center;background:var(--panel);border:1px solid var(--line)}
+.chatsec h3{margin:0 0 6px;font-size:22px;font-family:var(--hf,inherit)}.chatsec p{margin:0 0 16px;color:var(--mute)}
+.chbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chbtns a{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:40px;color:#fff;font-weight:700;text-decoration:none;font-size:15px}
+.chbtns .ms{background:#0084ff}.chbtns .cl{background:#2e8b57}.chbtns .tx{background:#444}.chbtns .vb{background:#7360f2}
+#chatfab{position:fixed;right:16px;bottom:16px;z-index:15}
+#chatfab>button{background:#0084ff;color:#fff;border:0;border-radius:40px;padding:14px 20px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.3)}
+#chatpanel{display:none;position:absolute;right:0;bottom:56px;width:270px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 18px 44px rgba(0,0,0,.3)}
+#chatpanel.on{display:block}#chatpanel .chbtns{flex-direction:column}#chatpanel .chbtns a{justify-content:center}
 </style>
 </head>
 <body>
-<header class="row"><div style="display:flex;align-items:center;gap:10px"><img id="logo" alt="" style="display:none;height:38px;border-radius:8px"><div><h1 id="brand">Booking</h1><div class="mute" id="tag"></div></div></div><button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openLookup()">Check my booking</button><span id="acct" style="margin-left:8px"></span></header>
+<header class="row"><div style="display:flex;align-items:center;gap:10px"><img id="logo" alt="" style="display:none;height:38px;border-radius:8px"><div><h1 id="brand">Booking</h1><div class="tagm" id="tagm"></div></div></div><div class="tagl" id="tag"></div><button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openLookup()">Check my booking</button><span id="acct" style="margin-left:8px"></span></header>
 <div id="hero" style="display:none"></div>
-<main><div id="hook"></div><div id="promo" style="display:none"></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">No units available yet.</div><div id="cta1"></div><div id="why"></div><div id="mv"></div><div id="cta2"></div><div id="reviews"></div><section id="about" style="display:none"></section><div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
+<main><div id="hook"></div><div id="promo" style="display:none"></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">No units available yet.</div><div id="cta1"></div><div id="why"></div><div id="mv"></div><div id="cta2"></div><div id="reviews"></div><section id="about" style="display:none"></section><div id="chat"></div><div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
 
 <div id="ov" class="overlay"><div class="sheet" id="sheet"></div></div>
 
@@ -289,7 +307,7 @@ async function init() {
   if (hid) DATA.units = DATA.units.filter(u => String(u.ownerId) === hid);
   if (H) { if (H.businessName) DATA.settings.brand = H.businessName; if (H.tagline) DATA.settings.tagline = H.tagline; if (/^https:\/\//.test(H.logoUrl || '')) DATA.settings.logoUrl = H.logoUrl; }
   const S = DATA.settings, on = k => String(S[k]).toLowerCase() === 'true', ok = c => /^#[0-9a-fA-F]{6}$/.test(c || ''), rs = document.documentElement.style;
-  document.title = S.seoTitle || S.brand; $('#brand').textContent = S.brand; $('#tag').textContent = S.tagline || ''; $('#foot').textContent = S.contact || '';
+  document.title = S.seoTitle || S.brand; $('#brand').textContent = S.brand; $('#tag').innerHTML = emphF(esc(S.tagline || '')); $('#tagm').innerHTML = $('#tag').innerHTML; $('#foot').textContent = S.contact || '';
   if (/^https:\/\//.test(S.logoUrl || '')) { const lg = $('#logo'); lg.src = S.logoUrl; lg.style.display = 'block'; }
   document.documentElement.setAttribute('data-theme', S.theme === 'dark' ? 'dark' : 'light');
   if (ok(S.accent)) rs.setProperty('--gold', S.accent);
@@ -298,7 +316,7 @@ async function init() {
   if (ok(S.secondaryBg)) rs.setProperty('--secBg', S.secondaryBg);
   if (ok(S.secondaryText)) rs.setProperty('--secText', S.secondaryText);
   { const SI = (H && H.site) || {}; if (ok(SI.color1)) { rs.setProperty('--gold', SI.color1); rs.setProperty('--gold2', SI.color1); const x = parseInt(SI.color1.slice(1), 16), lum = (0.299 * (x >> 16) + 0.587 * ((x >> 8) & 255) + 0.114 * (x & 255)); rs.setProperty('--onGold', lum > 150 ? '#1f1a05' : '#ffffff'); } if (ok(SI.color2)) rs.setProperty('--c2', SI.color2); if (ok(SI.color1)) { document.body.classList.add('themed'); const m = (c) => { const x = parseInt(c.slice(1), 16); return [x >> 16, (x >> 8) & 255, x & 255]; }, a = m(SI.color1), b = ok(SI.color2) ? m(SI.color2) : a, mix = a.map((v, i) => v * .88 + b[i] * .12), L = 0.299 * mix[0] + 0.587 * mix[1] + 0.114 * mix[2]; rs.setProperty('--bgInk', L > 160 ? '#1f2328' : '#ffffff'); } }
-  const SINGLE = ['DM Serif Display', 'Pacifico', 'Great Vibes', 'Satisfy', 'Allura'], SERIF = ['Georgia', 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora'], SCRIPT = ['Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura'];
+  const SINGLE = ['DM Serif Display', 'Pacifico', 'Great Vibes', 'Satisfy', 'Allura', 'Sacramento'], SERIF = ['Georgia', 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora'], SCRIPT = ['Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura', 'Sacramento'];
   const font = (f, v) => { if (!f || f === 'System') return; if (['Georgia'].indexOf(f) < 0) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + f.replace(/ /g, '+') + (SINGLE.indexOf(f) >= 0 ? '' : ':wght@400;600;700') + '&display=swap'; document.head.appendChild(l); } rs.setProperty(v, "'" + f + "', " + (SCRIPT.indexOf(f) >= 0 ? 'cursive' : SERIF.indexOf(f) >= 0 ? 'serif' : 'sans-serif')); };
   const emph = t => String(t).replace(/\*([^*]+)\*/g, '<em class="ac">$1</em>');
   font(S.headingFont, '--hf'); font(S.bodyFont, '--bf'); { const SI = (H && H.site) || {}; if (SI.font1) font(SI.font1, '--hf'); if (SI.font2) font(SI.font2, '--bf'); if (SI.font3) font(SI.font3, '--af'); }
@@ -326,7 +344,7 @@ async function init() {
       <div class="b"><div class="row"><b style="font-size:18px">${esc(u.name)}</b><span class="mute">★ ${esc(u.rating)}</span></div>
       <div class="loc">📍 ${esc(u.location)}</div>${u.hostName ? `<div class="mute" style="margin-top:-2px">Hosted by ${esc(u.hostName)}</div>` : ''}
       <div class="mini"><span>🛏 ${esc(u.beds)}</span><span>🚿 ${esc(u.bathrooms)}</span><span>👥 ${esc(u.maxGuests)}</span></div>
-      <div class="acts"><button class="btn sec" onclick="openUnit(${i})">👁 View</button><button class="btn" onclick="unit=DATA.units[${i}];startBooking()">📅 Book Now</button></div></div>
+      <div class="acts"><button class="btn sec" onclick="openUnit(${i})">👁 View</button><button class="btn" onclick="unit=DATA.units[${i}];startBooking()">📅 Book Now</button></div>${shareBtn('unit', i)}</div>
     </div>`).join('');
   try { if (window.google && google.script && google.script.url) google.script.url.getLocation(l => { const id = l && l.parameter && l.parameter.unit; const k = id ? DATA.units.findIndex(x => x.id === String(id)) : -1; if (k >= 0) openUnit(k); }); } catch (e) {}
   { const qp = new URLSearchParams(location.search), id = qp.get('unit'); const k = id ? DATA.units.findIndex(x => x.id === String(id)) : -1; if (k >= 0) openUnit(k); }
@@ -389,8 +407,16 @@ function gLogout() { run('logout', GTOK).catch(() => {}); GTOK = ''; GME = null;
 function closeSheet() { $('#ov').classList.remove('on'); }
 $('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeSheet(); });
 
+const shareBtn = (k, i) => `<button class="btn sec shr" onclick="shareItem('${k}',${i})">🔗 Share this</button>`;
+async function shareItem(kind, i) {
+  const x = ({ unit: DATA.units, listing: DATA.listings, service: DATA.services, product: DATA.products })[kind][i]; if (!x) return;
+  let link; try { link = String(await run('webUrl')).split('?')[0] + '?' + (x.ownerId ? 'host=' + encodeURIComponent(x.ownerId) + '&' : '') + kind + '=' + encodeURIComponent(x.id); } catch (e) { return; }
+  const name = x.name || x.title || 'this';
+  try { if (navigator.share) { await navigator.share({ title: name, url: link }); return; } } catch (e) { return; }
+  try { await navigator.clipboard.writeText(link); alert('Link copied! Paste it anywhere to share ' + name + '.'); } catch (e) { prompt('Copy this link:', link); }
+}
 async function shareThis() {
-  let link; try { link = (await run('webUrl')) + '?unit=' + encodeURIComponent(unit.id); } catch (e) { return; }
+  let link; try { link = String(await run('webUrl')).split('?')[0] + '?' + (unit.ownerId ? 'host=' + encodeURIComponent(unit.ownerId) + '&' : '') + 'unit=' + encodeURIComponent(unit.id); } catch (e) { return; }
   try { if (navigator.share) { await navigator.share({ title: unit.name, url: link }); return; } } catch (e) { return; }
   try { await navigator.clipboard.writeText(link); alert('Link copied!'); } catch (e) { prompt('Copy this link:', link); }
 }
@@ -529,6 +555,19 @@ const ICO = {
   mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg>'
 };
 const emphF = t => String(t).replace(/\*([^*]+)\*/g, '<em class="ac">$1</em>');
+function chatLinks(H) {
+  const SI = (H && H.site) || {}, out = [], ph = String(H.contactPhone || '').replace(/[^0-9+]/g, ''), intl = ph.replace(/^\+/, '').replace(/^0/, '63');
+  const ms = String(SI.chatMessenger || '').replace(/[^A-Za-z0-9._\-]/g, '');
+  if (ms) out.push(['ms', '💬 Chat on Messenger', 'https://m.me/' + ms, true]);
+  if (SI.chatMobile && ph) { out.push(['cl', '📞 Call', 'tel:' + ph]); out.push(['tx', '✉️ Text', 'sms:' + ph]); out.push(['vb', 'Viber', 'viber://chat?number=%2B' + intl]); }
+  return out;
+}
+function drawChat(H) {
+  const L = chatLinks(H); if (!L.length) return;
+  const btns = L.map(x => `<a class="${x[0]}" href="${esc(x[2])}"${x[3] ? ' target="_blank" rel="noopener"' : ''}>${x[1]}</a>`).join('');
+  $('#chat').innerHTML = `<div class="chatsec"><h3>Talk to the owner in real time</h3><p>Have a question? Message us now and we will reply as soon as we can.</p><div class="chbtns">${btns}</div></div>`;
+  if (!document.getElementById('chatfab')) { const d = document.createElement('div'); d.id = 'chatfab'; d.innerHTML = `<div id="chatpanel"><b>Chat with the owner</b><div class="chbtns" style="margin-top:10px">${btns}</div></div><button onclick="document.getElementById('chatpanel').classList.toggle('on')">💬 Chat</button>`; document.body.appendChild(d); }
+}
 function drawSite(H, hid) {
   const SI = (H && H.site) || {}, https = u => /^https:\/\//.test(u || '');
   const hasL = (DATA.listings || []).some(x => !hid || String(x.ownerId) === hid), hasS = (DATA.services || []).some(x => !hid || String(x.ownerId) === hid), hasP = (DATA.products || []).some(x => !hid || String(x.ownerId) === hid);
@@ -547,6 +586,7 @@ function drawSite(H, hid) {
   if (SI.mission || SI.vision) { $('#mv').innerHTML = '<div class="mv">' + (SI.mission ? `<div><small>OUR MISSION</small><h3>Mission</h3><p>${emphF(esc(SI.mission))}</p></div>` : '') + (SI.vision ? `<div><small>OUR VISION</small><h3>Vision</h3><p>${emphF(esc(SI.vision))}</p></div>` : '') + '</div>'; if (hasL || hasS || hasP || DATA.units.length) $('#cta2').innerHTML = cta; }
   const T = Array.isArray(H.testimonials) ? H.testimonials.filter(t => t && t.text) : [];
   if (T.length) $('#reviews').innerHTML = '<div class="coll" style="grid-column:1/-1"><small>TESTIMONIALS</small><h2>What our customers say</h2></div>' + T.map(t => `<div class="q">${https(t.photo) ? `<img src="${esc(t.photo)}" alt="">` : ''}“${esc(t.text)}”<b>— ${esc(t.name || 'Customer')}</b></div>`).join('');
+  drawChat(H);
   const so = H.socials || {}, L = ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].filter(k => https(so[k]));
   const name = SI.ownerName || H.hostName || H.businessName || '';
   if (H.about || H.ownerPhotoUrl || H.contactPhone || H.contactEmail || L.length || SI.salutation || SI.license || SI.ownerName) {
@@ -563,14 +603,14 @@ function drawSite(H, hid) {
 function drawExtras(hid) {
   const L = (DATA.listings || []).filter(x => !hid || String(x.ownerId) === hid), V = (DATA.services || []).filter(x => !hid || String(x.ownerId) === hid);
   const P = (DATA.products || []).filter(x => !hid || String(x.ownerId) === hid); DATA.products = P; DATA.listings = L; DATA.services = V;
-  if (P.length) $('#prd').innerHTML = '<div class="coll"><small>PRODUCTS</small><h2>Shop</h2></div><div class="grid">' + P.map((x, i) => `<div class="card">${x.images[0] ? `<div class="imgw"><img src="${esc(x.images[0])}" alt=""></div>` : ''}<div class="b"><div class="row"><b style="font-size:18px">${esc(x.name)}</b><b>${peso(x.price)}</b></div><div style="margin:6px 0">${esc(x.description)}</div>${x.stock === 0 ? '<div class="mute">Out of stock</div>' : orderBtn(x)}</div></div>`).join('') + '</div>';
+  if (P.length) $('#prd').innerHTML = '<div class="coll"><small>PRODUCTS</small><h2>Shop</h2></div><div class="grid">' + P.map((x, i) => `<div class="card" id="c_p_${esc(x.id)}">${x.images[0] ? `<div class="imgw"><img src="${esc(x.images[0])}" alt=""></div>` : ''}<div class="b"><div class="row"><b style="font-size:18px">${esc(x.name)}</b><b>${peso(x.price)}</b></div><div style="margin:6px 0">${esc(x.description)}</div>${x.stock === 0 ? '<div class="mute">Out of stock</div>' : orderBtn(x)}${shareBtn('product', i)}</div></div>`).join('') + '</div>';
   if (L.length) $('#lst').innerHTML = '<div class="coll"><small>PROPERTIES</small><h2>Properties for sale &amp; rent</h2></div><div class="grid">' + L.map((x, i) => `<div class="card"><div class="imgw">${x.images[0] ? `<img src="${esc(x.images[0])}" alt="" onclick="openListing(${i})" style="cursor:pointer">` : '<div class="ph"></div>'}</div>
     <div class="b"><div class="row"><b style="font-size:18px">${esc(x.title)}</b><span class="mute">${x.listingType === 'rent' ? 'For rent' : 'For sale'}</span></div><div class="loc">📍 ${esc(x.location)}</div>
     <div class="mini"><span>🛏 ${esc(x.bedrooms)}</span><span>🚿 ${esc(x.bathrooms)}</span>${x.floorArea ? `<span>📐 ${esc(x.floorArea)} sqm</span>` : ''}</div><b style="font-size:18px">${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b>
-    <div class="acts" style="margin-top:8px"><button class="btn sec" onclick="openListing(${i})">👁 View</button><button class="btn" onclick="inquire(${i})">✉️ Inquire</button></div></div></div>`).join('') + '</div>';
+    <div class="acts" style="margin-top:8px"><button class="btn sec" onclick="openListing(${i})">👁 View</button><button class="btn" onclick="inquire(${i})">✉️ Inquire</button></div>${shareBtn('listing', i)}</div></div>`).join('') + '</div>';
   if (V.length) $('#svc').innerHTML = '<div class="coll"><small>SERVICES</small><h2>Book an appointment</h2></div><div class="grid">' + V.map((x, i) => `<div class="card">${x.images[0] ? `<div class="imgw"><img src="${esc(x.images[0])}" alt=""></div>` : ''}<div class="b"><div class="row"><b style="font-size:18px">${esc(x.name)}</b><b>${peso(x.price)}</b></div>
-    <div class="mute">⏱ ${esc(x.durationMinutes)} min</div><div style="margin:6px 0">${esc(x.description)}</div><button class="btn" onclick="bookService(${i})">📅 Book now</button></div></div>`).join('') + '</div>';
-  try { const q = new URLSearchParams(location.search), l = q.get('listing'), sv = q.get('service'); if (l) { const k = L.findIndex(x => x.id === l); if (k >= 0) openListing(k); } if (sv) { const k = V.findIndex(x => x.id === sv); if (k >= 0) bookService(k); } } catch (e) {}
+    <div class="mute">⏱ ${esc(x.durationMinutes)} min</div><div style="margin:6px 0">${esc(x.description)}</div><button class="btn" onclick="bookService(${i})">📅 Book now</button>${shareBtn('service', i)}</div></div>`).join('') + '</div>';
+  try { const q = new URLSearchParams(location.search), l = q.get('listing'), sv = q.get('service'); if (l) { const k = L.findIndex(x => x.id === l); if (k >= 0) openListing(k); } if (sv) { const k = V.findIndex(x => x.id === sv); if (k >= 0) bookService(k); } const pr = q.get('product'); if (pr) setTimeout(() => { const e = document.getElementById('c_p_' + pr); if (e) { e.scrollIntoView({ behavior: 'smooth', block: 'center' }); e.style.outline = '3px solid var(--gold)'; } }, 400); } catch (e) {}
 }
 function orderBtn(x) {
   const msg = encodeURIComponent('Hi, I would like to order: ' + x.name);

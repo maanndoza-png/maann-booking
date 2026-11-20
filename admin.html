@@ -265,13 +265,14 @@ const H = {
     const biz = clean(p.businessName, 80), nm = clean(p.name, 80); if (!biz || !nm) throw new Error('Name and business name are required.');
     await A.upd('profiles', 'id=eq.' + A.uid, { name: nm, business_name: biz, phone: clean(p.phone, 30), payment_info: clean(p.paymentInfo, 1000) }); _me = null; return true;
   },
+  async fbSync(p) { const r = await A.fn('fb-sync', { url: p.url }); if (!r || r.error) throw new Error((r && r.error) || 'Could not reach Facebook sync.'); return r; },
   async saveStorefront(p) {
     const so = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => { const v = clean((p.socials || {})[k], 300); if (v && !/^https:\/\/\S+$/.test(v)) throw new Error(k + ' link must start with https://'); so[k] = v; });
     const url = v => { v = clean(v, 500); return /^https:\/\//.test(v) ? v : ''; };
     const tm = (p.testimonials || []).map(t => ({ name: clean(t.name, 60), text: clean(t.text, 400), photo: url(t.photo) })).filter(t => t.text).slice(0, 12);
-    const st = p.site || {}, col = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '', FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System'];
-    const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '',
-      ctaText: clean(st.ctaText, 30), why: (st.why || []).slice(0, 3).map(w => ({ title: clean(w.title, 60), text: clean(w.text, 240) })), whyTitle: clean(st.whyTitle, 60),
+    const st = p.site || {}, col = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '', FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System', 'Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura'];
+    const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '', font3: FONTS.indexOf(st.font3) >= 0 ? st.font3 : '', heroStyle: ['soft', 'warm', 'moody', 'bright'].indexOf(st.heroStyle) >= 0 ? st.heroStyle : 'soft', fbUrl: /^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//.test(st.fbUrl || '') ? clean(st.fbUrl, 300) : '',
+      ctaText: clean(st.ctaText, 30), hook: clean(st.hook, 140), hookSub: clean(st.hookSub, 200), why: (st.why || []).slice(0, 3).map(w => ({ title: clean(w.title, 60), text: clean(w.text, 240) })), whyTitle: clean(st.whyTitle, 60),
       mission: clean(st.mission, 600), vision: clean(st.vision, 600), ownerName: clean(st.ownerName, 80), salutation: clean(st.salutation, 40), license: clean(st.license, 80) };
     await A.upd('profiles', 'id=eq.' + A.uid, { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm, site });
     _me = null; return true;
@@ -844,7 +845,7 @@ function showIndustryPicker() {
 async function pickIndustry() {
   const v = $('#ip_s').value; if (!v) return $('#ip_e').textContent = 'Please choose one.';
   if (!confirm('Choose "' + IND_NAME[v] + '"? The other two industries will be locked until you pay to unlock them.')) return;
-  try { await api('chooseIndustry', { type: v }); $('#indpick').remove(); Object.assign(ME, await api('me')); enter(); } catch (e) { $('#ip_e').textContent = e.message; }
+  try { await api('chooseIndustry', { type: v }); $('#indpick').remove(); Object.assign(ME, await api('me')); enter(); showSyncStep(); } catch (e) { $('#ip_e').textContent = e.message; }
 }
 async function industries() {
   const m = await api('me'); Object.assign(ME, m); const S = await api('settings'), un = await api('myUnlocks').catch(() => []);
@@ -879,22 +880,80 @@ async function unlocks() {
 
 /* ===== My Website: one-page site designer ===== */
 let SF = null;
-const SF_FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System'];
+const SF_FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System', 'Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura'];
+const SF_HOOKS = {
+  staycation: { pain: ['Tired of crowded resorts and *hidden fees*?', "Booking a getaway shouldn't feel like *a second job*.", "You deserve a break that doesn't start with *stress*.", 'Why spend your weekend *stuck in traffic* instead of relaxing?'],
+    result: ['Wake up *rested*, in a place that feels like yours.', 'Your private escape, ready in *minutes*. Just show up and unwind.', 'A few days away that feel like *a full reset*.', 'Come home feeling like you *actually* went somewhere.'],
+    myth: ['Think a great staycation has to be *expensive*? Think again.', 'A short stay *can* feel like a real vacation.', "You don't need a plane ticket to *truly* get away.", "Private doesn't have to mean *pricey*."] },
+  real_estate: { pain: ["Tired of listings that look great but *don't match reality*?", "Buying property shouldn't feel like *a gamble*.", 'Endless viewings and no answers? *There is a better way.*', "Don't let the paperwork *scare you* out of your dream home."],
+    result: ['Find the home that fits your *life* and your budget.', 'From first viewing to *keys in hand*, we walk with you.', 'Your next address, chosen with *confidence*.', "Own a place you're *proud* to call home."],
+    myth: ["You don't need a *huge* budget to start owning property.", "Renting forever isn't *safer* than owning.", "A good agent doesn't cost you more. They *save* you.", 'The right property is not luck. It is *a process*.'] },
+  business: { pain: ['Tired of products and services that *promise more than they deliver*?', 'Wasting time on providers who *never reply*?', "Good quality shouldn't be *this hard to find*.", 'Stop settling for *"good enough"*.'],
+    result: ['Quality you can *feel* from the very first order.', 'Get exactly what you need: *fast, simple, reliable*.', 'Everything done right, so you can *focus on what matters*.', 'Customers come for the product and stay for *the experience*.'],
+    myth: ["Better quality doesn't have to mean *higher prices*.", 'Small business does not mean *small standards*.', "You don't need a big brand to get *big results*.", "Great service isn't a luxury. It is *the baseline*."] }
+};
+const SF_ANGLES = [['pain', '😣 Pain', 'Names the problem your customer feels'], ['result', '✨ Desired result', 'Paints the outcome they want'], ['myth', '💭 Myth & misconception', 'Corrects what they wrongly believe']];
+let HK_N = 0;
+function drawHooks() {
+  const set = SF_HOOKS[ME.businessType] || SF_HOOKS.business, cur = ($('#sf_hk') || {}).value || '';
+  $('#sf_hkc').innerHTML = SF_ANGLES.map(([k, l, d]) => { const t = set[k][HK_N % set[k].length]; return `<div onclick="sfPickHook('${k}')" style="cursor:pointer;border:2px solid ${cur === t ? 'var(--gold,#d4a62a)' : 'var(--line,#ddd)'};border-radius:12px;padding:10px 12px;margin:6px 0"><div class="mute" style="font-size:12px">${l} · ${d}</div><div style="font-weight:600;margin-top:2px">${esc(t).replace(/\*([^*]+)\*/g, '<u>$1</u>')}</div></div>`; }).join('') + '<button type="button" class="btn sec sm" onclick="HK_N++;drawHooks()">🔄 More ideas</button>';
+}
+function sfPickHook(k) { const set = SF_HOOKS[ME.businessType] || SF_HOOKS.business; $('#sf_hk').value = set[k][HK_N % set[k].length]; drawHooks(); }
+/* font picker with live previews */
+function fontPick(id, val) {
+  const fam = f => f ? (f === 'System' ? 'system-ui' : `'${f}'`) : 'inherit';
+  return `<div class="fp" style="position:relative"><input type="hidden" id="${id}" value="${esc(val || '')}"><button type="button" class="btn sec" id="fpb_${id}" onclick="fpToggle('${id}')" style="width:100%;text-align:left;display:flex;justify-content:space-between;font-family:${fam(val)};font-size:18px"><span>${esc(val || 'Default')}</span><span>▾</span></button>
+    <div id="fpm_${id}" style="display:none;position:absolute;z-index:30;left:0;right:0;max-height:280px;overflow:auto;background:var(--panel,#fff);border:1px solid var(--line,#ddd);border-radius:12px;box-shadow:0 14px 34px rgba(0,0,0,.25)">${['', ...SF_FONTS].map(f => `<div onclick="fpSet('${id}','${f}')" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line,#eee);font-family:${fam(f)};font-size:20px">${f || 'Default'} <span style="opacity:.55;font-size:15px">· Aa Bb Cc 123</span></div>`).join('')}</div></div>`;
+}
+function fpToggle(id) { const m = $('#fpm_' + id), on = m.style.display === 'none'; document.querySelectorAll('[id^=fpm_]').forEach(x => x.style.display = 'none'); m.style.display = on ? 'block' : 'none'; }
+function fpSet(id, f) { $('#' + id).value = f; const b = $('#fpb_' + id); b.firstChild.textContent = f || 'Default'; b.style.fontFamily = f ? (f === 'System' ? 'system-ui' : `'${f}'`) : 'inherit'; $('#fpm_' + id).style.display = 'none'; }
+document.addEventListener('click', e => { if (!e.target.closest('.fp')) document.querySelectorAll('[id^=fpm_]').forEach(x => x.style.display = 'none'); });
+function loadAdminFonts() { if (document.getElementById('gfonts')) return; const l = document.createElement('link'); l.id = 'gfonts'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?' + SF_FONTS.filter(f => f !== 'Georgia' && f !== 'System').map(f => 'family=' + f.replace(/ /g, '+')).join('&') + '&display=swap'; document.head.appendChild(l); }
+/* Facebook sync */
+let SYNC_NOTE = '';
+function fbNorm(u) { u = String(u || '').trim(); if (!u) return ''; if (!/^https?:\/\//i.test(u)) u = 'https://' + u; return u.replace(/^http:/i, 'https:'); }
+async function fbSyncRun(url, setMsg) {
+  url = fbNorm(url); if (!/^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//i.test(url)) throw new Error('Please paste your facebook.com page link.');
+  setMsg('Reading your Facebook page…'); const r = await api('fbSync', { url }); if (!r.ok) throw new Error(r.reason || 'Could not read that page.');
+  setMsg('Pre-filling your website…'); const m = await api('me'), st = m.site || {}; let bg = st.bgUrl || '';
+  if (!bg && r.image) { try { bg = await api('uploadImage', { data: r.image }); } catch (e) { } }
+  const desc = String(r.description || '').replace(/^[^.]*\.\s*[\d,]+\s+(followers|likes)[^.]*\.\s*/i, '').trim(), first = (desc.split(/(?<=[.!?])\s/)[0] || '').slice(0, 120), so = { ...(m.socials || {}) }; if (!so.facebook) so.facebook = url;
+  if (!m.businessName && r.name) await api('saveProfile', { name: ME.name, businessName: r.name, phone: ME.phone, paymentInfo: ME.paymentInfo });
+  await api('saveStorefront', { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', tagline: m.tagline || first, about: m.about || desc, contactPhone: m.contactPhone || '', contactEmail: m.contactEmail || '', socials: so, testimonials: m.testimonials || [], site: { ...st, bgUrl: bg, fbUrl: url } });
+  SYNC_NOTE = `We read <b>${esc(r.name || 'your page')}</b> and pre-filled your website. Check each part, pick a hook, then press Save My Website.`; return r;
+}
+function showSyncStep() {
+  const d = document.createElement('div'); d.id = 'syncstep'; d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto';
+  d.innerHTML = `<div class="card" style="max-width:480px;width:100%"><h2>Before we begin</h2><p class="mute">Paste the link of your <b>Facebook Page</b>. We read its public name, description and profile photo to pre-fill your one-page website and suggest hooks for you.</p>
+    <label>Facebook Page link</label><input id="sy_u" placeholder="https://facebook.com/yourpage"><div class="mute" id="sy_m" style="margin:8px 0"></div><div class="err" id="sy_e"></div>
+    <button class="btn" style="width:100%" id="sy_go" onclick="doSync()">Sync</button><button class="btn sec" style="width:100%;margin-top:8px" onclick="skipSync()">No Page yet</button></div>`;
+  document.body.appendChild(d);
+}
+async function doSync() { $('#sy_e').textContent = ''; $('#sy_go').disabled = true; try { await fbSyncRun($('#sy_u').value, t => $('#sy_m').textContent = t); $('#syncstep').remove(); go('storefront'); } catch (e) { $('#sy_e').textContent = e.message; $('#sy_m').textContent = ''; $('#sy_go').disabled = false; } }
+function skipSync() { $('#syncstep').remove(); go('storefront'); }
+async function sfResync() { $('#sf_fe').textContent = ''; try { await fbSyncRun($('#sf_fu').value, t => $('#sf_fm').textContent = t); storefront(); } catch (e) { $('#sf_fe').textContent = e.message; $('#sf_fm').textContent = ''; } }
 const SF_PALETTES = [['#d4a62a', '#0b1226'], ['#c2185b', '#2b1b2e'], ['#2e8b57', '#10281d'], ['#1e6fd9', '#0a1f3d'], ['#e4572e', '#2d1a14'], ['#7b5ea7', '#1e1633']];
 const sfCta = bt => bt === 'real_estate' ? 'Inquire Now' : bt === 'business' ? 'Buy / Book Now' : 'Book Now';
 async function storefront() {
   const m = await api('me'); Object.assign(ME, m); const st = m.site || {};
   SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', bgUrl: st.bgUrl || '', testimonials: (m.testimonials || []).map(t => ({ name: t.name || '', text: t.text || '', photo: t.photo || '' })), why: [0, 1, 2].map(i => (st.why || [])[i] || { title: '', text: '' }) };
-  const so = m.socials || {}, sel = (id, v) => `<select id="${id}"><option value="">Default</option>${SF_FONTS.map(f => `<option ${v === f ? 'selected' : ''} style="font-family:'${f}'">${f}</option>`).join('')}</select>`;
+  const so = m.socials || {}; loadAdminFonts(); const note = SYNC_NOTE; SYNC_NOTE = '';
   const c1 = /^#[0-9a-fA-F]{6}$/.test(st.color1 || '') ? st.color1 : '#d4a62a', c2 = /^#[0-9a-fA-F]{6}$/.test(st.color2 || '') ? st.color2 : '#0b1226';
-  $('#main').innerHTML = head('My Website', 'Your one-page website. Fill in each part, then press Save My Website.') +
-    `<div class="card"><h2>1 · Header &amp; background</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
-    <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}"><label>Subtitle</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes">
-    <label>Background photo (top of your website)</label><div class="mute">Best size: <b>1920 × 1080 px</b> (landscape), JPG or PNG. Choose a bright, sharp photo.</div>
-    <div class="row" style="justify-content:flex-start;gap:10px;margin-top:6px"><img id="sf_bg" style="height:70px;border-radius:8px;display:${SF.bgUrl ? 'block' : 'none'}" src="${esc(SF.bgUrl)}"><input type="file" accept="image/*" onchange="sfBg(this)"></div><div class="mute" id="sf_bgn"></div></div>
-    <div class="card"><h2>2 · Brand colors &amp; fonts</h2><div class="mute">Pick a ready-made pair or choose your own.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${SF_PALETTES.map(p => `<button type="button" class="btn sec sm" onclick="sfPal('${p[0]}','${p[1]}')" style="display:flex;gap:4px;align-items:center"><i style="width:18px;height:18px;border-radius:50%;background:${p[0]}"></i><i style="width:18px;height:18px;border-radius:50%;background:${p[1]}"></i></button>`).join('')}</div>
+  $('#main').innerHTML = head('My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') +
+    `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
+    `+
+    `<div class="card"><h2>1 · Logo, hero &amp; hook</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
+    <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}">
+    <label>Hero photo (big picture at the top of your website)</label><div class="mute">Best size: <b>1920 × 1080 px</b> (landscape), JPG or PNG. Choose a bright, sharp photo.</div>
+    <div class="row" style="justify-content:flex-start;gap:10px;margin-top:6px"><img id="sf_bg" style="height:70px;border-radius:8px;display:${SF.bgUrl ? 'block' : 'none'}" src="${esc(SF.bgUrl)}"><input type="file" accept="image/*" onchange="sfBg(this)"></div><div class="mute" id="sf_bgn"></div>
+    <label>Photo style</label><select id="sf_hst">${[['soft', 'Soft & dreamy'], ['warm', 'Warm golden glow'], ['moody', 'Dark & moody'], ['bright', 'Fresh & bright']].map(([k, l]) => `<option value="${k}" ${(st.heroStyle || 'soft') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
+    <label>Subtitle / tagline</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes">
+    <label>Strong hook statement</label><div class="mute">Pick one of the 3 angles below, or write your own. Put <b>*stars*</b> around a word to show it in your accent font.</div><div id="sf_hkc"></div>
+    <label>Your hook (edit it or write your own)</label><textarea id="sf_hk" rows="2" maxlength="140" oninput="drawHooks()" placeholder="e.g. The calmest escape, *45 minutes* from the city">${esc(st.hook || '')}</textarea>
+    <label>Supporting line (optional)</label><input id="sf_hs" maxlength="200" value="${esc(st.hookSub || '')}" placeholder="One short sentence that backs up the hook"></div>
+    <div class="card"><h2>2 · Brand colors &amp; fonts</h2><div class="mute">Your whole website background uses your <b>main color</b>, with a touch of your <b>second color</b>. Pick a ready-made pair or choose your own.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${SF_PALETTES.map(p => `<button type="button" class="btn sec sm" onclick="sfPal('${p[0]}','${p[1]}')" style="display:flex;gap:4px;align-items:center"><i style="width:18px;height:18px;border-radius:50%;background:${p[0]}"></i><i style="width:18px;height:18px;border-radius:50%;background:${p[1]}"></i></button>`).join('')}</div>
     <div class="g2"><div><label>Main brand color (buttons, highlights)</label><input type="color" id="sf_c1" value="${c1}" style="height:44px;padding:2px"></div><div><label>Second brand color (header, dark sections)</label><input type="color" id="sf_c2" value="${c2}" style="height:44px;padding:2px"></div></div>
-    <div class="g2"><div><label>Heading font</label>${sel('sf_f1', st.font1)}</div><div><label>Body font</label>${sel('sf_f2', st.font2)}</div></div></div>
+    <div class="g2"><div><label>Heading font (titles)</label>${fontPick('sf_f1', st.font1)}</div><div><label>Second font (hook heading &amp; body text)</label>${fontPick('sf_f2', st.font2)}</div></div><label>Accent font (for words you want to emphasise, written like *this*)</label>${fontPick('sf_f3', st.font3)}</div>
     <div class="card"><h2>3 · Call to action</h2><div class="mute">Shown under your listings and again after Mission &amp; Vision. Default: <b>${sfCta(ME.businessType)}</b>.</div><label>Button text (optional)</label><input id="sf_cta" maxlength="30" value="${esc(st.ctaText || '')}" placeholder="${sfCta(ME.businessType)}"></div>
     <div class="card"><h2>4 · Why Us — your 3 signature steps</h2><div class="mute">Three simple steps that show customers how you work and why you stand out.</div><label>Section title</label><input id="sf_wt" maxlength="60" value="${esc(st.whyTitle || '')}" placeholder="Why choose us">
     ${[0, 1, 2].map(i => `<div class="g2" style="margin-top:8px"><div><label>Step ${i + 1} title</label><input id="sf_w${i}t" maxlength="60" value="${esc(SF.why[i].title)}" placeholder="${['Tell us what you need', 'We take care of everything', 'Enjoy the result'][i]}"></div><div><label>Step ${i + 1} description</label><input id="sf_w${i}d" maxlength="240" value="${esc(SF.why[i].text)}"></div></div>`).join('')}</div>
@@ -906,7 +965,7 @@ async function storefront() {
     <label>About you / your business</label><textarea id="sf_a" rows="5">${esc(m.about)}</textarea><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}">
     <h3 style="margin:14px 0 0">Social media accounts</h3><div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
     <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: ME.ownerId }))}">👁 Preview my website</a>`;
-  drawTm();
+  drawTm(); drawHooks();
 }
 function sfPal(a, b) { $('#sf_c1').value = a; $('#sf_c2').value = b; }
 async function sfUp(el, key, img, max) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], max || 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
@@ -920,7 +979,7 @@ async function tmUp(el, i) { if (!el.files[0]) return; try { SF.testimonials[i].
 function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '', photo: '' }); drawTm(); }
 async function saveSf() {
   const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value); $('#sf_e').textContent = '';
-  const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, ctaText: $('#sf_cta').value, whyTitle: $('#sf_wt').value,
+  const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, font3: $('#sf_f3').value, heroStyle: $('#sf_hst').value, fbUrl: ($('#sf_fu') || {}).value || '', ctaText: $('#sf_cta').value, hook: $('#sf_hk').value, hookSub: $('#sf_hs').value, whyTitle: $('#sf_wt').value,
     why: [0, 1, 2].map(i => ({ title: $('#sf_w' + i + 't').value, text: $('#sf_w' + i + 'd').value })), mission: $('#sf_mi').value, vision: $('#sf_vi').value, ownerName: $('#sf_on').value, salutation: $('#sf_sa').value, license: $('#sf_li').value };
   try {
     await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });

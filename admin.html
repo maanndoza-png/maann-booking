@@ -306,6 +306,12 @@ const H = {
     if (!rec.name) throw new Error('Service name is required.'); if (s.id) { await A.upd('services', 'id=eq.' + s.id, rec); return s.id; } rec.owner_id = _me.ownerId; return (await A.ins('services', rec))[0].id;
   },
   async deleteService(p) { await A.upd('services', 'id=eq.' + p.id, { active: false }); return true; },
+  async products() { return (await A.sel('products', 'active=eq.true&order=created_at.desc')).map(p => ({ id: p.id, name: p.name, description: p.description, price: p.price, stock: p.stock == null ? '' : p.stock, images: p.images || [] })); },
+  async saveProduct(p) {
+    const rec = { name: clean(p.name, 120), description: clean(p.description, 2000), price: num(p.price), stock: p.stock === '' || p.stock == null ? null : Math.max(0, Math.floor(num(p.stock))), images: p.images || [], active: true };
+    if (!rec.name) throw new Error('Product name is required.'); if (p.id) { await A.upd('products', 'id=eq.' + p.id, rec); return p.id; } rec.owner_id = _me.ownerId; return (await A.ins('products', rec))[0].id;
+  },
+  async deleteProduct(p) { await A.upd('products', 'id=eq.' + p.id, { active: false }); return true; },
   async hours() { const r = await A.sel('working_hours', 'order=weekday'); const m = {}; r.forEach(x => { m[x.weekday] = { open: String(x.open_time).slice(0, 5), close: String(x.close_time).slice(0, 5) }; }); return m; },
   async saveHours(p) {
     await A.del('working_hours', 'owner_id=eq.' + _me.ownerId);
@@ -315,8 +321,8 @@ const H = {
   async appointments() { return (await A.sel('appointments', 'select=*,services(name)&order=starts_at.desc')).map(a => ({ id: a.ref, service: a.services ? a.services.name : '', name: a.name, email: a.email, phone: a.phone, notes: a.notes, start: a.starts_at, total: a.total, status: a.status })); },
   async setAppointment(p) { if (['Pending', 'Confirmed', 'Cancelled', 'Done'].indexOf(p.status) < 0) throw new Error('Bad status.'); await A.upd('appointments', 'ref=eq.' + encodeURIComponent(p.id), { status: p.status }); return true; },
   async dashboardOther() {
-    const [ap, iq, un, li, sv] = await Promise.all([H.appointments().catch(() => []), H.inquiries().catch(() => []), H.units().catch(() => []), H.listings().catch(() => []), H.services().catch(() => [])]);
-    return { appointments: ap, inquiries: iq, units: un.length, listings: li.length, services: sv.length };
+    const [ap, iq, un, li, sv, pr] = await Promise.all([H.appointments().catch(() => []), H.inquiries().catch(() => []), H.units().catch(() => []), H.listings().catch(() => []), H.services().catch(() => []), H.products().catch(() => [])]);
+    return { appointments: ap, inquiries: iq, units: un.length, listings: li.length, services: sv.length, products: pr.length };
   }
 };
 const rpc = async (fn, ...a) => {
@@ -346,13 +352,13 @@ let ME = {}, PW = '', tab = 'dashboard', editing = null, period = 'm12', SET = {
 PW = A.session ? 'sb' : ''; try { ME = JSON.parse(sessionStorage.getItem('me') || '{}'); } catch (e) {}
 const canAct = () => ME.role !== 'staff' || ME.perms === 'bookings';
 
-const ALLTABS = [['dashboard','📈','Dashboard'],['bookings','🗓️','Bookings'],['expenses','🧾','Expenses'],['calendar','📅','Interactive Calendar'],['blocking','⛔','Manual Blocking'],['units','🏠','Unit Management'],['addons','➕','Add-ons'],['holidays','🎉','Holiday Rates'],['listings','🏘️','Property Listings'],['inquiries','📨','Inquiries'],['services','🛎️','Services'],['hours','🕒','Working Hours'],['appointments','📆','Appointments'],['storefront','🌐','My Website'],['industries','🔓','My Industries'],['amenities','🛋️','Amenities'],['settings','⚙️','System Settings'],['ux','🎨','UI / UX Control'],['users','👥','Users'],['unlocks','🔑','Unlock Requests'],['team','🧑‍🤝‍🧑','Team'],['profile','👤','My Profile']];
+const ALLTABS = [['dashboard','📈','Dashboard'],['bookings','🗓️','Bookings'],['expenses','🧾','Expenses'],['calendar','📅','Interactive Calendar'],['blocking','⛔','Manual Blocking'],['units','🏠','My Listings'],['addons','➕','Add-ons'],['holidays','🎉','Holiday Rates'],['listings','🏘️','Property Listings'],['inquiries','📨','Inquiries'],['services','🛎️','Services'],['products','📦','My Products'],['hours','🕒','Working Hours'],['appointments','📆','Appointments'],['storefront','🌐','My Website'],['industries','🔓','My Industries'],['amenities','🛋️','Amenities'],['settings','⚙️','System Settings'],['ux','🎨','UI / UX Control'],['users','👥','Users'],['unlocks','🔑','Unlock Requests'],['team','🧑‍🤝‍🧑','Team'],['profile','👤','My Profile']];
 let TABS = ALLTABS;
 function tabsFor() {
   const bt = ME.businessType;
-  const byInd = { staycation: ['storefront','dashboard','bookings','expenses','calendar','blocking','units','addons','holidays','profile','team','industries'],
+  const byInd = { staycation: ['storefront','units','dashboard','bookings','expenses','calendar','blocking','addons','holidays','profile','team','industries'],
     real_estate: ['storefront','listings','dashboard','inquiries','profile','team','industries'],
-    business: ['storefront','dashboard','appointments','services','hours','profile','team','industries'] };
+    business: ['storefront','products','services','dashboard','appointments','hours','profile','team','industries'] };
   const stfBase = { staycation: ['dashboard','bookings','calendar'], real_estate: ['dashboard','inquiries'], business: ['dashboard','appointments'] }[bt] || ['dashboard'];
   const order = ME.role === 'admin' ? ['dashboard','bookings','expenses','calendar','blocking','units','addons','holidays','amenities','settings','ux','users','unlocks','team','profile']
     : ME.role === 'host' ? (byInd[bt] || ['dashboard','storefront','industries','team','profile'])
@@ -402,7 +408,7 @@ function go(t) { tab = t; editing = null; calSel = null; $('#side').classList.re
   $('#nav').innerHTML = TABS.map(([k, i, l]) => `<button class="nv ${k === t ? 'on' : ''}" onclick="go('${k}')"><span>${i}</span>${l}</button>`).join(''); load(); }
 async function load() {
   $('#main').innerHTML = '<p class="mute">Loading…</p>';
-  try { await ({ dashboard, bookings, expenses, calendar, blocking, units, addons, holidays, amenities, settings, ux, users, team, profile, listings, inquiries, services, hours, appointments, storefront, industries, unlocks })[tab](); $('#st').textContent = 'Online & Synced · ' + new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' }); }
+  try { await ({ dashboard, bookings, expenses, calendar, blocking, units, addons, holidays, amenities, settings, ux, users, team, profile, listings, inquiries, services, products, hours, appointments, storefront, industries, unlocks })[tab](); $('#st').textContent = 'Online & Synced · ' + new Date().toLocaleTimeString('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', minute: '2-digit' }); }
   catch (e) { $('#main').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; }
 }
 async function syncNow() { try { await api('sync'); } catch (e) { return alert(e.message); } load(); }
@@ -870,7 +876,7 @@ async function unlocks() {
 let SF = null;
 async function storefront() {
   const m = await api('me'); Object.assign(ME, m); SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', testimonials: (m.testimonials || []).slice() }; const so = m.socials || {};
-  $('#main').innerHTML = head('My Website', 'What guests see at the top of your page and in the About section.') +
+  $('#main').innerHTML = head('My Storefront', 'What guests see at the top of your page and in the About section.') +
     `<div class="card"><h2>Header</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo')"></div>
     <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}"><label>Subtitle</label><input id="sf_t" maxlength="120" value="${esc(m.tagline)}" placeholder="e.g. Book your stay in minutes"></div>
     <div class="card"><h2>About the owner</h2><label>Owner photo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_ph" style="height:80px;width:80px;border-radius:50%;object-fit:cover;display:${SF.ownerPhotoUrl ? 'block' : 'none'}" src="${esc(SF.ownerPhotoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'ownerPhotoUrl','sf_ph')"></div>
@@ -878,7 +884,7 @@ async function storefront() {
     <div class="g2"><div><label>Contact phone</label><input id="sf_cp" value="${esc(m.contactPhone)}"></div><div><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}"></div></div>
     <div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
     <div class="card"><h2>Testimonials</h2><div id="sf_tm"></div><button class="btn sec sm" onclick="sfTm()">+ Add testimonial</button></div>
-    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save website</button>`;
+    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save storefront</button>`;
   drawTm();
 }
 async function sfUp(el, key, img) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
@@ -889,7 +895,7 @@ async function saveSf() {
   try {
     await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
     await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials });
-    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('Website saved');
+    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('Storefront saved');
   } catch (e) { $('#sf_e').textContent = e.message; }
 }
 
@@ -950,9 +956,28 @@ async function appointments() {
 async function dashOther() {
   const d = await api('dashboardOther'), tile = (n, l) => `<div class="card" style="text-align:center"><div style="font-size:30px;font-weight:800">${n}</div><div class="mute">${l}</div></div>`;
   const t = ME.businessType === 'real_estate' ? [[d.listings, 'Active listings'], [d.inquiries.length, 'Inquiries'], [d.inquiries.filter(q => q.status === 'New').length, 'New inquiries'], [d.inquiries.filter(q => q.status === 'Viewing').length, 'Viewings']]
-    : [[d.services, 'Services'], [d.appointments.length, 'Appointments'], [d.appointments.filter(a => a.status === 'Pending').length, 'Pending'], [d.appointments.filter(a => a.status === 'Done').length, 'Done']];
+    : [[d.services, 'Services'], [d.products, 'Products'], [d.appointments.length, 'Appointments'], [d.appointments.filter(a => a.status === 'Pending').length, 'Pending'], [d.appointments.filter(a => a.status === 'Done').length, 'Done']];
   $('#main').innerHTML = head('Dashboard', IND_NAME[ME.businessType] || '') + '<div class="g3" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">' + t.map(x => tile(x[0], x[1])).join('') + '</div>';
 }
+
+/* ===== Other business: products ===== */
+let PE = null;
+async function products() {
+  const l = await api('products');
+  $('#main').innerHTML = head('My Products', 'Things you sell. Guests see them on your website and contact you to order.', '<button class="btn" onclick="editProduct()">+ New product</button>') + '<div id="pf"></div>' +
+    (l.map(x => `<div class="card"><div class="row"><b>${esc(x.name)}</b><b>${peso(x.price)}</b></div><div class="mute">${x.stock === '' ? 'Always available' : esc(x.stock) + ' in stock'} · ${esc(x.description)}</div>
+      ${x.images[0] ? `<img src="${esc(x.images[0])}" alt="" style="height:60px;border-radius:8px;margin-top:6px">` : ''}
+      <div style="margin-top:6px"><button class="btn sec sm" onclick='editProduct(${JSON.stringify(x).replace(/'/g, '&#39;')})'>Edit</button> <button class="btn sec sm" onclick="if(confirm('Remove product?'))act('deleteProduct',{id:'${esc(x.id)}'})">✕</button></div></div>`).join('') || '<p class="mute">No products yet.</p>');
+}
+function editProduct(x) {
+  x = x || { name: '', description: '', price: 0, stock: '', images: [] }; PE = { ...x, images: (x.images || []).slice() };
+  $('#pf').innerHTML = `<div class="card"><h2>${x.id ? 'Edit' : 'New'} product</h2><label>Name</label><input id="pr_name" value="${esc(PE.name)}"><div class="g2"><div><label>Price (₱)</label><input id="pr_price" type="number" value="${esc(PE.price)}"></div><div><label>Stock (leave empty if unlimited)</label><input id="pr_stock" type="number" value="${esc(PE.stock)}"></div></div>
+    <label>Description</label><textarea id="pr_description" rows="3">${esc(PE.description)}</textarea><label>Photos</label><div id="pr_th" class="row" style="justify-content:flex-start;gap:6px;flex-wrap:wrap"></div><input type="file" accept="image/*" multiple onchange="prUp(this)"><div class="err" id="pr_e"></div>
+    <button class="btn" onclick="saveProd()">Save product</button> <button class="btn sec" onclick="load()">Cancel</button></div>`; drawPTh(); $('#pf').scrollIntoView();
+}
+function drawPTh() { $('#pr_th').innerHTML = PE.images.map((s, i) => `<div><img src="${esc(s)}" style="height:60px;border-radius:8px"><br><a href="#" onclick="PE.images.splice(${i},1);drawPTh();return false">remove</a></div>`).join(''); }
+async function prUp(el) { for (const f of [...el.files]) { try { PE.images.push(await api('uploadImage', { data: await resize(f) })); drawPTh(); } catch (e) { $('#pr_e').textContent = e.message; } } el.value = ''; }
+async function saveProd() { try { await api('saveProduct', { id: PE.id, images: PE.images, name: $('#pr_name').value, price: $('#pr_price').value, stock: $('#pr_stock').value, description: $('#pr_description').value }); load(); } catch (e) { $('#pr_e').textContent = e.message; } }
 
 </script>
 </body>

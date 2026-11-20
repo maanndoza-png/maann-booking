@@ -83,6 +83,13 @@ aside button.nv.mobonly{display:none}
   .pw button,button[onclick*="togglePw"],#lform button.mute,.pwwrap button{min-height:40px;min-width:48px}
 }
 </style>
+<style id="needcss">
+.need{border-color:#ff3b3b!important;box-shadow:0 0 0 2px rgba(255,59,59,.28),0 0 12px 2px rgba(255,59,59,.55);animation:needglow 1.3s ease-in-out infinite alternate;border-radius:10px}
+@keyframes needglow{from{box-shadow:0 0 0 1px rgba(255,59,59,.2),0 0 4px 0 rgba(255,59,59,.35)}to{box-shadow:0 0 0 2px rgba(255,59,59,.45),0 0 18px 4px rgba(255,59,59,.85)}}
+div.need{padding:8px}
+.needct{display:inline-block;margin-left:8px;font:700 12px system-ui;padding:3px 9px;border-radius:20px;vertical-align:middle;background:#ff3b3b;color:#fff;animation:needglow 1.3s ease-in-out infinite alternate}
+.needct.ok{background:#2e8b57;animation:none;box-shadow:none}
+</style>
 </head>
 <body>
 <div id="login"><div class="card"><h2 id="lt">Sign in</h2>
@@ -940,12 +947,15 @@ function fbNorm(u) { u = String(u || '').trim(); if (!u) return ''; if (!/^https
 async function fbSyncRun(url, setMsg) {
   url = fbNorm(url); if (!/^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//i.test(url)) throw new Error('Please paste your facebook.com page link.');
   setMsg('Reading your Facebook page…'); const r = await api('fbSync', { url }); if (!r.ok) throw new Error(r.reason || 'Could not read that page.');
-  setMsg('Pre-filling your website…'); const m = await api('me'), st = m.site || {}; let bg = st.bgUrl || '';
-  if (!bg && r.image) { try { bg = await api('uploadImage', { data: r.image }); } catch (e) { } }
-  const desc = String(r.description || '').replace(/^[^.]*\.\s*[\d,]+\s+(followers|likes)[^.]*\.\s*/i, '').trim(), first = (desc.split(/(?<=[.!?])\s/)[0] || '').slice(0, 120), so = { ...(m.socials || {}) }; if (!so.facebook) so.facebook = url;
+  setMsg('Pre-filling your website…'); const m = await api('me'), st = m.site || {}; let logo = m.logoUrl || '', filled = [];
+  if (!logo && r.image) { try { logo = await api('uploadImage', { data: r.image }); filled.push('logo'); } catch (e) { } }
+  const desc = String(r.description || '').replace(/^[^.]*\.\s*[\d,]+\s+(followers|likes)[^.]*\.\s*/i, '').trim(), first = (desc.split(/(?<=[.!?])\s/)[0] || '').slice(0, 90), so = { ...(m.socials || {}) }; if (!so.facebook) so.facebook = url;
+  if (!so.website && /^https:\/\//.test(r.website || '')) { so.website = r.website; filled.push('website'); }
   if (!m.businessName && r.name) await api('saveProfile', { name: ME.name, businessName: r.name, phone: ME.phone, paymentInfo: ME.paymentInfo });
-  await api('saveStorefront', { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', tagline: m.tagline || first, about: m.about || desc, contactPhone: m.contactPhone || '', contactEmail: m.contactEmail || '', socials: so, testimonials: m.testimonials || [], site: { ...st, bgUrl: bg, fbUrl: url } });
-  SYNC_NOTE = `We read <b>${esc(r.name || 'your page')}</b> and pre-filled your website. Check each part, pick a hook, then press Save My Website.`; return r;
+  if (!m.businessName && r.name || r.name) filled.push('name');
+  if (!m.tagline && first) filled.push('tagline'); if (!m.about && desc) filled.push('about'); if (!m.contactPhone && r.phone) filled.push('phone'); if (!m.contactEmail && r.email) filled.push('email');
+  await api('saveStorefront', { logoUrl: logo, ownerPhotoUrl: m.ownerPhotoUrl || '', tagline: m.tagline || first, about: m.about || desc, contactPhone: m.contactPhone || r.phone || '', contactEmail: m.contactEmail || r.email || '', socials: so, testimonials: m.testimonials || [], site: { ...st, fbUrl: url, chatMessenger: st.chatMessenger || '' }, inquiryEmail: m.inquiryEmail || r.email || '' });
+  SYNC_NOTE = `We read <b>${esc(r.name || 'your page')}</b> and copied what Facebook shows publicly (${[...new Set(filled)].join(', ') || 'page name'}). The parts glowing <b style="color:#ff4d4d">red</b> still need you. Facebook hides some details (phone, email) for many pages.`; return r;
 }
 function showSyncStep() {
   const d = document.createElement('div'); d.id = 'syncstep'; d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto';
@@ -965,14 +975,14 @@ async function storefront() {
   SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', bgUrl: st.bgUrl || '', testimonials: (m.testimonials || []).map(t => ({ name: t.name || '', text: t.text || '', photo: t.photo || '' })), why: [0, 1, 2].map(i => (st.why || [])[i] || { title: '', text: '' }) };
   const so = m.socials || {}; loadAdminFonts(); const note = SYNC_NOTE; SYNC_NOTE = '';
   const c1 = /^#[0-9a-fA-F]{6}$/.test(st.color1 || '') ? st.color1 : '#d4a62a', c2 = /^#[0-9a-fA-F]{6}$/.test(st.color2 || '') ? st.color2 : '#0b1226';
-  $('#main').innerHTML = head('My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') +
+  $('#main').innerHTML = head('My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') + '<div class="card" id="sf_sum" style="position:sticky;top:60px;z-index:5;padding:8px 14px"></div>' +
     `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button><button class="btn sec sm" style="width:auto;white-space:nowrap" onclick="noPageYet()">No Page yet</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
     `+
-    `<div class="card"><h2>1 · Logo, hero &amp; hook</h2><label>Logo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
+    `<div class="card"><h2>1 · Logo, hero &amp; hook</h2><label>Logo</label><div class="row" id="need_logo" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
     <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}">
     <label>Tagline statement</label><div class="mute">Shows in the <b>upper right</b> of your website, a little smaller than your company name, in tagline style. Use *stars* for your accent font.</div><input id="sf_t" maxlength="90" value="${esc(m.tagline)}" placeholder="e.g. Your *calm* corner of Tagaytay">
     <label>Hero photo (big picture at the top of your website)</label><div class="mute">Best size: <b>1920 × 1080 px</b> (landscape), JPG or PNG. Choose a bright, sharp photo.</div>
-    <div class="row" style="justify-content:flex-start;gap:10px;margin-top:6px"><img id="sf_bg" style="height:70px;border-radius:8px;display:${SF.bgUrl ? 'block' : 'none'}" src="${esc(SF.bgUrl)}"><input type="file" accept="image/*" onchange="sfBg(this)"></div><div class="mute" id="sf_bgn"></div>
+    <div class="row" id="need_bg" style="justify-content:flex-start;gap:10px;margin-top:6px"><img id="sf_bg" style="height:70px;border-radius:8px;display:${SF.bgUrl ? 'block' : 'none'}" src="${esc(SF.bgUrl)}"><input type="file" accept="image/*" onchange="sfBg(this)"></div><div class="mute" id="sf_bgn"></div>
     <label>Photo style</label><select id="sf_hst">${[['soft', 'Soft & dreamy'], ['warm', 'Warm golden glow'], ['moody', 'Dark & moody'], ['bright', 'Fresh & bright']].map(([k, l]) => `<option value="${k}" ${(st.heroStyle || 'soft') === k ? 'selected' : ''}>${l}</option>`).join('')}</select>
     <label>Strong hook statement</label><div class="mute">Pick one of the 3 angles below, or write your own. Put <b>*stars*</b> around a word to show it in your accent font.</div><div id="sf_hkc"></div>
     <label>Your hook (edit it or write your own)</label><textarea id="sf_hk" rows="2" maxlength="140" oninput="drawHooks()" placeholder="e.g. The calmest escape, *45 minutes* from the city">${esc(st.hook || '')}</textarea>
@@ -984,30 +994,49 @@ async function storefront() {
     <div class="card"><h2>4 · Why Us — your 3 signature steps</h2><div class="mute">Three simple steps that show customers how you work and why you stand out.</div><label>Section title</label><input id="sf_wt" maxlength="60" value="${esc(st.whyTitle || '')}" placeholder="Why choose us">
     ${[0, 1, 2].map(i => `<div class="g2" style="margin-top:8px"><div><label>Step ${i + 1} title</label><input id="sf_w${i}t" maxlength="60" value="${esc(SF.why[i].title)}" placeholder="${['Tell us what you need', 'We take care of everything', 'Enjoy the result'][i]}"></div><div><label>Step ${i + 1} description</label><input id="sf_w${i}d" maxlength="240" value="${esc(SF.why[i].text)}"></div></div>`).join('')}</div>
     <div class="card"><h2>5 · Mission &amp; Vision</h2><label>Mission</label><textarea id="sf_mi" rows="3" maxlength="600">${esc(st.mission || '')}</textarea><label>Vision</label><textarea id="sf_vi" rows="3" maxlength="600">${esc(st.vision || '')}</textarea></div>
-    <div class="card"><h2>6 · Testimonials</h2><div class="mute">Add a photo of the customer for more trust.</div><div id="sf_tm"></div><button class="btn sec sm" onclick="sfTm()">+ Add testimonial</button></div>
-    <div class="card"><h2>7 · Meet the owner</h2><label>Owner photo</label><div class="row" style="justify-content:flex-start;gap:10px"><img id="sf_ph" style="height:80px;width:80px;border-radius:50%;object-fit:cover;display:${SF.ownerPhotoUrl ? 'block' : 'none'}" src="${esc(SF.ownerPhotoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'ownerPhotoUrl','sf_ph',900)"></div>
+    <div class="card"><h2>6 · Testimonials</h2><div class="mute">Add a photo of the customer for more trust.</div><div id="need_tm"><div id="sf_tm"></div><button class="btn sec sm" onclick="sfTm()">+ Add testimonial</button></div></div>
+    <div class="card"><h2>7 · Meet the owner</h2><label>Owner photo</label><div class="row" id="need_ph" style="justify-content:flex-start;gap:10px"><img id="sf_ph" style="height:80px;width:80px;border-radius:50%;object-fit:cover;display:${SF.ownerPhotoUrl ? 'block' : 'none'}" src="${esc(SF.ownerPhotoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'ownerPhotoUrl','sf_ph',900)"></div>
     <label>Owner name (heading)</label><input id="sf_on" maxlength="80" value="${esc(st.ownerName || m.name || '')}">
     <div class="g3"><div><label>Salutation / title</label><input id="sf_sa" maxlength="40" value="${esc(st.salutation || '')}" placeholder="e.g. Licensed Broker"></div><div><label>License no.</label><input id="sf_li" maxlength="80" value="${esc(st.license || '')}" placeholder="e.g. PRC Lic. 12345"></div><div><label>Contact number</label><input id="sf_cp" value="${esc(m.contactPhone)}"></div></div>
     <label>About you / your business</label><textarea id="sf_a" rows="5">${esc(m.about)}</textarea><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}">
-    <h3 style="margin:14px 0 0">Live chat with customers</h3><div class="mute">Customers get a chat button on your website to talk to you in real time.</div>
+    <h3 style="margin:14px 0 0">Live chat with customers</h3><div class="mute">Customers get a chat button on your website to talk to you in real time.</div><div id="need_chat">
     <label>Messenger: your Facebook Page link or username</label><input id="sf_msg" placeholder="facebook.com/yourpage" value="${esc(st.chatMessenger || (st.fbUrl ? msgFrom(st.fbUrl) : '') || msgFrom(so.facebook || ''))}">
-    <label class="chk" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="sf_mob" ${st.chatMobile ? 'checked' : ''} style="width:auto"> Also let customers call, text or Viber my contact number (above)</label>
+    <label class="chk" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="sf_mob" ${st.chatMobile ? 'checked' : ''} style="width:auto"> Also let customers call, text or Viber my contact number (above)</label></div>
     <h3 style="margin:14px 0 0">Social media accounts</h3><div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
     <div class="card"><h2>8 · Inquiry email</h2><div class="mute">The email where you want to receive customer inquiries. Every inquiry also shows in your <b>Inquiries</b> tab.</div><label>Email for inquiries</label><input id="sf_iq" type="email" value="${esc(m.inquiryEmail || m.email || '')}" placeholder="you@email.com"></div>
     <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: ME.ownerId }))}">👁 Preview my website</a>`;
-  drawTm(); drawHooks();
+  drawTm(); drawHooks(); refreshNeeds();
+  if (!$('#main')._nd) { $('#main')._nd = 1; ['input', 'change'].forEach(ev => $('#main').addEventListener(ev, () => refreshNeeds())); }
 }
 function msgFrom(v) { return msgName(v); }
+function refreshNeeds() {
+  const main = $('#main'); if (!main || !$('#sf_b')) return;
+  const val = id => String(($('#' + id) || {}).value || '').trim(), mark = (el, bad) => { if (el) el.classList.toggle('need', !!bad); };
+  const inp = id => $('#' + id);
+  ['sf_b', 'sf_t', 'sf_hk', 'sf_mi', 'sf_vi', 'sf_on', 'sf_cp', 'sf_a', 'sf_ce', 'sf_iq'].forEach(id => mark(inp(id), !val(id)));
+  [0, 1, 2].forEach(i => { mark(inp('sf_w' + i + 't'), !val('sf_w' + i + 't')); mark(inp('sf_w' + i + 'd'), !val('sf_w' + i + 'd')); });
+  mark($('#need_logo'), !SF.logoUrl); mark($('#need_bg'), !SF.bgUrl); mark($('#need_ph'), !SF.ownerPhotoUrl);
+  mark($('#need_tm'), !SF.testimonials.some(t => (t.text || '').trim()));
+  mark($('#need_chat'), !val('sf_msg') && !($('#sf_mob') || {}).checked);
+  mark(inp('sf_s_facebook'), !val('sf_s_facebook') && !val('sf_s_instagram') && !val('sf_s_tiktok') && !val('sf_s_youtube') && !val('sf_s_website'));
+  let total = 0; main.querySelectorAll('.card').forEach(c => {
+    const n = c.querySelectorAll('.need').length, h = c.querySelector('h2'); if (!h || !c.querySelector('[id^=sf_],[id^=need_]')) return; total += n;
+    let b = h.querySelector('.needct'); if (!b) { b = document.createElement('span'); b.className = 'needct'; h.appendChild(b); }
+    b.className = 'needct' + (n ? '' : ' ok'); b.textContent = n ? n + ' to fill' : '✓ done';
+  });
+  const s = $('#sf_sum'); if (s) { s.innerHTML = total ? `<div class="row" style="gap:8px"><span><b style="color:#ff4d4d">${total} to fill</b> · <span class="mute">red glowing boxes</span></span><button class="btn sm" style="width:auto;min-height:38px;padding:6px 14px" onclick="needNext()">Next ↓</button></div>` : '<b style="color:#2e8b57">✓ Everything is filled in.</b> Press Save My Website.'; }
+}
+function needNext() { const e = document.querySelector('#main .need'); if (e) e.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
 function sfPal(a, b) { $('#sf_c1').value = a; $('#sf_c2').value = b; }
-async function sfUp(el, key, img, max) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], max || 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
+async function sfUp(el, key, img, max) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], max || 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; refreshNeeds(); } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
 function sfBg(el) {
   const f = el.files[0]; if (!f) return; const u = URL.createObjectURL(f), im = new Image();
   im.onload = async () => { URL.revokeObjectURL(u); $('#sf_bgn').textContent = im.width < 1280 ? `⚠ This photo is ${im.width}×${im.height}px. It may look blurry — 1920×1080 is best.` : `✓ ${im.width}×${im.height}px — good size (saved as max 1920px wide).`; await sfUp(el, 'bgUrl', 'sf_bg', 1920); };
   im.onerror = () => { $('#sf_e').textContent = 'That file is not a picture.'; }; im.src = u;
 }
-function drawTm() { $('#sf_tm').innerHTML = SF.testimonials.map((t, i) => `<div class="card" style="margin:8px 0"><div class="row" style="justify-content:flex-start;gap:10px"><img src="${esc(t.photo)}" style="height:48px;width:48px;border-radius:50%;object-fit:cover;display:${t.photo ? 'block' : 'none'}"><input type="file" accept="image/*" onchange="tmUp(this,${i})"></div><div class="g2" style="margin-top:6px"><input placeholder="Customer name" value="${esc(t.name)}" oninput="SF.testimonials[${i}].name=this.value"><div style="display:flex;gap:6px"><input placeholder="What they said" value="${esc(t.text)}" oninput="SF.testimonials[${i}].text=this.value"><button class="btn sec sm" onclick="SF.testimonials.splice(${i},1);drawTm()">✕</button></div></div></div>`).join('') || '<p class="mute">No testimonials yet.</p>'; }
+function drawTm() { $('#sf_tm').innerHTML = SF.testimonials.map((t, i) => `<div class="card" style="margin:8px 0"><div class="row" style="justify-content:flex-start;gap:10px"><img src="${esc(t.photo)}" style="height:48px;width:48px;border-radius:50%;object-fit:cover;display:${t.photo ? 'block' : 'none'}"><input type="file" accept="image/*" onchange="tmUp(this,${i})"></div><div class="g2" style="margin-top:6px"><input placeholder="Customer name" value="${esc(t.name)}" oninput="SF.testimonials[${i}].name=this.value"><div style="display:flex;gap:6px"><input placeholder="What they said" value="${esc(t.text)}" oninput="SF.testimonials[${i}].text=this.value"><button class="btn sec sm" onclick="SF.testimonials.splice(${i},1);drawTm();refreshNeeds()">✕</button></div></div></div>`).join('') || '<p class="mute">No testimonials yet.</p>'; }
 async function tmUp(el, i) { if (!el.files[0]) return; try { SF.testimonials[i].photo = await api('uploadImage', { data: await resize(el.files[0], 300) }); drawTm(); } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
-function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '', photo: '' }); drawTm(); }
+function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '', photo: '' }); drawTm(); refreshNeeds(); }
 async function saveSf() {
   const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value); $('#sf_e').textContent = '';
   const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, font3: $('#sf_f3').value, chatMessenger: $('#sf_msg').value, chatMobile: $('#sf_mob').checked, heroStyle: $('#sf_hst').value, fbUrl: ($('#sf_fu') || {}).value || '', ctaText: $('#sf_cta').value, hook: $('#sf_hk').value, hookSub: $('#sf_hs').value, whyTitle: $('#sf_wt').value,

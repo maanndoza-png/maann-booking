@@ -147,7 +147,7 @@ body.themed #foot a,body.themed main>div>a{color:var(--bgInk)!important}
 
 header.row{gap:14px}
 header .tagl{margin-left:auto;text-align:right;font:italic 400 15px/1.3 var(--bf,inherit);letter-spacing:.6px;color:#e6ebf7;max-width:340px}
-header .tagm{display:none;font:italic 12px var(--bf,inherit);color:#aab4cf}
+header .tagm{display:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font:italic 12px var(--bf,inherit);color:#aab4cf}
 header .tagl .ac,header .tagm .ac{font-style:normal;color:var(--gold)}
 @media(max-width:760px){header .tagl{display:none}header .tagm{display:block}}
 #hero .t p{display:none}
@@ -162,10 +162,53 @@ header .tagl .ac,header .tagm .ac{font-style:normal;color:var(--gold)}
 #chatfab>button{background:#0084ff;color:#fff;border:0;border-radius:40px;padding:14px 20px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.3)}
 #chatpanel{display:none;position:absolute;right:0;bottom:56px;width:270px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 18px 44px rgba(0,0,0,.3)}
 #chatpanel.on{display:block}#chatpanel .chbtns{flex-direction:column}#chatpanel .chbtns a{justify-content:center}
+
+#chatpanel{position:fixed;right:16px;bottom:78px;z-index:16}
+#mbar{display:none}
+.dsk{display:inline}.mob{display:none}
+@media(max-width:640px){
+  .dsk{display:none}.mob{display:inline}
+  header,header.row{padding:10px 12px;gap:8px;flex-wrap:nowrap}
+  header>div:first-child{flex:1;min-width:0;overflow:hidden}
+  header>div:first-child>div{min-width:0;overflow:hidden}
+  header h1{font-size:15px;letter-spacing:.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  header img#logo{height:34px!important}
+  header .btn.sec,#acct .btn,#acct button{width:auto!important;padding:9px 11px!important;font-size:13px!important;min-height:40px}
+  #acct{margin-left:0!important}
+  #hero{min-height:430px}
+  #hero .t{margin:22px 14px;padding:30px 20px;border-radius:24px}
+  #hero .t h2{font-size:34px}
+  main{padding:12px}
+  .coll{margin:22px 0 14px}.coll h2{font-size:24px}
+  #hook{margin:24px auto 4px}
+  .steps{grid-template-columns:1fr;gap:10px}
+  .step{display:grid;grid-template-columns:48px 1fr;gap:2px 14px;text-align:left;padding:16px}
+  .step i{grid-row:1/3;margin:0;width:44px;height:44px;font-size:19px;align-self:center}
+  .mv>div{padding:20px 18px}
+  .cband{margin:24px 0;padding:26px 18px}
+  .shr,.acts .btn,.btn{min-height:46px}
+  .owner{padding:20px 16px}.owner>img,.owner .nophoto{width:150px;height:150px}.owner h3{font-size:24px}
+  .owner .sub a,#foot a,main>div>a{display:inline-block;padding:12px 4px}
+  .soc a{width:48px;height:48px}
+  .chatsec{padding:22px 14px}.chbtns a{padding:14px 18px;min-height:46px}
+  #chatfab{display:none}
+  #mbar{display:flex;gap:8px;position:fixed;left:0;right:0;bottom:0;z-index:15;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--c2);box-shadow:0 -8px 24px rgba(0,0,0,.25)}
+  #mbar .btn{flex:1;width:auto;border-radius:14px;padding:12px}
+  #mbar .btn.sec{flex:0 0 auto;width:auto;background:#0084ff;color:#fff;border:0}
+  #chatpanel{left:12px;right:12px;width:auto;bottom:74px}
+  body{padding-bottom:76px}
+  .sheet{max-height:96vh;padding:14px 14px calc(14px + env(safe-area-inset-bottom))}
+  .x{width:42px;height:42px}
+  .d{padding:13px 0}
+  .cal button.n{width:46px;height:46px}.stepper button{width:46px;height:46px}
+  .chk{min-height:44px}.chk input[type=checkbox]{width:22px;height:22px}
+  input[type=file],input[type=text],input[type=email],input[type=tel],input[type=number],textarea,select{font-size:16px!important}
+  .stat{padding:8px 4px}
+}
 </style>
 </head>
 <body>
-<header class="row"><div style="display:flex;align-items:center;gap:10px"><img id="logo" alt="" style="display:none;height:38px;border-radius:8px"><div><h1 id="brand">Booking</h1><div class="tagm" id="tagm"></div></div></div><div class="tagl" id="tag"></div><button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openLookup()">Check my booking</button><span id="acct" style="margin-left:8px"></span></header>
+<header class="row"><div style="display:flex;align-items:center;gap:10px"><img id="logo" alt="" style="display:none;height:38px;border-radius:8px"><div><h1 id="brand">Booking</h1><div class="tagm" id="tagm"></div></div></div><div class="tagl" id="tag"></div><button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openLookup()"><span class="dsk">Check my booking</span><span class="mob">My booking</span></button><span id="acct" style="margin-left:8px"></span></header>
 <div id="hero" style="display:none"></div>
 <main><div id="hook"></div><div id="promo" style="display:none"></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">No units available yet.</div><div id="cta1"></div><div id="why"></div><div id="mv"></div><div id="cta2"></div><div id="reviews"></div><section id="about" style="display:none"></section><div id="chat"></div><div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
 
@@ -562,11 +605,17 @@ function chatLinks(H) {
   if (SI.chatMobile && ph) { out.push(['cl', '📞 Call', 'tel:' + ph]); out.push(['tx', '✉️ Text', 'sms:' + ph]); out.push(['vb', 'Viber', 'viber://chat?number=%2B' + intl]); }
   return out;
 }
+function toggleChat() { const p = document.getElementById('chatpanel'); if (p) p.classList.toggle('on'); }
+function drawMbar(label) {
+  let m = document.getElementById('mbar'); if (!m) { m = document.createElement('div'); m.id = 'mbar'; document.body.appendChild(m); }
+  m.innerHTML = `<button class="btn" onclick="CTA_GO()">${esc(label)}</button>` + (window.HAS_CHAT ? '<button class="btn sec" onclick="toggleChat()">💬 Chat</button>' : '');
+}
 function drawChat(H) {
   const L = chatLinks(H); if (!L.length) return;
   const btns = L.map(x => `<a class="${x[0]}" href="${esc(x[2])}"${x[3] ? ' target="_blank" rel="noopener"' : ''}>${x[1]}</a>`).join('');
   $('#chat').innerHTML = `<div class="chatsec"><h3>Talk to the owner in real time</h3><p>Have a question? Message us now and we will reply as soon as we can.</p><div class="chbtns">${btns}</div></div>`;
-  if (!document.getElementById('chatfab')) { const d = document.createElement('div'); d.id = 'chatfab'; d.innerHTML = `<div id="chatpanel"><b>Chat with the owner</b><div class="chbtns" style="margin-top:10px">${btns}</div></div><button onclick="document.getElementById('chatpanel').classList.toggle('on')">💬 Chat</button>`; document.body.appendChild(d); }
+  if (!document.getElementById('chatfab')) { const d = document.createElement('div'); d.id = 'chatfab'; d.innerHTML = `<button onclick="toggleChat()">💬 Chat</button>`; document.body.appendChild(d); const pn = document.createElement('div'); pn.id = 'chatpanel'; pn.innerHTML = `<b>Chat with the owner</b><div class="chbtns" style="margin-top:10px">${btns}</div>`; document.body.appendChild(pn); }
+  window.HAS_CHAT = true;
 }
 function drawSite(H, hid) {
   const SI = (H && H.site) || {}, https = u => /^https:\/\//.test(u || '');
@@ -578,7 +627,7 @@ function drawSite(H, hid) {
   const sub = bt === 'real_estate' ? 'Tell us what you are looking for.' : bt === 'business' ? 'Pick what you need and we will take it from here.' : 'Pick your dates and secure your stay.';
   const cta = '<div class="cband"><h3>Ready when you are</h3><p>' + esc(sub) + '</p><button class="btn" onclick="CTA_GO()">' + esc(label) + '</button></div>';
   const hc = document.querySelector('#hero .cta'); if (hc) { hc.textContent = label.toUpperCase(); hc.setAttribute('onclick', 'CTA_GO()'); }
-  if (!H) return;
+  if (!H) { drawMbar(label); return; }
   if (SI.hook) $('#hook').innerHTML = '<h2>' + emphF(esc(SI.hook)) + '</h2>' + (SI.hookSub ? '<p>' + emphF(esc(SI.hookSub)) + '</p>' : '');
   const W = (SI.why || []).filter(w => w && (w.title || w.text));
   if (hasL || hasS || hasP || DATA.units.length) $('#cta1').innerHTML = cta;
@@ -586,7 +635,7 @@ function drawSite(H, hid) {
   if (SI.mission || SI.vision) { $('#mv').innerHTML = '<div class="mv">' + (SI.mission ? `<div><small>OUR MISSION</small><h3>Mission</h3><p>${emphF(esc(SI.mission))}</p></div>` : '') + (SI.vision ? `<div><small>OUR VISION</small><h3>Vision</h3><p>${emphF(esc(SI.vision))}</p></div>` : '') + '</div>'; if (hasL || hasS || hasP || DATA.units.length) $('#cta2').innerHTML = cta; }
   const T = Array.isArray(H.testimonials) ? H.testimonials.filter(t => t && t.text) : [];
   if (T.length) $('#reviews').innerHTML = '<div class="coll" style="grid-column:1/-1"><small>TESTIMONIALS</small><h2>What our customers say</h2></div>' + T.map(t => `<div class="q">${https(t.photo) ? `<img src="${esc(t.photo)}" alt="">` : ''}“${esc(t.text)}”<b>— ${esc(t.name || 'Customer')}</b></div>`).join('');
-  drawChat(H);
+  drawChat(H); drawMbar(label);
   const so = H.socials || {}, L = ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].filter(k => https(so[k]));
   const name = SI.ownerName || H.hostName || H.businessName || '';
   if (H.about || H.ownerPhotoUrl || H.contactPhone || H.contactEmail || L.length || SI.salutation || SI.license || SI.ownerName) {

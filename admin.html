@@ -60,6 +60,28 @@ svg .grid{stroke:var(--line);stroke-width:1}svg .ax{fill:var(--mute);font-size:1
 .ev.C{background:#0f3b2a;color:#5ee0a4}.ev.P{background:#4a3b0b;color:#ffd666}.ev.K{background:#2a2f3e;color:#aab2c5}
 [data-theme=light] .ev.C{background:#d8f1e2;color:#1d6b40}[data-theme=light] .ev.P{background:#fff1c9;color:#7a5a00}[data-theme=light] .ev.K{background:#e6e6e6;color:#555}
 @media(max-width:900px){aside{transform:translateX(-100%)}aside.open{transform:none}.top{padding-left:16px}main{padding-left:16px}#burger{display:inline-block}.g{grid-template-columns:1fr}.g3{grid-template-columns:1fr 1fr}}
+aside button.nv.mobonly{display:none}
+@media(max-width:700px){
+  .deskonly{display:none!important}aside button.nv.mobonly{display:flex;margin-top:10px;border-top:1px solid var(--line);border-radius:0 0 10px 10px}
+  .top{padding:8px 10px;gap:6px;flex-wrap:nowrap}
+  #clk{display:none}
+  .top .r{display:flex;gap:6px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;min-width:0}
+  .top .r::-webkit-scrollbar{display:none}
+  .pill{padding:10px 13px;min-height:44px;white-space:nowrap;display:inline-flex;align-items:center;flex:0 0 auto}
+  #indp{max-width:150px;overflow:hidden;text-overflow:ellipsis}
+  aside{width:84vw;max-width:310px}
+  aside button.nv{padding:15px 12px;font-size:15px;min-height:48px}
+  main{padding:12px 12px 90px}
+  main h1{font-size:25px}
+  input,select,textarea{font-size:16px!important}
+  .btn{min-height:46px}.btn.sm{min-height:42px}
+  .g2,.g3{grid-template-columns:1fr}
+  table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .card{padding:14px}
+  input[type=file]{padding:10px}
+  input[type=checkbox]{width:22px;height:22px}
+  .pw button,button[onclick*="togglePw"],#lform button.mute,.pwwrap button{min-height:40px;min-width:48px}
+}
 </style>
 </head>
 <body>
@@ -72,10 +94,10 @@ svg .grid{stroke:var(--line);stroke-width:1}svg .ax{fill:var(--mute);font-size:1
 
 <div id="app">
   <aside id="side"><div class="brand"><div class="logo">🏠</div><div><b id="bn">ADMIN</b><small>MANAGEMENT PORTAL</small></div></div><div id="nav"></div>
-    <div class="status"><span class="dot"></span><span id="st">Online &amp; Synced</span></div></aside>
+    <button class="nv mobonly" onclick="logout()">🚪 Log out</button><div class="status"><span class="dot"></span><span id="st">Online &amp; Synced</span></div></aside>
   <div class="top"><div><button class="pill" id="burger" onclick="$('#side').classList.toggle('open')">☰</button> <span class="pill" id="clk"></span></div>
-    <div class="r"><button class="pill" id="indp" onclick="go('industries')" style="display:none"></button><button class="pill" onclick="toggleTheme()">🌓</button><a class="pill" id="vs" href="#" target="_top" style="text-decoration:none">View site</a><button class="pill" onclick="logout()">Log out</button></div></div>
-  <main id="main"></main>
+    <div class="r"><button class="pill" id="indp" onclick="go('industries')" style="display:none"></button><button class="pill" onclick="toggleTheme()">🌓</button><a class="pill" id="vs" href="#" target="_top" style="text-decoration:none">View site</a><button class="pill deskonly" onclick="logout()">Log out</button></div></div>
+  <main id="main" onclick="$('#side').classList.remove('open')"></main>
 </div>
 
 <script>

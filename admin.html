@@ -92,10 +92,10 @@ div.need{padding:8px}
 </style>
 </head>
 <body>
-<div id="login"><div class="card"><h2 id="lt">Sign in</h2>
+<div id="login"><div class="card"><div id="lgo" style="text-align:center;margin:0 0 14px"></div><h2 id="lt">Sign in</h2>
 <div id="lform"><label>Email</label><input type="email" id="em" autocomplete="username"><label>Password</label><input type="password" id="pw" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()"><div class="err" id="le"></div><button class="btn" style="width:100%;margin-top:6px" onclick="login()">Sign in</button>
-<p class="mute" style="text-align:center;margin:14px 0 0">New host? <a href="#" onclick="showSignup(event)" style="color:var(--gold)">Create a host account</a></p></div>
-<div id="sform" style="display:none"><label>Your name</label><input id="sn" autocomplete="name"><label>Business / property name</label><input id="sb"><label>What will you use this app for?</label><select id="si"><option value="">— Select —</option><option value="business">💼 1. Other business</option><option value="real_estate">🏘️ 2. Property Listing</option><option value="staycation">🏠 3. Booking App (staycation)</option></select><div class="mute" style="margin:4px 0 8px">Choosing one locks the other two. You can pay later to unlock them.</div><label>Phone</label><input id="sp" type="tel"><label>Email</label><input id="se" type="email" autocomplete="email"><label>Password (min 8 characters)</label><input type="password" id="sw" autocomplete="new-password"><div class="err" id="sx"></div><button class="btn" style="width:100%;margin-top:6px" onclick="doSignup()">Request host account</button>
+<p class="mute" style="text-align:center;margin:14px 0 0">New host? <a href="#" onclick="showSignup(event)" style="color:var(--gold)">Create your account</a></p></div>
+<div id="sform" style="display:none"><label>Your name</label><input id="sn" autocomplete="name"><label>Business / property name</label><input id="sb"><label>What will you use this app for?</label><select id="si"><option value="">— Select —</option><option value="business">💼 1. Other business</option><option value="real_estate">🏘️ 2. Property Listing</option><option value="staycation">🏠 3. Booking App (staycation)</option></select><div class="mute" style="margin:4px 0 8px">Choosing one locks the other two. You can pay later to unlock them.</div><label>Phone</label><input id="sp" type="tel"><label>Email</label><input id="se" type="email" autocomplete="email"><label>Password (min 8 characters)</label><input type="password" id="sw" autocomplete="new-password"><div class="err" id="sx"></div><button class="btn" style="width:100%;margin-top:6px" onclick="doSignup()">Create my account</button>
 <p class="mute" style="text-align:center;margin:14px 0 0">Already have an account? <a href="#" onclick="showLogin(event)" style="color:var(--gold)">Sign in</a></p></div>
 </div></div>
 
@@ -209,6 +209,10 @@ async function loadMe() {
   if (p.role === 'staff') { const [o] = await A.sel('profiles', 'id=eq.' + p.owner_id + '&select=business_type,business_name'); _me.businessType = o && o.business_type; _me.businessName = o && o.business_name; }
   return _me;
 }
+async function hostMe(id) {
+  const [p] = await A.sel('profiles', 'id=eq.' + id + '&select=*'); if (!p) throw new Error('Host not found.');
+  return { id: p.id, name: p.name, businessName: p.business_name, businessType: p.business_type, logoUrl: p.logo_url, tagline: p.tagline, about: p.about, ownerPhotoUrl: p.owner_photo_url, contactPhone: p.contact_phone, contactEmail: p.contact_email, inquiryEmail: p.inquiry_email || '', socials: p.socials || {}, testimonials: p.testimonials || [], site: p.site || {} };
+}
 async function upPhoto(dataUrl, kind) {
   const blob = await dataUrlBlob(dataUrl); const ext = (blob.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg').replace(/[^a-z0-9]/gi, '');
   const path = A.uid + '/' + kind + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7) + '.' + ext;
@@ -241,7 +245,7 @@ async function dashboardStay(period) {
 }
 const SETKEYS = ['brand','tagline','accent','theme','paymentInfo','terms','minNights','logoUrl','contact','primaryText','secondaryBg','secondaryText','errorColor','headingFont','bodyFont','showHero','showPromo','showAmenities','showReviews','showUnits','heroImages','promoBanners','testimonials','seoTitle','seoKeywords','seoDescription','seoOgImage','allowHostSignup','allowGuestSignup','unlockPrice','unlockInstructions'];
 const H = {
-  async me() { return _me || loadMe(); },
+  async me() { if (ACT) return ACT.me; return _me || loadMe(); },
   url: async () => location.origin + location.pathname.replace(/[^/]*$/, ''),
   sync: async () => true, login: async () => true,
   async dashboard(p) { return dashboardStay(p.period || 'm12'); },
@@ -301,16 +305,24 @@ const H = {
     const url = v => { v = clean(v, 500); return /^https:\/\//.test(v) ? v : ''; };
     const tm = (p.testimonials || []).map(t => ({ name: clean(t.name, 60), text: clean(t.text, 400), photo: url(t.photo) })).filter(t => t.text).slice(0, 12);
     const st = p.site || {}, col = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '', FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System', 'Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura', 'Sacramento'];
-    const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '', font3: FONTS.indexOf(st.font3) >= 0 ? st.font3 : '', heroStyle: ['soft', 'warm', 'moody', 'bright'].indexOf(st.heroStyle) >= 0 ? st.heroStyle : 'soft', chatMessenger: msgName(st.chatMessenger), chatMobile: !!st.chatMobile, fbUrl: /^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//.test(st.fbUrl || '') ? clean(st.fbUrl, 300) : '',
+    const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '', font3: FONTS.indexOf(st.font3) >= 0 ? st.font3 : '', heroStyle: ['soft', 'warm', 'moody', 'bright'].indexOf(st.heroStyle) >= 0 ? st.heroStyle : 'soft', chatMessenger: msgName(st.chatMessenger), chatMobile: false, fbUrl: /^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//.test(st.fbUrl || '') ? clean(st.fbUrl, 300) : '',
       ctaText: clean(st.ctaText, 30), hook: clean(st.hook, 140), hookSub: clean(st.hookSub, 200), why: (st.why || []).slice(0, 3).map(w => ({ title: clean(w.title, 60), text: clean(w.text, 240) })), whyTitle: clean(st.whyTitle, 60),
       mission: clean(st.mission, 600), vision: clean(st.vision, 600), ownerName: clean(st.ownerName, 80), salutation: clean(st.salutation, 40), license: clean(st.license, 80) };
-    await A.upd('profiles', 'id=eq.' + A.uid, { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm, site, inquiry_email: (/^\S+@\S+\.\S+$/.test(clean(p.inquiryEmail, 160)) ? clean(p.inquiryEmail, 160) : '') });
+    const patch = { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm, site, inquiry_email: (/^\S+@\S+\.\S+$/.test(clean(p.inquiryEmail, 160)) ? clean(p.inquiryEmail, 160) : '') };
+    if (ACT) { if (p.businessName != null) patch.business_name = clean(p.businessName, 80); await A.rpc('admin_update_host', { p_host: ACT.id, p: patch }); ACT.me = await hostMe(ACT.id); return true; }
+    await A.upd('profiles', 'id=eq.' + A.uid, patch);
     _me = null; return true;
   },
   async team() { return ((await A.fn('manage-staff', { action: 'list' })).staff || []).map(s => ({ id: s.id, name: s.name, email: s.email, perms: s.perms, status: s.status, createdAt: s.created_at })); },
   async addStaff(p) { await A.fn('manage-staff', { action: 'add', name: p.name, email: p.email, password: p.password, perms: p.perms }); return true; },
   async setStaff(p) { await A.fn('manage-staff', { action: p.newPassword ? 'reset' : 'set', id: p.id, newPassword: p.newPassword, perms: p.perms, status: p.status }); return true; },
   async deleteStaff(p) { await A.fn('manage-staff', { action: 'remove', id: p.id }); return true; },
+  async setAccess(p) { await A.rpc('admin_set_access', { p_host: p.id, p_industry: p.industry, p_until: p.until || null, p_remove: !!p.remove }); return true; },
+  async hostAccess(p) { return A.sel('industry_access', 'owner_id=eq.' + p.id + '&select=industry,paid_until,source'); },
+  async redeemTrial(p) { return A.rpc('redeem_trial', { p_code: p.code, p_industry: p.industry || null }); },
+  async trialCodes() { return A.sel('trial_codes', 'order=created_at.desc&select=*'); },
+  async saveTrialCode(p) { await A.ins('trial_codes', { code: p.code, note: clean(p.note, 120), industries: p.industries || [], days: Math.max(1, Math.min(365, num(p.days) || 14)), max_uses: Math.max(1, Math.min(1000, num(p.maxUses) || 1)) }); return true; },
+  async setTrialCode(p) { await A.upd('trial_codes', 'code=eq.' + encodeURIComponent(p.code), { active: !!p.active }); return true; },
   async users() { return (await A.sel('profiles', 'role=in.(host,staff,admin)&order=created_at.desc&select=*')).map(u => ({ id: u.id, role: u.role, name: u.name, email: u.email, status: u.status, ownerId: u.owner_id, perms: u.perms, businessName: u.business_name, phone: u.phone, createdAt: String(u.created_at).slice(0, 16).replace('T', ' '), businessType: u.business_type })); },
   async setUserStatus(p) { await A.rpc('admin_set_user_status', { p_id: p.id, p_status: p.status }); return true; },
   // --- industries ---
@@ -389,7 +401,8 @@ PW = A.session ? 'sb' : ''; try { ME = JSON.parse(sessionStorage.getItem('me') |
 const canAct = () => ME.role !== 'staff' || ME.perms === 'bookings';
 
 const ALLTABS = [['dashboard','📈','Dashboard'],['bookings','🗓️','Bookings'],['expenses','🧾','Expenses'],['calendar','📅','Interactive Calendar'],['blocking','⛔','Manual Blocking'],['units','🏠','My Listings'],['addons','➕','Add-ons'],['holidays','🎉','Holiday Rates'],['listings','🏘️','Property Listings'],['inquiries','📨','Inquiries'],['services','🛎️','Services'],['products','📦','My Products'],['hours','🕒','Working Hours'],['appointments','📆','Appointments'],['storefront','🌐','My Website'],['industries','🔓','My Industries'],['amenities','🛋️','Amenities'],['settings','⚙️','System Settings'],['ux','🎨','UI / UX Control'],['users','👥','Users'],['unlocks','🔑','Unlock Requests'],['team','🧑‍🤝‍🧑','Team'],['profile','👤','My Profile']];
-let TABS = ALLTABS;
+let TABS = ALLTABS, ACT = null, ACT_NEXT = null;
+const indNow = () => (ACT ? ACT.me.businessType : ME.businessType), hostNow = () => (ACT ? ACT.id : ME.ownerId);
 function tabsFor() {
   const bt = ME.businessType;
   const byInd = { staycation: ['storefront','units','dashboard','bookings','expenses','calendar','blocking','addons','holidays','profile','team','industries'],
@@ -421,13 +434,16 @@ function applyTheme(S) {
 /* auth */
 function startSession(r) { PW = r.token; ME = r; try { sessionStorage.setItem('tok', PW); sessionStorage.setItem('me', JSON.stringify(r)); } catch (e) {} enter(); }
 if (PW) api('me').then(m => { ME = Object.assign(ME, m); enter(); }).catch(() => { PW = ''; try { sessionStorage.clear(); } catch (e) {} });
+(async () => { try { const j = await A.raw('/rest/v1/rpc/public_data', { anon: true, body: {} }), S = (j && j.settings) || {}, box = document.getElementById('lgo'); if (!box) return;
+  const u = /^https:\/\//.test(S.logoUrl || '') ? S.logoUrl : '';
+  box.innerHTML = u ? `<img src="${u.replace(/"/g, '')}" alt="" style="max-height:72px;max-width:70%;object-fit:contain">` : (S.brand ? `<div style="font:700 24px Georgia,serif;color:var(--gold)">${String(S.brand).replace(/[<>&"]/g, '')}</div>` : ''); } catch (e) {} })();
 async function login() { try { startSession(await rpc('authLogin', $('#em').value, $('#pw').value, 'admin')); } catch (e) { $('#le').textContent = e.message; } }
 async function logout() { await rpc('logout').catch(() => {}); try { sessionStorage.clear(); } catch (e) {} location.reload(); }
-function showSignup(ev) { if (ev) ev.preventDefault(); $('#lform').style.display = 'none'; $('#sform').style.display = 'block'; $('#lt').textContent = 'Create a host account'; }
+function showSignup(ev) { if (ev) ev.preventDefault(); $('#lform').style.display = 'none'; $('#sform').style.display = 'block'; $('#lt').textContent = 'Create your account'; }
 function showLogin(ev) { if (ev) ev.preventDefault(); location.reload(); }
 async function doSignup() {
   const d = { name: $('#sn').value, businessName: $('#sb').value, phone: $('#sp').value, businessType: $('#si').value, email: $('#se').value, password: $('#sw').value };
-  try { await rpc('signupHost', d); $('#sform').innerHTML = '<p>Your host account is ready. Sign in below with your email and password.</p><button class="btn" onclick="location.reload()">Back to sign in</button>'; }
+  try { await rpc('signupHost', d); $('#sform').innerHTML = '<p>Your account is ready. Sign in below with your email and password.</p><button class="btn" onclick="location.reload()">Back to sign in</button>'; }
   catch (e) { $('#sx').textContent = e.message; }
 }
 async function enter() {
@@ -440,7 +456,7 @@ async function enter() {
   $('#vs').href = siteLink('guest', ME.role === 'admin' ? '' : { host: ME.ownerId });
   go(TABS[0][0]);
 }
-function go(t) { tab = t; editing = null; calSel = null; $('#side').classList.remove('open');
+function go(t) { tab = t; ACT = (t === 'storefront' && ACT_NEXT) ? ACT_NEXT : null; ACT_NEXT = null; editing = null; calSel = null; $('#side').classList.remove('open');
   $('#nav').innerHTML = TABS.map(([k, i, l]) => `<button class="nv ${k === t ? 'on' : ''}" onclick="go('${k}')"><span>${i}</span>${l}</button>`).join(''); load(); }
 async function load() {
   $('#main').innerHTML = '<p class="mute">Loading…</p>';
@@ -755,16 +771,44 @@ async function users() {
   const grp = (role, title) => { const l = us.filter(u => u.role === role); return `<h2 style="margin:18px 0 8px">${title} (${l.length})</h2>` + (l.map(userCard).join('') || '<p class="mute">None yet.</p>'); };
   $('#main').innerHTML = head('Users', 'Approve hosts, manage staff and guests, reset passwords.') +
     `<div class="card"><h2>Sign-up settings</h2>${f('allowHostSignup', 'Allow new host sign-ups (you approve each one)')}${f('allowGuestSignup', 'Allow guest sign-ups')}<div class="err" id="ge"></div><button class="btn sm" onclick="saveSignup()">Save</button></div>` +
-    grp('host', 'Hosts') + grp('staff', 'Staff') + grp('guest', 'Guests');
+    '<div id="tc"></div>' + grp('host', 'Hosts') + grp('staff', 'Staff') + grp('guest', 'Guests'); drawTrials();
 }
+async function drawTrials() {
+  const L = await api('trialCodes').catch(() => []), box = $('#tc'); if (!box) return;
+  box.innerHTML = `<div class="card"><h2>🎟️ Free trial codes</h2><div class="mute">Give a code to a host. They enter it in My Industries to unlock an industry free for the days you set.</div>
+    <label>Note (who it is for)</label><input id="tc_n" placeholder="e.g. Ana, resort owner">
+    <div class="row" style="gap:8px"><div style="flex:1"><label>Days free</label><input id="tc_d" type="number" inputmode="numeric" value="14"></div><div style="flex:1"><label>Max uses</label><input id="tc_u" type="number" inputmode="numeric" value="1"></div></div>
+    <label>Industry</label><select id="tc_i"><option value="">Any (host chooses)</option>${INDUSTRIES.map(([k, n, ic]) => `<option value="${k}">${ic} ${esc(n)}</option>`).join('')}</select>
+    <div class="err" id="tc_e"></div><button class="btn" style="margin-top:6px" onclick="makeTrial()">Create code</button>
+    ${L.map(c => `<div class="row" style="padding:8px 0;border-top:1px solid #2a2f45"><span><b style="letter-spacing:1px;font-size:17px">${esc(c.code)}</b> <button class="btn sec sm" style="width:auto" onclick="copyLink('${esc(c.code)}')">Copy</button><br><span class="mute">${esc(c.note || '')} · ${c.days} days · ${c.uses}/${c.max_uses} used${c.industries && c.industries.length ? ' · ' + esc(c.industries.map(k => IND_NAME[k]).join(', ')) : ''}</span></span><button class="btn ${c.active ? 'sec' : 'ok'} sm" style="width:auto" onclick="toggleTrial('${esc(c.code)}',${!c.active})">${c.active ? 'Turn off' : 'Turn on'}</button></div>`).join('')}</div>`;
+}
+async function makeTrial() {
+  const ab = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', r = new Uint8Array(8); crypto.getRandomValues(r); const code = 'TRY-' + [...r].map(x => ab[x % ab.length]).join('');
+  try { const i = $('#tc_i').value; await api('saveTrialCode', { code, note: $('#tc_n').value, days: $('#tc_d').value, maxUses: $('#tc_u').value, industries: i ? [i] : [] }); toast('Code created'); drawTrials(); } catch (e) { $('#tc_e').textContent = e.message; }
+}
+async function toggleTrial(code, on) { try { await api('setTrialCode', { code, active: on }); drawTrials(); } catch (e) { alert(e.message); } }
 function userCard(u) {
   const id = esc(u.id);
   return `<div class="card"><div class="row"><b>${esc(u.name)}${u.businessName ? ' · ' + esc(u.businessName) : ''}</b>${stTag(u.status)}</div>
     <div class="mute">${esc(u.email)}${u.phone ? ' · ' + esc(u.phone) : ''} · joined ${esc(u.createdAt)}${u.role === 'host' ? ' · ' + (IND_NAME[u.businessType] || 'no industry') : ''}${u.role === 'staff' ? ' · ' + (u.perms === 'bookings' ? 'bookings access' : 'view only') + (u.ownerId && u.ownerId !== 'main' ? ' (host team)' : '') : ''}</div>
     <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
     ${u.status !== 'active' ? `<button class="btn ok sm" onclick="act('setUserStatus',{id:'${id}',status:'active'})">${u.status === 'pending' ? 'Approve' : 'Enable'}</button>` : `<button class="btn sec sm" onclick="act('setUserStatus',{id:'${id}',status:'disabled'})">Disable</button>`}
+    ${u.role === 'host' ? `<button class="btn sm" onclick="editHostSite('${id}')">✏️ Edit website</button><button class="btn sec sm" onclick="hostAccessCard('${id}')">🔓 Industries / trial</button><a class="btn sec sm" style="text-decoration:none" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: u.id }))}">👁 View site</a>` : ''}
     <button class="btn sec sm" onclick="resetPw('${id}')">Reset password</button>
-    <button class="btn bad sm" onclick="if(confirm('Delete this account${u.role === 'host' ? ' and unlist their units' : ''}? This cannot be undone.'))act('deleteUser',{id:'${id}'})">Delete</button></div></div>`;
+    <button class="btn bad sm" onclick="if(confirm('Delete this account${u.role === 'host' ? ' and unlist their units' : ''}? This cannot be undone.'))act('deleteUser',{id:'${id}'})">Delete</button></div><div id="ha_${id}"></div></div>`;
+}
+async function editHostSite(id) { try { ACT_NEXT = { id, me: await hostMe(id) }; go('storefront'); } catch (e) { alert(e.message); } }
+async function hostAccessCard(id) {
+  const box = $('#ha_' + id); if (box.innerHTML) { box.innerHTML = ''; return; }
+  const acc = await api('hostAccess', { id }), by = k => acc.find(x => x.industry === k);
+  box.innerHTML = '<div style="margin-top:10px;border-top:1px solid #2a2f45;padding-top:8px">' + INDUSTRIES.map(([k, n, ic]) => { const x = by(k), live = x && (!x.paid_until || Date.parse(x.paid_until) > Date.now());
+    return `<div class="row" style="padding:5px 0"><span>${ic} ${esc(n)} · <span class="mute">${x ? (live ? (x.paid_until ? 'until ' + esc(String(x.paid_until).slice(0, 10)) : 'no end date') : 'expired') + ' (' + esc(x.source || '') + ')' : 'locked'}</span></span>
+      <span style="display:flex;gap:4px;flex-wrap:wrap"><button class="btn sm" style="width:auto" onclick="setAcc('${id}','${k}',30)">+30 days</button><button class="btn sec sm" style="width:auto" onclick="setAcc('${id}','${k}',0)">Forever</button>${x ? `<button class="btn bad sm" style="width:auto" onclick="setAcc('${id}','${k}',-1)">Lock</button>` : ''}</span></div>`; }).join('') + '</div>';
+}
+async function setAcc(id, k, d) {
+  try { if (d < 0) await api('setAccess', { id, industry: k, remove: true }); else { const acc = (await api('hostAccess', { id })).find(x => x.industry === k), base = acc && acc.paid_until && Date.parse(acc.paid_until) > Date.now() ? Date.parse(acc.paid_until) : Date.now();
+      await api('setAccess', { id, industry: k, until: d === 0 ? null : new Date(base + d * 864e5).toISOString() }); }
+    toast('Saved'); $('#ha_' + id).innerHTML = ''; hostAccessCard(id); } catch (e) { alert(e.message); }
 }
 async function saveSignup() { try { await api('saveSettings', { allowHostSignup: $('#g_allowHostSignup').checked ? 'true' : 'false', allowGuestSignup: $('#g_allowGuestSignup').checked ? 'true' : 'false' }); toast('Saved'); } catch (e) { $('#ge').textContent = e.message; } }
 async function resetPw(id) { const pw = prompt('New password for this user (min 8 characters). Tell them privately.'); if (!pw) return; try { await api('resetUserPassword', { id: id, newPassword: pw }); toast('Password reset'); } catch (e) { alert(e.message); } }
@@ -880,7 +924,7 @@ async function pickIndustry() {
 async function industries() {
   const m = await api('me'); Object.assign(ME, m); const S = await api('settings'), un = await api('myUnlocks').catch(() => []);
   const price = S.unlockPrice ? '₱' + esc(S.unlockPrice) + ' per industry' : 'Ask the admin for the subscription price';
-  $('#main').innerHTML = head('My Industries', 'You can use the industries you own. Locked ones need a paid subscription.') + INDUSTRIES.map(([k, n, ic]) => {
+  $('#main').innerHTML = head('My Industries', 'You can use the industries you own. Locked ones need a paid subscription.') + `<div class="card"><h2>🎟️ Have a free trial code?</h2><div class="row" style="gap:8px"><input id="tr_c" placeholder="TRY-XXXXXXXX" autocapitalize="characters" style="text-transform:uppercase"><button class="btn sm" style="width:auto" onclick="useTrial()">Redeem</button></div><select id="tr_i" style="margin-top:6px"><option value="">Industry (only if the code allows any)</option>${INDUSTRIES.map(([k, n, ic]) => `<option value="${k}">${ic} ${esc(n)}</option>`).join('')}</select><div class="err" id="tr_e"></div></div>` + INDUSTRIES.map(([k, n, ic]) => {
     const own = ME.industries.indexOf(k) >= 0, cur = ME.businessType === k, pend = un.find(u => u.industry === k && u.status === 'pending');
     return `<div class="card"><div class="row"><b>${ic} ${esc(n)}</b>${own ? (cur ? '<span class="tag Confirmed">In use</span>' : '<span class="tag Pending">Owned</span>') : '<span class="tag Cancelled">🔒 Locked</span>'}</div>
       <div class="mute">${esc(IND_DESC[k])}</div>
@@ -889,6 +933,7 @@ async function industries() {
       : `<button class="btn sec sm" style="margin-top:8px" onclick="unlockForm('${k}')">🔓 Unlock · ${price}</button><div id="uf_${k}"></div>`}</div>`;
   }).join('') + (un.length ? '<h2 style="margin:16px 0 6px">Requests</h2>' + un.map(u => `<div class="card row"><span>${esc(IND_NAME[u.industry])} · ${esc(String(u.created_at).slice(0, 10))}</span>${stTag(u.status === 'approved' ? 'active' : u.status === 'pending' ? 'pending' : 'declined')}</div>`).join('') : '');
 }
+async function useTrial() { try { const r = await api('redeemTrial', { code: $('#tr_c').value, industry: $('#tr_i').value }); Object.assign(ME, await api('me')); TABS = tabsFor(); toast('Unlocked ' + (IND_NAME[r.industry] || '') + ' for ' + r.days + ' days'); load(); } catch (e) { $('#tr_e').textContent = e.message; } }
 async function switchInd(t) { try { await api('switchIndustry', { type: t }); Object.assign(ME, await api('me')); TABS = tabsFor(); go('dashboard'); } catch (e) { alert(e.message); } }
 async function unlockForm(k) {
   const S = await api('settings');
@@ -926,10 +971,10 @@ const SF_HOOKS = {
 const SF_ANGLES = [['pain', '😣 Pain', 'Names the problem your customer feels'], ['result', '✨ Desired result', 'Paints the outcome they want'], ['myth', '💭 Myth & misconception', 'Corrects what they wrongly believe']];
 let HK_N = 0;
 function drawHooks() {
-  const set = SF_HOOKS[ME.businessType] || SF_HOOKS.business, cur = ($('#sf_hk') || {}).value || '';
+  const set = SF_HOOKS[indNow()] || SF_HOOKS.business, cur = ($('#sf_hk') || {}).value || '';
   $('#sf_hkc').innerHTML = SF_ANGLES.map(([k, l, d]) => { const t = set[k][HK_N % set[k].length]; return `<div onclick="sfPickHook('${k}')" style="cursor:pointer;border:2px solid ${cur === t ? 'var(--gold,#d4a62a)' : 'var(--line,#ddd)'};border-radius:12px;padding:10px 12px;margin:6px 0"><div class="mute" style="font-size:12px">${l} · ${d}</div><div style="font-weight:600;margin-top:2px">${esc(t).replace(/\*([^*]+)\*/g, '<u>$1</u>')}</div></div>`; }).join('') + '<button type="button" class="btn sec sm" onclick="HK_N++;drawHooks()">🔄 More ideas</button>';
 }
-function sfPickHook(k) { const set = SF_HOOKS[ME.businessType] || SF_HOOKS.business; $('#sf_hk').value = set[k][HK_N % set[k].length]; drawHooks(); }
+function sfPickHook(k) { const set = SF_HOOKS[indNow()] || SF_HOOKS.business; $('#sf_hk').value = set[k][HK_N % set[k].length]; drawHooks(); }
 /* font picker with live previews */
 function fontPick(id, val, list) {
   list = list || SF_FONTS;
@@ -971,13 +1016,13 @@ async function sfResync() { $('#sf_fe').textContent = ''; try { await fbSyncRun(
 const SF_PALETTES = [['#d4a62a', '#0b1226'], ['#c2185b', '#2b1b2e'], ['#2e8b57', '#10281d'], ['#1e6fd9', '#0a1f3d'], ['#e4572e', '#2d1a14'], ['#7b5ea7', '#1e1633']];
 const sfCta = bt => bt === 'real_estate' ? 'Inquire Now' : bt === 'business' ? 'Buy / Book Now' : 'Book Now';
 async function storefront() {
-  const m = await api('me'); Object.assign(ME, m); const st = m.site || {};
+  if (ACT) ACT.me = await hostMe(ACT.id); const m = await api('me'); if (!ACT) Object.assign(ME, m); const st = m.site || {};
   SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', bgUrl: st.bgUrl || '', testimonials: (m.testimonials || []).map(t => ({ name: t.name || '', text: t.text || '', photo: t.photo || '' })), why: [0, 1, 2].map(i => (st.why || [])[i] || { title: '', text: '' }) };
   const so = m.socials || {}; loadAdminFonts(); const note = SYNC_NOTE; SYNC_NOTE = '';
   const c1 = /^#[0-9a-fA-F]{6}$/.test(st.color1 || '') ? st.color1 : '#d4a62a', c2 = /^#[0-9a-fA-F]{6}$/.test(st.color2 || '') ? st.color2 : '#0b1226';
-  $('#main').innerHTML = head('My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') + '<div class="card" id="sf_sum" style="position:sticky;top:60px;z-index:5;padding:8px 14px"></div>' +
-    `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button><button class="btn sec sm" style="width:auto;white-space:nowrap" onclick="noPageYet()">No Page yet</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
-    `+
+  $('#main').innerHTML = (ACT ? `<div class="card" style="border-color:var(--gold)"><b>Editing as owner:</b> ${esc(ACT.me.businessName || ACT.me.name || 'host')}'s website <button class="btn sec sm" style="width:auto;margin-left:8px" onclick="go('users')">← Back to Users</button></div>` : '') + head(ACT ? (ACT.me.businessName || 'Host') + ' · Website' : 'My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') + '<div class="card" id="sf_sum" style="position:sticky;top:60px;z-index:5;padding:8px 14px"></div>' +
+    (ACT ? '' : `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button><button class="btn sec sm" style="width:auto;white-space:nowrap" onclick="noPageYet()">No Page yet</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
+    `) +
     `<div class="card"><h2>1 · Logo, hero &amp; hook</h2><label>Logo</label><div class="row" id="need_logo" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
     <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}">
     <label>Tagline statement</label><div class="mute">Shows in the <b>upper right</b> of your website, a little smaller than your company name, in tagline style. Use *stars* for your accent font.</div><input id="sf_t" maxlength="90" value="${esc(m.tagline)}" placeholder="e.g. Your *calm* corner of Tagaytay">
@@ -990,7 +1035,7 @@ async function storefront() {
     <div class="card"><h2>2 · Brand colors &amp; fonts</h2><div class="mute">Your whole website background uses your <b>main color</b>, with a touch of your <b>second color</b>. Pick a ready-made pair or choose your own.</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0">${SF_PALETTES.map(p => `<button type="button" class="btn sec sm" onclick="sfPal('${p[0]}','${p[1]}')" style="display:flex;gap:4px;align-items:center"><i style="width:18px;height:18px;border-radius:50%;background:${p[0]}"></i><i style="width:18px;height:18px;border-radius:50%;background:${p[1]}"></i></button>`).join('')}</div>
     <div class="g2"><div><label>Main brand color (buttons, highlights)</label><input type="color" id="sf_c1" value="${c1}" style="height:44px;padding:2px"></div><div><label>Second brand color (header, dark sections)</label><input type="color" id="sf_c2" value="${c2}" style="height:44px;padding:2px"></div></div>
     <div class="g2"><div><label>Heading font (titles)</label>${fontPick('sf_f1', st.font1)}</div><div><label>Second font (hook heading &amp; body text)</label>${fontPick('sf_f2', st.font2)}</div></div><label>Accent font · simple cursive (for words you want to emphasise, written like *this*)</label>${fontPick('sf_f3', st.font3, SF_SCRIPT)}</div>
-    <div class="card"><h2>3 · Call to action</h2><div class="mute">Shown under your listings and again after Mission &amp; Vision. Default: <b>${sfCta(ME.businessType)}</b>.</div><label>Button text (optional)</label><input id="sf_cta" maxlength="30" value="${esc(st.ctaText || '')}" placeholder="${sfCta(ME.businessType)}"></div>
+    <div class="card"><h2>3 · Call to action</h2><div class="mute">Shown under your listings and again after Mission &amp; Vision. Default: <b>${sfCta(indNow())}</b>.</div><label>Button text (optional)</label><input id="sf_cta" maxlength="30" value="${esc(st.ctaText || '')}" placeholder="${sfCta(indNow())}"></div>
     <div class="card"><h2>4 · Why Us — your 3 signature steps</h2><div class="mute">Three simple steps that show customers how you work and why you stand out.</div><label>Section title</label><input id="sf_wt" maxlength="60" value="${esc(st.whyTitle || '')}" placeholder="Why choose us">
     ${[0, 1, 2].map(i => `<div class="g2" style="margin-top:8px"><div><label>Step ${i + 1} title</label><input id="sf_w${i}t" maxlength="60" value="${esc(SF.why[i].title)}" placeholder="${['Tell us what you need', 'We take care of everything', 'Enjoy the result'][i]}"></div><div><label>Step ${i + 1} description</label><input id="sf_w${i}d" maxlength="240" value="${esc(SF.why[i].text)}"></div></div>`).join('')}</div>
     <div class="card"><h2>5 · Mission &amp; Vision</h2><label>Mission</label><textarea id="sf_mi" rows="3" maxlength="600">${esc(st.mission || '')}</textarea><label>Vision</label><textarea id="sf_vi" rows="3" maxlength="600">${esc(st.vision || '')}</textarea></div>
@@ -1001,10 +1046,10 @@ async function storefront() {
     <label>About you / your business</label><textarea id="sf_a" rows="5">${esc(m.about)}</textarea><label>Contact email</label><input id="sf_ce" type="email" value="${esc(m.contactEmail)}">
     <h3 style="margin:14px 0 0">Live chat with customers</h3><div class="mute">Customers get a chat button on your website to talk to you in real time.</div><div id="need_chat">
     <label>Messenger: your Facebook Page link or username</label><input id="sf_msg" placeholder="facebook.com/yourpage" value="${esc(st.chatMessenger || (st.fbUrl ? msgFrom(st.fbUrl) : '') || msgFrom(so.facebook || ''))}">
-    <label class="chk" style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="sf_mob" ${st.chatMobile ? 'checked' : ''} style="width:auto"> Also let customers call, text or Viber my contact number (above)</label></div>
+</div>
     <h3 style="margin:14px 0 0">Social media accounts</h3><div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
     <div class="card"><h2>8 · Inquiry email</h2><div class="mute">The email where you want to receive customer inquiries. Every inquiry also shows in your <b>Inquiries</b> tab.</div><label>Email for inquiries</label><input id="sf_iq" type="email" value="${esc(m.inquiryEmail || m.email || '')}" placeholder="you@email.com"></div>
-    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: ME.ownerId }))}">👁 Preview my website</a>`;
+    <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: hostNow() }))}">👁 Preview my website</a>`;
   drawTm(); drawHooks(); refreshNeeds();
   if (!$('#main')._nd) { $('#main')._nd = 1; ['input', 'change'].forEach(ev => $('#main').addEventListener(ev, () => refreshNeeds())); }
 }
@@ -1017,7 +1062,7 @@ function refreshNeeds() {
   [0, 1, 2].forEach(i => { mark(inp('sf_w' + i + 't'), !val('sf_w' + i + 't')); mark(inp('sf_w' + i + 'd'), !val('sf_w' + i + 'd')); });
   mark($('#need_logo'), !SF.logoUrl); mark($('#need_bg'), !SF.bgUrl); mark($('#need_ph'), !SF.ownerPhotoUrl);
   mark($('#need_tm'), !SF.testimonials.some(t => (t.text || '').trim()));
-  mark($('#need_chat'), !val('sf_msg') && !($('#sf_mob') || {}).checked);
+  mark($('#need_chat'), !val('sf_msg'));
   mark(inp('sf_s_facebook'), !val('sf_s_facebook') && !val('sf_s_instagram') && !val('sf_s_tiktok') && !val('sf_s_youtube') && !val('sf_s_website'));
   let total = 0; main.querySelectorAll('.card').forEach(c => {
     const n = c.querySelectorAll('.need').length, h = c.querySelector('h2'); if (!h || !c.querySelector('[id^=sf_],[id^=need_]')) return; total += n;
@@ -1039,12 +1084,12 @@ async function tmUp(el, i) { if (!el.files[0]) return; try { SF.testimonials[i].
 function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '', photo: '' }); drawTm(); refreshNeeds(); }
 async function saveSf() {
   const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value); $('#sf_e').textContent = '';
-  const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, font3: $('#sf_f3').value, chatMessenger: $('#sf_msg').value, chatMobile: $('#sf_mob').checked, heroStyle: $('#sf_hst').value, fbUrl: ($('#sf_fu') || {}).value || '', ctaText: $('#sf_cta').value, hook: $('#sf_hk').value, hookSub: $('#sf_hs').value, whyTitle: $('#sf_wt').value,
+  const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, font3: $('#sf_f3').value, chatMessenger: $('#sf_msg').value, chatMobile: false, heroStyle: $('#sf_hst').value, fbUrl: ($('#sf_fu') || {}).value || '', ctaText: $('#sf_cta').value, hook: $('#sf_hk').value, hookSub: $('#sf_hs').value, whyTitle: $('#sf_wt').value,
     why: [0, 1, 2].map(i => ({ title: $('#sf_w' + i + 't').value, text: $('#sf_w' + i + 'd').value })), mission: $('#sf_mi').value, vision: $('#sf_vi').value, ownerName: $('#sf_on').value, salutation: $('#sf_sa').value, license: $('#sf_li').value };
   try {
-    await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
-    await api('saveStorefront', { logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials, site, inquiryEmail: $('#sf_iq').value });
-    ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); toast('My Website saved ✓');
+    if (!ACT) await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
+    await api('saveStorefront', { businessName: $('#sf_b').value, logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials, site, inquiryEmail: $('#sf_iq').value });
+    if (!ACT) { ME.businessName = $('#sf_b').value; $('#bn').textContent = ME.businessName.toUpperCase(); } toast('My Website saved ✓');
   } catch (e) { $('#sf_e').textContent = e.message; }
 }
 

@@ -120,6 +120,8 @@ html{scroll-behavior:smooth}
 
 body.themed{background:linear-gradient(165deg,var(--gold) 0%,color-mix(in srgb,var(--gold) 76%,var(--c2)) 100%);min-height:100vh}
 body.themed .coll h2,body.themed #hook h2,body.themed #hook p,body.themed #foot,body.themed .empty{color:var(--bgInk)}
+body.themed #hook{background:var(--hkBg,transparent);border-radius:22px;padding:26px 20px;box-shadow:0 8px 26px rgba(0,0,0,.14)}
+body.themed #hook h2,body.themed #hook p{color:var(--hkInk,var(--bgInk))}
 body.themed .coll small{color:var(--bgInk);opacity:.7}
 body.themed #foot a,body.themed main>div>a{color:var(--bgInk)!important}
 .mv small{color:#fff!important;opacity:.7}
@@ -159,7 +161,7 @@ header .tagl .ac,header .tagm .ac{font-style:normal;color:var(--gold)}
 .chbtns a{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:40px;color:#fff;font-weight:700;text-decoration:none;font-size:15px}
 .chbtns .ms{background:#0084ff}.chbtns .cl{background:#2e8b57}.chbtns .tx{background:#444}.chbtns .vb{background:#7360f2}
 #chatfab{position:fixed;right:16px;bottom:16px;z-index:15}
-#chatfab>button{background:#0084ff;color:#fff;border:0;border-radius:40px;padding:14px 20px;font-weight:700;font-size:15px;cursor:pointer;box-shadow:0 10px 28px rgba(0,0,0,.3)}
+#chatfab>button{background:#0084ff;color:#fff;border:0;border-radius:50%;width:46px;height:46px;padding:0;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.28)}#chatfab svg,#mbar .mi svg{width:22px;height:22px;fill:#fff}#mbar .mi{flex:0 0 46px;width:46px;height:46px;padding:0;border-radius:50%;background:#0084ff;border:0;display:flex;align-items:center;justify-content:center}
 #chatpanel{display:none;position:absolute;right:0;bottom:56px;width:270px;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 18px 44px rgba(0,0,0,.3)}
 #chatpanel.on{display:block}#chatpanel .chbtns{flex-direction:column}#chatpanel .chbtns a{justify-content:center}
 
@@ -217,7 +219,7 @@ header .tagl .ac,header .tagm .ac{font-style:normal;color:var(--gold)}
 <script>
 // ===== Supabase connection (plain fetch, no library). Publishable key is safe in the browser: row-level security protects the data. =====
 const SBX = (() => {
-  const BASE = 'https://wqngwiagcoehytfbexil.supabase.co', KEY = 'sb_publishable_Gb7BwZtFLVt5pnZ4chSccA_XuenGpK6';
+  const BASE = 'https://wqngwiagcoehytfbexil.supabase.co', KEY = 'sb_publishable_Gb7BwZtFLVt5pnZ4chSccA_XuenGpK6'; window.BASE_URL = BASE; window.KEY_PUB = KEY;
   function make(skey) {
     let sess = null;
     try { sess = JSON.parse(sessionStorage.getItem(skey) || 'null'); } catch (e) {}
@@ -358,7 +360,7 @@ async function init() {
   if (ok(S.errorColor)) rs.setProperty('--bad', S.errorColor);
   if (ok(S.secondaryBg)) rs.setProperty('--secBg', S.secondaryBg);
   if (ok(S.secondaryText)) rs.setProperty('--secText', S.secondaryText);
-  { const SI = (H && H.site) || {}; if (ok(SI.color1)) { rs.setProperty('--gold', SI.color1); rs.setProperty('--gold2', SI.color1); const x = parseInt(SI.color1.slice(1), 16), lum = (0.299 * (x >> 16) + 0.587 * ((x >> 8) & 255) + 0.114 * (x & 255)); rs.setProperty('--onGold', lum > 150 ? '#1f1a05' : '#ffffff'); } if (ok(SI.color2)) rs.setProperty('--c2', SI.color2); if (ok(SI.color1)) { document.body.classList.add('themed'); const m = (c) => { const x = parseInt(c.slice(1), 16); return [x >> 16, (x >> 8) & 255, x & 255]; }, a = m(SI.color1), b = ok(SI.color2) ? m(SI.color2) : a, mix = a.map((v, i) => v * .88 + b[i] * .12), L = 0.299 * mix[0] + 0.587 * mix[1] + 0.114 * mix[2]; rs.setProperty('--bgInk', L > 160 ? '#1f2328' : '#ffffff'); } }
+  { const SI = (H && H.site) || {}; if (ok(SI.color1)) { rs.setProperty('--gold', SI.color1); rs.setProperty('--gold2', SI.color1); const x = parseInt(SI.color1.slice(1), 16), lum = (0.299 * (x >> 16) + 0.587 * ((x >> 8) & 255) + 0.114 * (x & 255)); rs.setProperty('--onGold', lum > 150 ? '#1f1a05' : '#ffffff'); } if (ok(SI.color2)) rs.setProperty('--c2', SI.color2); if (ok(SI.color1)) { document.body.classList.add('themed'); const m = (c) => { const x = parseInt(c.slice(1), 16); return [x >> 16, (x >> 8) & 255, x & 255]; }, a = m(SI.color1), b = ok(SI.color2) ? m(SI.color2) : a, mix = a.map((v, i) => v * .88 + b[i] * .12), L = 0.299 * mix[0] + 0.587 * mix[1] + 0.114 * mix[2]; rs.setProperty('--bgInk', L > 160 ? '#1f2328' : '#ffffff'); if (ok(SI.color2)) { const h = a.map((v, k) => Math.round(b[k] * .9 + v * .1)), hl = 0.299 * h[0] + 0.587 * h[1] + 0.114 * h[2]; rs.setProperty('--hkBg', 'rgb(' + h.join(',') + ')'); rs.setProperty('--hkInk', hl > 160 ? '#1f2328' : '#ffffff'); } } }
   const SINGLE = ['DM Serif Display', 'Pacifico', 'Great Vibes', 'Satisfy', 'Allura', 'Sacramento'], SERIF = ['Georgia', 'Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora'], SCRIPT = ['Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura', 'Sacramento'];
   const font = (f, v) => { if (!f || f === 'System') return; if (['Georgia'].indexOf(f) < 0) { const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=' + f.replace(/ /g, '+') + (SINGLE.indexOf(f) >= 0 ? '' : ':wght@400;600;700') + '&display=swap'; document.head.appendChild(l); } rs.setProperty(v, "'" + f + "', " + (SCRIPT.indexOf(f) >= 0 ? 'cursive' : SERIF.indexOf(f) >= 0 ? 'serif' : 'sans-serif')); };
   const emph = t => String(t).replace(/\*([^*]+)\*/g, '<em class="ac">$1</em>');
@@ -561,6 +563,9 @@ function resize(file, max = 1200) {
 }
 async function onProof(el) { if (el.files[0]) { try { proof = await resize(el.files[0]); } catch (e) { $('#er').textContent = e.message; } } }
 
+function notifyMail(kind, ref, email, el) {
+  if (!ref) return; fetch(BASE_URL + '/functions/v1/notify', { method: 'POST', headers: { apikey: KEY_PUB, 'Content-Type': 'application/json' }, body: JSON.stringify({ kind, ref }) }).then(r => r.json()).then(j => { if (el && j && j.ok && j.guest && j.guest.ok) el.textContent = 'A confirmation email was sent' + (email ? ' to ' + email : '') + '.'; else if (el) el.textContent = 'The host will contact you using the details you gave.'; }).catch(() => { if (el) el.textContent = 'The host will contact you using the details you gave.'; });
+}
 async function submitBooking() {
   const er = $('#er'); er.textContent = '';
   const name = $('#gn').value.trim(), email = $('#em').value.trim(), phone = $('#ph').value.trim();
@@ -573,8 +578,8 @@ async function submitBooking() {
   try {
     const r = await run('createBooking', { unitId: unit.id, checkIn: start, checkOut: end, guests, pets, addonIds: [...addonIds], guestName: name, email, phone, proof, token: GTOK });
     show(`<div style="text-align:center;padding:24px 8px"><div style="font-size:48px">✅</div><h2>Booking submitted</h2>
-      <p>Your booking is <b>pending confirmation</b>. We sent an email to <b>${esc(email)}</b>.</p>
-      <p class="mute">Reference: ${esc(r.id)} · Total ${peso(r.total)}</p><button class="btn sec" onclick="closeSheet()">Done</button></div>`);
+      <p>Your booking is <b>pending confirmation</b>.</p><p class="mute" id="mailnote">Sending your confirmation email…</p>
+      <p class="mute">Reference: ${esc(r.id)} · Total ${peso(r.total)}</p><button class="btn sec" onclick="closeSheet()">Done</button></div>`); notifyMail('booking', r.id, email, document.getElementById('mailnote'));
   } catch (e) { er.textContent = e.message; b.disabled = false; b.textContent = 'Confirm Booking'; }
 }
 (function () {
@@ -602,19 +607,19 @@ function chatLinks(H) {
   const SI = (H && H.site) || {}, out = [], ph = String(H.contactPhone || '').replace(/[^0-9+]/g, ''), intl = ph.replace(/^\+/, '').replace(/^0/, '63');
   const ms = String(SI.chatMessenger || '').replace(/[^A-Za-z0-9._\-]/g, '');
   if (ms) out.push(['ms', '💬 Chat on Messenger', 'https://m.me/' + ms, true]);
-  if (SI.chatMobile && ph) { out.push(['cl', '📞 Call', 'tel:' + ph]); out.push(['tx', '✉️ Text', 'sms:' + ph]); out.push(['vb', 'Viber', 'viber://chat?number=%2B' + intl]); }
   return out;
 }
+const MSGR = '<svg viewBox="0 0 24 24"><path d="M12 2C6.4 2 2 6.1 2 11.3c0 2.9 1.4 5.4 3.6 7.1V22l3.3-1.8c1 .3 2 .4 3.1.4 5.6 0 10-4.1 10-9.3S17.6 2 12 2zm1 12.5-2.5-2.7-4.9 2.7 5.4-5.7 2.6 2.7 4.8-2.7-5.4 5.7z"/></svg>';
 function toggleChat() { const p = document.getElementById('chatpanel'); if (p) p.classList.toggle('on'); }
 function drawMbar(label) {
   let m = document.getElementById('mbar'); if (!m) { m = document.createElement('div'); m.id = 'mbar'; document.body.appendChild(m); }
-  m.innerHTML = `<button class="btn" onclick="CTA_GO()">${esc(label)}</button>` + (window.HAS_CHAT ? '<button class="btn sec" onclick="toggleChat()">💬 Chat</button>' : '');
+  m.innerHTML = `<button class="btn" onclick="CTA_GO()">${esc(label)}</button>` + (window.HAS_CHAT ? `<button class="mi" onclick="toggleChat()" aria-label="Chat on Messenger">${MSGR}</button>` : '');
 }
 function drawChat(H) {
   const L = chatLinks(H); if (!L.length) return;
   const btns = L.map(x => `<a class="${x[0]}" href="${esc(x[2])}"${x[3] ? ' target="_blank" rel="noopener"' : ''}>${x[1]}</a>`).join('');
-  $('#chat').innerHTML = `<div class="chatsec"><h3>Talk to the owner in real time</h3><p>Have a question? Message us now and we will reply as soon as we can.</p><div class="chbtns">${btns}</div></div>`;
-  if (!document.getElementById('chatfab')) { const d = document.createElement('div'); d.id = 'chatfab'; d.innerHTML = `<button onclick="toggleChat()">💬 Chat</button>`; document.body.appendChild(d); const pn = document.createElement('div'); pn.id = 'chatpanel'; pn.innerHTML = `<b>Chat with the owner</b><div class="chbtns" style="margin-top:10px">${btns}</div>`; document.body.appendChild(pn); }
+  $('#chat').innerHTML = `<div class="chatsec"><h3>Chat with the owner</h3><p>Have a question? Message us on Messenger.</p><div class="chbtns">${btns}</div></div>`;
+  if (!document.getElementById('chatfab')) { const d = document.createElement('div'); d.id = 'chatfab'; d.innerHTML = `<button onclick="toggleChat()" aria-label="Chat on Messenger">${MSGR}</button>`; document.body.appendChild(d); const pn = document.createElement('div'); pn.id = 'chatpanel'; pn.innerHTML = `<b>Chat with the owner</b><div class="chbtns" style="margin-top:10px">${btns}</div>`; document.body.appendChild(pn); }
   window.HAS_CHAT = true;
 }
 function drawSite(H, hid) {
@@ -681,7 +686,7 @@ async function sendInquiry(i) {
   const x = DATA.listings[i], g = id => $('#' + id).value.trim(); if (!g('iq_n') || !/^\S+@\S+\.\S+$/.test(g('iq_e')) || !g('iq_p')) return alert('Please fill in your name, a valid email and phone.');
   $('#iq_go').disabled = true;
   try { const r = await run('createInquiry', { listingId: x.id, name: g('iq_n'), email: g('iq_e'), phone: g('iq_p'), message: g('iq_m'), date: g('iq_d') });
-    show(`<h3>Inquiry sent ✓</h3><p>Reference <b>${esc((r && (r.id || r.ref)) || '')}</b>. ${esc(x.hostName || 'The owner')} will contact you soon.</p><button class="btn" onclick="closeSheet()">Done</button>`); }
+    show(`<h3>Inquiry sent ✓</h3><p>Reference <b>${esc((r && (r.id || r.ref)) || '')}</b>. ${esc(x.hostName || 'The owner')} will contact you soon.</p><p class="mute" id="mailnote"></p><button class="btn" onclick="closeSheet()">Done</button>`); notifyMail('inquiry', r && (r.id || r.ref), '', document.getElementById('mailnote')); }
   catch (e) { $('#iq_go').disabled = false; alert(e.message); }
 }
 function bookService(i) {
@@ -704,7 +709,7 @@ async function sendAppt(i) {
   const x = DATA.services[i], g = id => $('#' + id).value.trim(); if (!APS) return alert('Pick a time first.'); if (!g('ap_n') || !/^\S+@\S+\.\S+$/.test(g('ap_e')) || !g('ap_p')) return alert('Please fill in your name, a valid email and phone.');
   $('#ap_go').disabled = true;
   try { const r = await run('createAppointment', { serviceId: x.id, start: APS, name: g('ap_n'), email: g('ap_e'), phone: g('ap_p'), notes: g('ap_m') });
-    show(`<h3>Appointment requested ✓</h3><p>Reference <b>${esc((r && (r.id || r.ref)) || '')}</b>.</p>${x.payInfo ? `<div class="sum"><b>How to pay</b><div style="white-space:pre-wrap">${esc(x.payInfo)}</div></div>` : ''}<button class="btn" onclick="closeSheet()">Done</button>`); }
+    show(`<h3>Appointment requested ✓</h3><p>Reference <b>${esc((r && (r.id || r.ref)) || '')}</b>.</p>${x.payInfo ? `<div class="sum"><b>How to pay</b><div style="white-space:pre-wrap">${esc(x.payInfo)}</div></div>` : ''}<p class="mute" id="mailnote"></p><button class="btn" onclick="closeSheet()">Done</button>`); notifyMail('appointment', r && (r.id || r.ref), '', document.getElementById('mailnote')); }
   catch (e) { $('#ap_go').disabled = false; alert(e.message); }
 }
 </script>

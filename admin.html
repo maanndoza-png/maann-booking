@@ -318,6 +318,10 @@ const H = {
   async addStaff(p) { await A.fn('manage-staff', { action: 'add', name: p.name, email: p.email, password: p.password, perms: p.perms }); return true; },
   async setStaff(p) { await A.fn('manage-staff', { action: p.newPassword ? 'reset' : 'set', id: p.id, newPassword: p.newPassword, perms: p.perms, status: p.status }); return true; },
   async deleteStaff(p) { await A.fn('manage-staff', { action: 'remove', id: p.id }); return true; },
+  async domains(p) { return A.sel('domain_requests', 'host_id=eq.' + p.id + '&order=created_at.desc&select=*'); },
+  async requestDomain(p) { await A.ins('domain_requests', { host_id: A.uid, domain: p.domain }); return true; },
+  async deleteDomain(p) { await A.del('domain_requests', 'id=eq.' + encodeURIComponent(p.id)); return true; },
+  async setDomain(p) { await A.rpc('admin_set_domain', { p_id: p.id, p_status: p.status, p_note: p.note || '' }); return true; },
   async setAccess(p) { await A.rpc('admin_set_access', { p_host: p.id, p_industry: p.industry, p_until: p.until || null, p_remove: !!p.remove }); return true; },
   async hostAccess(p) { return A.sel('industry_access', 'owner_id=eq.' + p.id + '&select=industry,paid_until,source'); },
   async redeemTrial(p) { return A.rpc('redeem_trial', { p_code: p.code, p_industry: p.industry || null }); },
@@ -1052,8 +1056,10 @@ async function storefront() {
 </div>
     <h3 style="margin:14px 0 0">Social media accounts</h3><div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
     <div class="card"><h2>8 · Inquiry email</h2><div class="mute">The email where you want to receive customer inquiries. Every inquiry also shows in your <b>Inquiries</b> tab.</div><label>Email for inquiries</label><input id="sf_iq" type="email" value="${esc(m.inquiryEmail || m.email || '')}" placeholder="you@email.com"></div>
+    <div class="card" id="dm_card"><h2>9 · My own domain</h2><div class="mute">Want your website on your own web address, like <b>yourbusiness.com</b>? Buy a domain first (GoDaddy or Cloudflare are reliable), then add it here. We connect it for you and tell you the exact steps. Until it is connected, your website keeps working on its normal link.</div>
+      ${ACT ? '' : '<label>Your domain</label><div class="row" style="gap:8px"><input id="dm_in" placeholder="yourbusiness.com" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:auto" onclick="dmAdd()">Add</button></div>'}<div class="err" id="dm_e"></div><div id="dm_list"></div></div>
     <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: hostNow() }))}">👁 Preview my website</a>`;
-  drawTm(); drawHooks(); refreshNeeds();
+  drawTm(); drawHooks(); drawDomains(); refreshNeeds();
   if (!$('#main')._nd) { $('#main')._nd = 1; ['input', 'change'].forEach(ev => $('#main').addEventListener(ev, () => refreshNeeds())); }
 }
 function msgFrom(v) { return msgName(v); }
@@ -1181,6 +1187,20 @@ function sbNext() {
 }
 function sbReplace() { if (SBW && SBW.B) { sbApply(SBW.B, true); toast('Replaced with your answers'); $('#sb_box').innerHTML = '<div style="margin-top:10px"><b style="color:#2e8b57">Replaced ✓</b> Review and press Save My Website.</div>'; } }
 
+const DM_ST = { pending: ['Waiting for us to connect it', '#d4a62a'], active: ['Connected', '#2e8b57'], rejected: ['Could not be connected', '#ff4d4d'] };
+async function drawDomains() {
+  const box = $('#dm_list'); if (!box) return; const L = await api('domains', { id: hostNow() }).catch(() => []);
+  box.innerHTML = L.map(d => `<div class="row" style="padding:8px 0;border-top:1px solid #2a2f45"><span><b>${esc(d.domain)}</b><br><span style="color:${DM_ST[d.status][1]};font-size:13px">● ${DM_ST[d.status][0]}</span>${d.note ? `<br><span class="mute">${esc(d.note)}</span>` : ''}</span>
+    <span style="display:flex;gap:4px;flex-wrap:wrap">${ACT || ME.role === 'admin' ? `${d.status !== 'active' ? `<button class="btn sm" style="width:auto" onclick="dmSet('${d.id}','active')">Mark connected</button>` : ''}${d.status !== 'rejected' ? `<button class="btn sec sm" style="width:auto" onclick="dmSet('${d.id}','rejected')">Reject</button>` : ''}` : (d.status === 'pending' ? `<button class="btn bad sm" style="width:auto" onclick="dmDel('${d.id}')">Remove</button>` : '')}</span></div>`).join('');
+}
+async function dmAdd() {
+  const er = $('#dm_e'); er.textContent = ''; let d = ($('#dm_in').value || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/[\/?#].*$/, '');
+  if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/.test(d)) { er.textContent = 'Enter a domain like yourbusiness.com'; return; }
+  if (/(github\.io|supabase\.co)$/.test(d)) { er.textContent = 'Use your own domain, not a free link.'; return; }
+  try { await api('requestDomain', { domain: d }); $('#dm_in').value = ''; toast('Domain added. We will connect it and tell you the steps.'); drawDomains(); } catch (e) { er.textContent = /duplicate|unique/i.test(e.message) ? 'That domain is already added.' : /row-level|policy/i.test(e.message) ? 'You can add up to 3 domains.' : e.message; }
+}
+async function dmDel(id) { try { await api('deleteDomain', { id }); drawDomains(); } catch (e) { alert(e.message); } }
+async function dmSet(id, status) { try { const note = status === 'rejected' ? (prompt('Short reason for the host (optional)') || '') : ''; await api('setDomain', { id, status, note }); drawDomains(); } catch (e) { alert(e.message); } }
 function sfPal(a, b) { $('#sf_c1').value = a; $('#sf_c2').value = b; }
 async function sfUp(el, key, img, max) { if (!el.files[0]) return; try { SF[key] = await api('uploadImage', { data: await resize(el.files[0], max || 900) }); $('#' + img).src = SF[key]; $('#' + img).style.display = 'block'; refreshNeeds(); } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
 function sfBg(el) {

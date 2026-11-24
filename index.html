@@ -347,7 +347,8 @@ let guests = 1, pets = false, addonIds = new Set();
 init();
 async function init() {
   try { DATA = await run('publicData'); } catch (e) { $('#list').innerHTML = '<div class="err">' + esc(e.message) + '</div>'; return; }
-  const HS = await run('hostStorefronts').catch(() => ({})); const qh = new URLSearchParams(location.search).get('host');
+  const HS = await run('hostStorefronts').catch(() => ({})); let qh = new URLSearchParams(location.search).get('host');
+  if (!qh && location.protocol !== 'file:') { const hn = location.hostname.toLowerCase(); if (hn && hn !== 'localhost' && !/(^|\.)github\.io$/.test(hn)) { for (const c of [hn, hn.replace(/^www\./, '')]) { try { const r = await G.rpc('host_by_domain', { p_domain: c }); if (r && HS[r]) { qh = r; break; } } catch (e) { } } } }
   const hid = qh && HS[qh] ? qh : (Object.keys(HS).length === 1 ? Object.keys(HS)[0] : ''); const H = hid ? HS[hid] : null;
   if (hid) DATA.units = DATA.units.filter(u => String(u.ownerId) === hid);
   if (H) { if (H.businessName) DATA.settings.brand = H.businessName; if (H.tagline) DATA.settings.tagline = H.tagline; if (/^https:\/\//.test(H.logoUrl || '')) DATA.settings.logoUrl = H.logoUrl; }

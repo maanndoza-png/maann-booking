@@ -102,6 +102,37 @@ div[style*="padding:18px 24px"],div[style*="padding:32px 24px"]{padding-left:20p
 </div>
 </div>
 
+<!-- device preview: Pragma Realty sample -->
+<style>
+.dv{max-width:1120px;margin:0 auto;padding:8px 24px 56px;text-align:center}
+.dv h2{font-family:'Space Grotesk',system-ui,sans-serif;font-size:clamp(26px,5vw,40px);margin:0 0 8px;color:#eef0fa}
+.dv p.sub{margin:0 auto 28px;color:#c9cfe3;max-width:560px;line-height:1.55}
+.dv-stage{position:relative;width:100%;max-width:880px;margin:0 auto;padding-bottom:6%}
+.dv-lap{width:86%;margin:0 auto}
+.dv-lscr{background:#0b0f1f;border:2px solid #2c3764;border-radius:14px 14px 0 0;padding:2.2% 2.2% 0;position:relative}
+.dv-lview{position:relative;width:100%;aspect-ratio:16/10;overflow:hidden;border-radius:6px 6px 0 0;background:#fff}
+.dv-lview iframe{position:absolute;top:0;left:0;width:1280px;height:800px;border:0;transform-origin:0 0;pointer-events:none}
+.dv-base{height:14px;background:linear-gradient(#3a4676,#1c2447);border-radius:0 0 16px 16px;width:108%;margin:0 -4%;box-shadow:0 18px 30px -12px rgba(0,0,0,.6)}
+.dv-ph{position:absolute;right:0;bottom:0;width:23%;background:#0b0f1f;border:2px solid #3a4676;border-radius:26px;padding:2.2%;box-shadow:0 24px 50px -10px rgba(0,0,0,.7)}
+.dv-pview{position:relative;width:100%;aspect-ratio:9/19;overflow:hidden;border-radius:18px;background:#fff}
+.dv-pview iframe{position:absolute;top:0;left:0;width:390px;height:823px;border:0;transform-origin:0 0;pointer-events:none}
+.dv-cap{margin-top:22px;font-size:14px;color:#a5aec9}
+.dv-cap a{color:#d4a62a;font-weight:600;text-decoration:none}
+</style>
+<section class="dv" id="preview">
+<h2>See a website built with Slam Book</h2>
+<p class="sub">A real sample: Pragma Realty, shown on a laptop and on a phone.</p>
+<div class="dv-stage">
+<div class="dv-lap"><div class="dv-lscr"><div class="dv-lview"><iframe id="dvL" src="https://maann-booking.pages.dev/index.html?host=c5176b6d-18fa-4a49-aefe-0e1391e450ff" title="Pragma Realty on laptop" loading="lazy" tabindex="-1"></iframe></div></div><div class="dv-base"></div></div>
+<div class="dv-ph"><div class="dv-pview"><iframe id="dvP" src="https://maann-booking.pages.dev/index.html?host=c5176b6d-18fa-4a49-aefe-0e1391e450ff" title="Pragma Realty on phone" loading="lazy" tabindex="-1"></iframe></div></div>
+</div>
+<div class="dv-cap">Sample website: Pragma Realty. <a href="https://maann-booking.pages.dev/index.html?host=c5176b6d-18fa-4a49-aefe-0e1391e450ff" target="_blank" rel="noopener">Open it live</a></div>
+</section>
+<script>
+(function(){function fit(){var l=document.getElementById('dvL'),p=document.getElementById('dvP');if(!l||!p)return;l.style.transform='scale('+(l.parentNode.clientWidth/1280)+')';p.style.transform='scale('+(p.parentNode.clientWidth/390)+')'}
+fit();addEventListener('resize',fit);addEventListener('load',fit)})();
+</script>
+
 <!-- quick facts -->
 <div style="max-width:1120px;margin:0 auto;padding:8px 24px 48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
 <div style="background:#121a33;border:1px solid #232d4f;border-radius:18px;padding:22px"><div style="font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:#d4a62a">1 page</div><div style="color:#c9cfe3;margin-top:6px;font-size:15px">Mobile-first one-page website</div></div>

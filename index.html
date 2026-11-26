@@ -207,12 +207,64 @@ header .tagl .ac,header .tagm .ac{font-style:normal;color:var(--gold)}
   input[type=file],input[type=text],input[type=email],input[type=tel],input[type=number],textarea,select{font-size:16px!important}
   .stat{padding:8px 4px}
 }
+
+/* ===== 4-page layout ===== */
+header,header.row{display:flex;align-items:center;gap:10px;padding:10px 14px;flex-wrap:nowrap}
+header>div:first-child,header>div:first-child>div{overflow:visible}
+.menubtn{width:46px;height:46px;border-radius:12px;border:1px solid rgba(255,255,255,.35);background:transparent;display:flex;flex-direction:column;justify-content:center;gap:5px;padding:0 12px;cursor:pointer}
+.menubtn span{display:block;height:2px;background:#fff;border-radius:2px}
+header img#logo{height:44px!important;max-width:60vw;object-fit:contain}
+#brandfb{color:#fff;font-size:15px;letter-spacing:1px;text-transform:uppercase;max-width:55vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#navbk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:18}
+#navmenu{position:fixed;top:0;left:0;bottom:0;width:min(86vw,340px);background:var(--panel);color:var(--ink);z-index:19;transform:translateX(-102%);transition:transform .22s;padding:70px 16px 20px;overflow:auto;box-shadow:0 0 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px}
+#navmenu.on{transform:none}#navbk.on{display:block}
+#navmenu a{display:block;padding:15px 12px;border-radius:12px;color:var(--ink);text-decoration:none;font-weight:600;font-size:17px;min-height:48px;box-sizing:border-box}
+#navmenu a.cur{background:var(--gold);color:var(--onGold,#1f1a05)}
+#navmenu a#navphone{border:1px solid var(--line);margin-top:8px;text-align:center}
+#navmenu .btn{margin-top:6px;width:100%}
+#navmenu #acct{margin:8px 0 0!important;display:block}#navmenu #acct .btn,#navmenu #acct button{width:100%!important;margin-top:6px}
+#hero{min-height:420px!important}
+#hero .t{background:none!important;border:0!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;padding:0!important;margin:0!important;box-shadow:none!important}
+@media(max-width:640px){#hero{min-height:340px!important}header,header.row{padding:10px 12px}}
+#words{text-align:center;margin:22px auto 8px;max-width:900px}
+#words .wc{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+#words .wc span{background:var(--panel);border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:8px 16px;font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+#faq details{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:8px 0;padding:0}
+#faq summary{cursor:pointer;padding:16px 18px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px;min-height:48px;align-items:center}
+#faq summary::-webkit-details-marker{display:none}#faq summary:after{content:"+";font-size:22px;color:var(--gold)}#faq details[open] summary:after{content:"\2212"}
+#faq details p{margin:0;padding:0 18px 16px;line-height:1.6;white-space:pre-wrap;color:var(--ink)}
+.sect{margin-top:30px}
+.mapw{border-radius:18px;overflow:hidden;border:1px solid var(--line);background:var(--panel)}
+.mapw iframe{display:block;width:100%;height:320px;border:0}
+.calbox{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px}
+.dpick{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dpick .dw{font-size:11px;color:var(--mute);padding:4px 0}
+.dpick button{padding:12px 0;border-radius:10px;border:1px solid transparent;background:var(--bg);color:var(--ink);font-size:15px;cursor:pointer}
+.dpick button.sel{background:var(--gold);color:var(--onGold,#1f1a05);font-weight:700}.dpick button:disabled{opacity:.35;cursor:not-allowed}
+.polbox{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:4px 18px}
+.polbox summary{cursor:pointer;font-weight:700;padding:14px 0}.polbox div{white-space:pre-wrap;line-height:1.65;padding-bottom:14px}
+.deal{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:26px 20px;text-align:center}
+.deal .badge{display:inline-block;background:var(--gold);color:var(--onGold,#1f1a05);border-radius:999px;padding:8px 18px;font-weight:800;margin:6px 0 10px}
+.deal h2{margin:4px 0 8px;font-size:clamp(26px,5vw,38px)}
+.deal .qr{display:block;width:100%;max-width:260px;margin:12px auto;border-radius:16px;background:#fff}
+.dform{text-align:left;max-width:460px;margin:14px auto 0}
+.dform .btn{margin-top:14px}
+.st2{display:inline-block;background:var(--gold);color:var(--onGold,#1f1a05);border-radius:999px;font-weight:800;font-size:13px;padding:3px 12px;margin:16px 0 6px}
+.hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
+.fgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
 </style>
 </head>
 <body>
-<header class="row"><div style="display:flex;align-items:center;gap:10px"><img id="logo" alt="" style="display:none;height:38px;border-radius:8px"><div><h1 id="brand">Booking</h1><div class="tagm" id="tagm"></div></div></div><div class="tagl" id="tag"></div><button class="btn sec" style="width:auto;padding:10px 14px;font-size:14px" onclick="openLookup()"><span class="dsk">Check my booking</span><span class="mob">My booking</span></button><span id="acct" style="margin-left:8px"></span></header>
+<header class="row"><button id="menubtn" class="menubtn" aria-label="Open menu" aria-expanded="false" onclick="toggleMenu()"><span></span><span></span><span></span></button><div style="flex:1"></div><img id="logo" alt="Logo" style="display:none;height:44px;border-radius:8px"><b id="brandfb" style="display:none"></b><span id="brand" hidden></span><div id="tag" hidden></div><div id="tagm" hidden></div></header>
+<div id="navbk" onclick="toggleMenu(false)"></div>
+<nav id="navmenu" aria-label="Main menu"><a href="#home" data-pg="home">🏠 Home</a><a href="#about" data-pg="about">ℹ️ About</a><a href="#services" data-pg="services">🛎 Services Offered</a><a href="#deals" data-pg="deals">🏷 Deals / Promo</a><a id="navphone" href="#" style="display:none"></a><button class="btn" id="navcta" onclick="toggleMenu(false);CTA_GO()">Book Now</button><button class="btn sec" onclick="toggleMenu(false);openLookup()">Check my booking</button><div id="acct"></div></nav>
 <div id="hero" style="display:none"></div>
-<main><div id="hook"></div><div id="promo" style="display:none"></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">No units available yet.</div><div id="cta1"></div><div id="why"></div><div id="mv"></div><div id="cta2"></div><div id="reviews"></div><section id="about" style="display:none"></section><div id="chat"></div><div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
+<main>
+<section class="pg" id="pg-home"><div id="hook"></div><div id="words"></div><div id="promo" style="display:none"></div><div id="feat"></div><div id="why"></div><div id="reviews"></div><div id="faq"></div><div id="cta1"></div></section>
+<section class="pg" id="pg-about" style="display:none"><section id="about" style="display:none"></section><div id="mv"></div><div id="map"></div><div id="calsec"></div><div id="privacy"></div><div id="chat"></div><div id="cta2"></div></section>
+<section class="pg" id="pg-services" style="display:none"><div class="coll" id="svch"><small>WHAT WE OFFER</small><h2>Services Offered</h2></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">Nothing is listed yet.</div></section>
+<section class="pg" id="pg-deals" style="display:none"><div id="deals"></div></section>
+<div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
 
 <div id="ov" class="overlay"><div class="sheet" id="sheet"></div></div>
 
@@ -372,15 +424,17 @@ async function init() {
   const HSITE = (H && H.site) || {}, heroes = /^https:\/\//.test(HSITE.bgUrl || '') ? [HSITE.bgUrl] : urls(S.heroImages), promos = urls(S.promoBanners);
   if (on('showHero') || heroes.length && /^https:\/\//.test(HSITE.bgUrl || '')) {
     const h = $('#hero'); h.style.display = 'flex'; h.className = 'hs-' + (HSITE.heroStyle || 'soft') + (heroes.length ? '' : ' nophoto');
-    h.innerHTML = heroes.map((u, i) => `<div class="s ${i ? '' : 'on'}" style="background-image:url('${esc(u)}')"></div>`).join('') + (heroes.length ? '<div class="shade"></div>' : '') + `<div class="t"><small>WELCOME TO</small><h2>${esc(S.brand)}</h2><p>${emph(esc(S.tagline || 'Find your perfect stay'))}</p><button class="cta" onclick="document.getElementById('coll').scrollIntoView({behavior:'smooth'})">BOOK NOW</button></div>`;
+    h.innerHTML = heroes.map((u, i) => `<div class="s ${i ? '' : 'on'}" style="background-image:url('${esc(u)}')"></div>`).join('') + (heroes.length ? '<div class="shade"></div>' : '') + `<div class="t"><button class="cta" onclick="CTA_GO()">BOOK NOW</button></div>`; window.HERO_ON = true;
     if (heroes.length > 1) { let n = 0; setInterval(() => { const sl = h.querySelectorAll('.s'); sl[n].classList.remove('on'); n = (n + 1) % sl.length; sl[n].classList.add('on'); }, 5000); }
   }
   if (on('showPromo') && promos.length) { const p = $('#promo'); p.style.display = 'flex'; p.innerHTML = promos.map(u => `<img src="${esc(u)}" alt="">`).join(''); }
   if (on('showAmenities')) { const used = new Set(); DATA.units.forEach(u => u.amenities.forEach(id => used.add(id))); $('#amstrip').innerHTML = DATA.amenities.filter(a => used.has(a.id)).map(a => `<span>${esc(a.icon)} ${esc(a.name)}</span>`).join(''); }
   const quotes = String(S.testimonials || '').split('\n').map(l => l.split('|')).filter(p => p[0] && p[1]);
   if (on('showReviews') && quotes.length && !(H && (H.testimonials||[]).length)) $('#reviews').innerHTML = quotes.map(p => `<div class="q">“${esc(p.slice(1).join('|').trim())}”<b>— ${esc(p[0].trim())}</b></div>`).join('');
+  window.HOST_ID = hid; window.HOST_H = H; drawChrome(S, H);
   drawSite(H, hid);
   drawExtras(hid);
+  drawHome(H, hid); drawAbout(H, hid); drawDeals(H, hid); goPage(location.hash.replace('#', ''));
   if (!DATA.units.length && !(DATA.listings || []).length && !(DATA.services || []).length && !(DATA.products || []).length) $('#empty').style.display = 'block';
   if (!DATA.units.length) { $('#list').style.display = 'none'; $('#coll').style.display = 'none'; return; }
   if (!(String(DATA.settings.showUnits).toLowerCase() === 'true')) { $('#list').style.display = 'none'; $('#coll').style.display = 'none'; return; }
@@ -603,6 +657,99 @@ const ICO = {
   phone: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8.1 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>',
   mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m3 7 9 6 9-6"/></svg>'
 };
+
+// ===== 4-page navigation, Home extras, About extras, Deals page =====
+const PAGES = ['home', 'about', 'services', 'deals'];
+function toggleMenu(on) { const m = $('#navmenu'), b = $('#navbk'), btn = $('#menubtn'); const v = on === undefined ? !m.classList.contains('on') : !!on; m.classList.toggle('on', v); b.classList.toggle('on', v); if (btn) btn.setAttribute('aria-expanded', v ? 'true' : 'false'); }
+function goPage(p) {
+  if (PAGES.indexOf(p) < 0) p = 'home';
+  PAGES.forEach(x => { const e = document.getElementById('pg-' + x); if (e) e.style.display = x === p ? 'block' : 'none'; });
+  const h = $('#hero'); if (h) h.style.display = (p === 'home' && window.HERO_ON) ? 'flex' : 'none';
+  document.querySelectorAll('#navmenu a[data-pg]').forEach(a => a.classList.toggle('cur', a.dataset.pg === p));
+  if (location.hash.replace('#', '') !== p) { try { history.replaceState(null, '', location.pathname + location.search + '#' + p); } catch (e) { } }
+  window.scrollTo({ top: 0 }); window.CUR_PAGE = p;
+}
+window.addEventListener('hashchange', () => { toggleMenu(false); goPage(location.hash.replace('#', '')); });
+document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('#navmenu a[data-pg]'); if (a) { e.preventDefault(); toggleMenu(false); goPage(a.dataset.pg); } });
+
+function drawChrome(S, H) {
+  if (!/^https:\/\//.test(S.logoUrl || '')) { const b = $('#brandfb'); b.textContent = S.brand || ''; b.style.display = 'block'; }
+  const ph = H && H.contactPhone ? String(H.contactPhone).trim() : '', n = $('#navphone');
+  if (ph) { n.href = 'tel:' + ph.replace(/[^0-9+]/g, ''); n.textContent = '📞 ' + ph; n.style.display = 'block'; }
+}
+const FCARD = (img, title, sub, price, btns) => `<div class="card">${img ? `<div class="imgw"><img src="${esc(img)}" alt=""></div>` : '<div class="ph"></div>'}<div class="b"><div class="row"><b style="font-size:18px">${esc(title)}</b>${price ? `<b>${esc(price)}</b>` : ''}</div>${sub ? `<div class="mute" style="margin:4px 0 10px">${esc(sub)}</div>` : ''}<div class="acts">${btns}</div></div></div>`;
+function drawHome(H, hid) {
+  const SI = (H && H.site) || {};
+  const words = (SI.words || []).filter(Boolean);
+  if (words.length) $('#words').innerHTML = '<div class="wc">' + words.map(w => `<span>${esc(w)}</span>`).join('') + '</div>';
+  const items = [];
+  (Array.isArray(SI.featured) ? SI.featured : []).forEach(f => {
+    if (f.k === 'unit') { const i = DATA.units.findIndex(x => String(x.id) === String(f.id)); if (i >= 0) items.push(['unit', i]); }
+    if (f.k === 'listing') { const i = (DATA.listings || []).findIndex(x => String(x.id) === String(f.id)); if (i >= 0) items.push(['listing', i]); }
+    if (f.k === 'service') { const i = (DATA.services || []).findIndex(x => String(x.id) === String(f.id)); if (i >= 0) items.push(['service', i]); }
+    if (f.k === 'product') { const i = (DATA.products || []).findIndex(x => String(x.id) === String(f.id)); if (i >= 0) items.push(['product', i]); }
+  });
+  if (!items.length) { const pool = [].concat(DATA.units.map((_, i) => ['unit', i]), (DATA.listings || []).map((_, i) => ['listing', i]), (DATA.services || []).map((_, i) => ['service', i]), (DATA.products || []).map((_, i) => ['product', i])); pool.slice(0, 3).forEach(x => items.push(x)); }
+  const card = ([k, i]) => {
+    if (k === 'unit') { const u = DATA.units[i]; return FCARD(u.images[0], u.name, '📍 ' + (u.location || ''), peso(u.price) + '/night', `<button class="btn sec" onclick="openUnit(${i})">👁 View</button><button class="btn" onclick="unit=DATA.units[${i}];startBooking()">📅 Book Now</button>`); }
+    if (k === 'listing') { const x = DATA.listings[i]; return FCARD(x.images[0], x.title, '📍 ' + (x.location || ''), peso(x.price) + (x.listingType === 'rent' ? '/mo' : ''), `<button class="btn sec" onclick="openListing(${i})">👁 View</button><button class="btn" onclick="inquire(${i})">✉️ Inquire</button>`); }
+    if (k === 'service') { const x = DATA.services[i]; return FCARD(x.images[0], x.name, '⏱ ' + x.durationMinutes + ' min', peso(x.price), `<button class="btn" style="grid-column:1/-1" onclick="bookService(${i})">📅 Book now</button>`); }
+    const x = DATA.products[i]; return FCARD(x.images[0], x.name, x.description, peso(x.price), `<div style="grid-column:1/-1">${x.stock === 0 ? '<div class="mute">Out of stock</div>' : orderBtn(x)}</div>`);
+  };
+  if (items.length) $('#feat').innerHTML = '<div class="coll sect"><small>FEATURED</small><h2>Featured Listing</h2></div><div class="fgrid">' + items.map(card).join('') + '</div><div style="text-align:center;margin-top:14px"><button class="btn sec" style="width:auto;padding:12px 26px" onclick="goPage(\'services\')">See everything →</button></div>';
+  const F = (SI.faq || []).filter(f => f && f.q && f.a);
+  if (F.length) $('#faq').innerHTML = '<div class="coll sect"><small>FAQ</small><h2>Frequently asked questions</h2></div>' + F.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('');
+}
+const DEF_PRIV = n => `Privacy\nWhen you send an inquiry, a booking request or a payment on this website, ${n} receives your name, mobile number, email address and any message or file you attach. We use them only to reply to you, confirm your booking and process your payment. We do not sell your information.\n\nBookings and payments\nA booking is confirmed only after ${n} replies to you. Please keep your reference number. Payment proofs you attach are used only to verify your payment.\n\nQuestions\nContact us using the details on this website.`;
+let CAL = { y: 0, m: 0, sel: '' };
+function calDraw() {
+  const t = manilaToday(), first = new Date(Date.UTC(CAL.y, CAL.m, 1)), dim = new Date(Date.UTC(CAL.y, CAL.m + 1, 0)).getUTCDate(), pad = first.getUTCDay();
+  const mn = first.toLocaleString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  let cells = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => `<div class="dw">${d}</div>`).join('') + '<span></span>'.repeat(pad);
+  for (let d = 1; d <= dim; d++) { const k = ds(CAL.y, CAL.m, d); cells += `<button type="button" class="${k === CAL.sel ? 'sel' : ''}" ${k < t ? 'disabled' : ''} onclick="calPick('${k}')">${d}</button>`; }
+  $('#calgrid').innerHTML = `<div class="row" style="margin-bottom:8px"><button type="button" class="btn sec" style="width:46px;padding:0" onclick="calMv(-1)" aria-label="Previous month">‹</button><b>${mn}</b><button type="button" class="btn sec" style="width:46px;padding:0" onclick="calMv(1)" aria-label="Next month">›</button></div><div class="dpick">${cells}</div>`;
+  $('#caldate').textContent = CAL.sel ? 'Selected date: ' + CAL.sel : 'Tap a date.';
+}
+function calMv(n) { CAL.m += n; if (CAL.m < 0) { CAL.m = 11; CAL.y--; } if (CAL.m > 11) { CAL.m = 0; CAL.y++; } calDraw(); }
+function calPick(k) { CAL.sel = k; calDraw(); }
+async function postReq(kind, form, errEl, btn, onOk) {
+  errEl.textContent = '';
+  const g = n => String(form.elements[n] ? form.elements[n].value : '').trim(), file = form.elements.proof && form.elements.proof.files[0];
+  if (g('name').length < 2) { errEl.textContent = 'Please enter your full name.'; return; }
+  if (!/^[+0-9][0-9 ()-]{6,}$/.test(g('mobile'))) { errEl.textContent = 'Please enter a valid mobile number.'; return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g('email'))) { errEl.textContent = 'Please enter a valid email address.'; return; }
+  if (kind === 'calendar' && !CAL.sel) { errEl.textContent = 'Please pick a date on the calendar.'; return; }
+  if (kind === 'payment') { if (!file) { errEl.textContent = 'Please attach your payment screenshot.'; return; } if (file.size > 5 * 1024 * 1024) { errEl.textContent = 'The file is too big. Please use one under 5 MB.'; return; } }
+  const fd = new FormData(form); fd.append('kind', kind); fd.append('host', window.HOST_ID || ''); if (kind === 'calendar') fd.append('date', CAL.sel);
+  const old = btn.textContent; btn.disabled = true; btn.textContent = 'Sending...';
+  try { const r = await fetch(BASE_URL + '/functions/v1/site-request', { method: 'POST', body: fd }); const j = await r.json().catch(() => ({ ok: false }));
+    if (!j.ok) { const t = { proof_type: 'Please attach a photo (JPG, PNG, WEBP) or a PDF.', proof_size: 'The file is too big. Please use one under 5 MB.', too_many: 'Too many tries. Please wait a while and try again.' }; errEl.textContent = t[j.reason] || 'Could not send. Please check your internet and try again.'; btn.disabled = false; btn.textContent = old; return; }
+    onOk(j);
+  } catch (e) { errEl.textContent = 'Could not send. Please check your internet and try again.'; btn.disabled = false; btn.textContent = old; }
+}
+function msgrLink() { const ms = String(((window.HOST_H || {}).site || {}).chatMessenger || '').replace(/[^A-Za-z0-9._\-]/g, ''); return ms ? 'https://m.me/' + ms : ''; }
+function drawAbout(H, hid) {
+  const SI = (H && H.site) || {}, name = (H && H.businessName) || DATA.settings.brand || 'us';
+  if (SI.mapQuery) $('#map').innerHTML = '<div class="coll sect"><small>FIND US</small><h2>Our location</h2></div><div class="mapw"><iframe title="Map" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.google.com/maps?q=' + encodeURIComponent(SI.mapQuery) + '&output=embed"></iframe></div><div class="mute" style="margin-top:8px;text-align:center">📍 ' + esc(SI.mapQuery) + '</div>';
+  if (hid) {
+    const n = new Date(Date.now() + 8 * 3600e3); CAL = { y: n.getUTCFullYear(), m: n.getUTCMonth(), sel: '' };
+    $('#calsec').innerHTML = `<div class="coll sect"><small>BOOKING CALENDAR</small><h2>Pick a date and send your request</h2></div><div class="calbox"><div id="calgrid"></div><div class="mute" id="caldate" style="margin:10px 0"></div><form id="calf" novalidate><label>Full name</label><input name="name" type="text" autocomplete="name"><label>Mobile number</label><input name="mobile" type="tel" autocomplete="tel"><label>Email address</label><input name="email" type="email" autocomplete="email"><label>Message (optional)</label><textarea name="message" rows="2" maxlength="1000" style="width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:var(--panel);color:var(--ink)"></textarea><input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="err" id="calerr" role="alert"></div><button class="btn" id="calgo" type="submit" style="margin-top:8px">Send my request</button></form><div id="caldone" style="display:none;text-align:center"><h3>Request sent ✓</h3><p>Reference <b id="calref"></b>. ${esc(name)} will contact you soon. Check your email for a confirmation.</p></div></div>`;
+    calDraw(); $('#calf').addEventListener('submit', e => { e.preventDefault(); postReq('calendar', e.target, $('#calerr'), $('#calgo'), j => { $('#calf').style.display = 'none'; $('#caldone').style.display = 'block'; $('#calref').textContent = j.ref; }); });
+  }
+  $('#privacy').innerHTML = '<div class="coll sect"><small>POLICIES</small><h2>Privacy &amp; policies</h2></div><details class="polbox"><summary>Read our privacy &amp; policies</summary><div>' + esc(SI.privacy || DEF_PRIV(name)) + '</div></details>';
+}
+function drawDeals(H, hid) {
+  const SI = (H && H.site) || {}, https = u => /^https:\/\//.test(u || ''), has = https(SI.payQrUrl);
+  if (!hid || !H) { $('#deals').innerHTML = '<div class="empty">No deals yet. Please check back soon.</div>'; return; }
+  const ml = msgrLink();
+  $('#deals').innerHTML = `<div class="deal"><small style="letter-spacing:4px;color:var(--gold)">DEALS &amp; PROMO</small><h2>${esc(SI.dealTitle || 'Special offer')}</h2>${SI.dealOffer ? `<div class="badge">${esc(SI.dealOffer)}</div>` : ''}${SI.dealText ? `<p style="line-height:1.65;white-space:pre-wrap">${esc(SI.dealText)}</p>` : ''}
+  ${has ? `<div class="st2">Step 1: Scan and pay</div><img class="qr" src="${esc(SI.payQrUrl)}" alt="Payment QR code">${SI.payNote ? `<p class="mute" style="white-space:pre-wrap">${esc(SI.payNote)}</p>` : ''}<div class="st2">Step 2: Send your proof of payment</div>
+  <form id="payf" class="dform" novalidate><label>Full name</label><input name="name" type="text" autocomplete="name"><label>Mobile number</label><input name="mobile" type="tel" autocomplete="tel"><label>Email address (we send your confirmation here)</label><input name="email" type="email" autocomplete="email"><label>Attach your payment screenshot</label><input name="proof" type="file" accept="image/*,application/pdf"><div class="mute" style="margin-top:4px">Photo or PDF, up to 5 MB.</div><input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="err" id="payerr" role="alert"></div><button class="btn" id="paygo" type="submit">Send my payment</button></form>
+  <div id="paydone" style="display:none"><h3>Payment sent ✓</h3><p>Reference <b id="payref"></b>. Check your email for a confirmation.</p>${ml ? `<a class="btn" style="display:block;text-decoration:none;text-align:center;max-width:360px;margin:10px auto" target="_blank" rel="noopener" href="${esc(ml)}">💬 Also tell us on Messenger</a>` : ''}</div>`
+   : `<p class="mute">Payment details are coming soon. Contact us to claim this offer.</p>${ml ? `<a class="btn" style="display:block;text-decoration:none;text-align:center;max-width:360px;margin:10px auto" target="_blank" rel="noopener" href="${esc(ml)}">💬 Message us on Messenger</a>` : ''}`}</div>`;
+  const f = $('#payf'); if (f) f.addEventListener('submit', e => { e.preventDefault(); postReq('payment', e.target, $('#payerr'), $('#paygo'), j => { f.style.display = 'none'; $('#paydone').style.display = 'block'; $('#payref').textContent = j.ref; }); });
+}
+
 const emphF = t => String(t).replace(/\*([^*]+)\*/g, '<em class="ac">$1</em>');
 function chatLinks(H) {
   const SI = (H && H.site) || {}, out = [], ph = String(H.contactPhone || '').replace(/[^0-9+]/g, ''), intl = ph.replace(/^\+/, '').replace(/^0/, '63');
@@ -629,7 +776,7 @@ function drawSite(H, hid) {
   const bt = (H && H.businessType) || (DATA.units.length ? 'staycation' : hasL ? 'real_estate' : 'business');
   const label = SI.ctaText || (bt === 'real_estate' ? 'Inquire Now' : bt === 'business' ? (hasP && !hasS ? 'Buy Now' : hasS && !hasP ? 'Book Now' : 'Buy / Book Now') : 'Book Now');
   const target = bt === 'real_estate' ? 'lst' : bt === 'business' ? (hasS ? 'svc' : 'prd') : 'coll';
-  window.CTA_GO = () => { const el = document.getElementById(target); if (el) el.scrollIntoView({ behavior: 'smooth' }); };
+  window.CTA_GO = () => { goPage('services'); setTimeout(() => { const el = document.getElementById(target); if (el) el.scrollIntoView({ behavior: 'smooth' }); }, 60); }; { const nc = document.getElementById('navcta'); if (nc) nc.textContent = label; }
   const sub = bt === 'real_estate' ? 'Tell us what you are looking for.' : bt === 'business' ? 'Pick what you need and we will take it from here.' : 'Pick your dates and secure your stay.';
   const cta = '<div class="cband"><h3>Ready when you are</h3><p>' + esc(sub) + '</p><button class="btn" onclick="CTA_GO()">' + esc(label) + '</button></div>';
   const hc = document.querySelector('#hero .cta'); if (hc) { hc.textContent = label.toUpperCase(); hc.setAttribute('onclick', 'CTA_GO()'); }

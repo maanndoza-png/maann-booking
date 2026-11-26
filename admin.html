@@ -84,7 +84,7 @@ aside button.nv.mobonly{display:none}
 }
 </style>
 <style id="needcss">
-.need{border-color:#ff3b3b!important;box-shadow:0 0 0 2px rgba(255,59,59,.28),0 0 12px 2px rgba(255,59,59,.55);animation:needglow 1.3s ease-in-out infinite alternate;border-radius:10px}
+.card{scroll-margin-top:130px}.need{border-color:#ff3b3b!important;box-shadow:0 0 0 2px rgba(255,59,59,.28),0 0 12px 2px rgba(255,59,59,.55);animation:needglow 1.3s ease-in-out infinite alternate;border-radius:10px}
 @keyframes needglow{from{box-shadow:0 0 0 1px rgba(255,59,59,.2),0 0 4px 0 rgba(255,59,59,.35)}to{box-shadow:0 0 0 2px rgba(255,59,59,.45),0 0 18px 4px rgba(255,59,59,.85)}}
 div.need{padding:8px}
 .sb-o.on{border-color:#b79bff!important;background:rgba(183,155,255,.16)!important}
@@ -300,6 +300,7 @@ const H = {
     const biz = clean(p.businessName, 80), nm = clean(p.name, 80); if (!biz || !nm) throw new Error('Name and business name are required.');
     await A.upd('profiles', 'id=eq.' + A.uid, { name: nm, business_name: biz, phone: clean(p.phone, 30), payment_info: clean(p.paymentInfo, 1000) }); _me = null; return true;
   },
+  async copySite(p) { const r = await A.fn('copy-site', { url: p.url }); if (!r || r.error) throw new Error((r && r.error) || 'Could not read that website.'); return r; },
   async fbSync(p) { const r = await A.fn('fb-sync', { url: p.url }); if (!r || r.error) throw new Error((r && r.error) || 'Could not reach Facebook sync.'); return r; },
   async saveStorefront(p) {
     const so = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => { const v = clean((p.socials || {})[k], 300); if (v && !/^https:\/\/\S+$/.test(v)) throw new Error(k + ' link must start with https://'); so[k] = v; });
@@ -308,7 +309,12 @@ const H = {
     const st = p.site || {}, col = c => /^#[0-9a-fA-F]{6}$/.test(c || '') ? c : '', FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System', 'Dancing Script', 'Pacifico', 'Caveat', 'Great Vibes', 'Satisfy', 'Allura', 'Sacramento'];
     const site = { bgUrl: url(st.bgUrl), color1: col(st.color1), color2: col(st.color2), font1: FONTS.indexOf(st.font1) >= 0 ? st.font1 : '', font2: FONTS.indexOf(st.font2) >= 0 ? st.font2 : '', font3: FONTS.indexOf(st.font3) >= 0 ? st.font3 : '', heroStyle: ['soft', 'warm', 'moody', 'bright'].indexOf(st.heroStyle) >= 0 ? st.heroStyle : 'soft', chatMessenger: msgName(st.chatMessenger), chatMobile: false, fbUrl: /^https:\/\/(www\.|m\.|web\.)?(facebook|fb)\.com\//.test(st.fbUrl || '') ? clean(st.fbUrl, 300) : '',
       ctaText: clean(st.ctaText, 30), hook: clean(st.hook, 140), hookSub: clean(st.hookSub, 200), why: (st.why || []).slice(0, 3).map(w => ({ title: clean(w.title, 60), text: clean(w.text, 240) })), whyTitle: clean(st.whyTitle, 60),
-      mission: clean(st.mission, 600), vision: clean(st.vision, 600), ownerName: clean(st.ownerName, 80), salutation: clean(st.salutation, 40), license: clean(st.license, 80) };
+      mission: clean(st.mission, 600), vision: clean(st.vision, 600), ownerName: clean(st.ownerName, 80), salutation: clean(st.salutation, 40), license: clean(st.license, 80),
+      words: (st.words || []).map(w => clean(w, 24)).filter(Boolean).slice(0, 40),
+      featured: (st.featured || []).filter(f => f && ['unit', 'listing', 'service', 'product'].indexOf(f.k) >= 0 && /^[\w-]{6,60}$/.test(String(f.id))).slice(0, 6).map(f => ({ k: f.k, id: String(f.id) })),
+      faq: (st.faq || []).map(f => ({ q: clean(f.q, 160), a: clean(f.a, 800) })).filter(f => f.q && f.a).slice(0, 12),
+      mapQuery: clean(st.mapQuery, 200), privacy: clean(st.privacy, 4000),
+      dealTitle: clean(st.dealTitle, 80), dealText: clean(st.dealText, 600), dealOffer: clean(st.dealOffer, 80), payQrUrl: url(st.payQrUrl), payNote: clean(st.payNote, 400) };
     const patch = { logo_url: clean(p.logoUrl, 500), tagline: clean(p.tagline, 120), about: clean(p.about, 2000), owner_photo_url: clean(p.ownerPhotoUrl, 500), contact_phone: clean(p.contactPhone, 40), contact_email: clean(p.contactEmail, 120), socials: so, testimonials: tm, site, inquiry_email: (/^\S+@\S+\.\S+$/.test(clean(p.inquiryEmail, 160)) ? clean(p.inquiryEmail, 160) : '') };
     if (ACT) { if (p.businessName != null) patch.business_name = clean(p.businessName, 80); await A.rpc('admin_update_host', { p_host: ACT.id, p: patch }); ACT.me = await hostMe(ACT.id); return true; }
     await A.upd('profiles', 'id=eq.' + A.uid, patch);
@@ -1024,11 +1030,12 @@ const SF_PALETTES = [['#d4a62a', '#0b1226'], ['#c2185b', '#2b1b2e'], ['#2e8b57',
 const sfCta = bt => bt === 'real_estate' ? 'Inquire Now' : bt === 'business' ? 'Buy / Book Now' : 'Book Now';
 async function storefront() {
   if (ACT) ACT.me = await hostMe(ACT.id); const m = await api('me'); if (!ACT) Object.assign(ME, m); const st = m.site || {};
-  SF = { logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', bgUrl: st.bgUrl || '', testimonials: (m.testimonials || []).map(t => ({ name: t.name || '', text: t.text || '', photo: t.photo || '' })), why: [0, 1, 2].map(i => (st.why || [])[i] || { title: '', text: '' }) };
+  const [fU, fL, fS, fP] = await Promise.all(['units', 'listings', 'services', 'products'].map(k => api(k).catch(() => []))); const FEATS = [].concat(fU.map(x => ({ k: 'unit', id: x.id, n: x.name })), fL.map(x => ({ k: 'listing', id: x.id, n: x.title })), fS.map(x => ({ k: 'service', id: x.id, n: x.name })), fP.map(x => ({ k: 'product', id: x.id, n: x.name }))); const FKL = { unit: 'Stay', listing: 'Property', service: 'Service', product: 'Product' };
+  SF = { payQrUrl: st.payQrUrl || '', faq: [0, 1, 2].map(i => (st.faq || [])[i] || { q: '', a: '' }).concat((st.faq || []).slice(3)), logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', bgUrl: st.bgUrl || '', testimonials: (m.testimonials || []).map(t => ({ name: t.name || '', text: t.text || '', photo: t.photo || '' })), why: [0, 1, 2].map(i => (st.why || [])[i] || { title: '', text: '' }) };
   const so = m.socials || {}; loadAdminFonts(); const note = SYNC_NOTE; SYNC_NOTE = '';
   const c1 = /^#[0-9a-fA-F]{6}$/.test(st.color1 || '') ? st.color1 : '#d4a62a', c2 = /^#[0-9a-fA-F]{6}$/.test(st.color2 || '') ? st.color2 : '#0b1226';
   $('#main').innerHTML = (ACT ? `<div class="card" style="border-color:var(--gold)"><b>Editing as owner:</b> ${esc(ACT.me.businessName || ACT.me.name || 'host')}'s website <button class="btn sec sm" style="width:auto;margin-left:8px" onclick="go('users')">← Back to Users</button></div>` : '') + head(ACT ? (ACT.me.businessName || 'Host') + ' · Website' : 'My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') + '<div class="card" id="sf_sum" style="position:sticky;top:60px;z-index:5;padding:8px 14px"></div>' +
-    sbCard() + (ACT ? '' : `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button><button class="btn sec sm" style="width:auto;white-space:nowrap" onclick="noPageYet()">No Page yet</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
+    sbCard() + csCard() + (ACT ? '' : `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button><button class="btn sec sm" style="width:auto;white-space:nowrap" onclick="noPageYet()">No Page yet</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
     `) +
     `<div class="card"><h2>1 · Logo, hero &amp; hook</h2><label>Logo</label><div class="row" id="need_logo" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>
     <label>Company name</label><input id="sf_b" value="${esc(m.businessName)}">
@@ -1056,10 +1063,19 @@ async function storefront() {
 </div>
     <h3 style="margin:14px 0 0">Social media accounts</h3><div class="g2">${[['facebook', 'Facebook'], ['instagram', 'Instagram'], ['tiktok', 'TikTok'], ['youtube', 'YouTube'], ['website', 'Website']].map(([k, l]) => `<div><label>${l} link</label><input id="sf_s_${k}" placeholder="https://" value="${esc(so[k] || '')}"></div>`).join('')}</div></div>
     <div class="card"><h2>8 · Inquiry email</h2><div class="mute">The email where you want to receive customer inquiries. Every inquiry also shows in your <b>Inquiries</b> tab.</div><label>Email for inquiries</label><input id="sf_iq" type="email" value="${esc(m.inquiryEmail || m.email || '')}" placeholder="you@email.com"></div>
-    <div class="card" id="dm_card"><h2>9 · My own domain</h2><div class="mute">Want your website on your own web address, like <b>yourbusiness.com</b>? Buy a domain first (GoDaddy or Cloudflare are reliable), then add it here. We connect it for you and tell you the exact steps. Until it is connected, your website keeps working on its normal link.</div>
+    <div class="card"><h2>9 · Services in one word</h2><div class="mute">After your hook, visitors see a strip of short words that introduce the kind of services you offer. Write at least <b>20 words</b>, separated by commas.</div><label>Your words</label><textarea id="sf_words" rows="4" placeholder="e.g. Relax, Unwind, Pool, Cozy, Family, Barkada ...">${esc((st.words || []).join(', '))}</textarea><div class="mute" id="sf_wc"></div><button type="button" class="btn sec sm" style="width:auto;margin-top:6px" onclick="sfWordsSuggest()">Suggest words for my industry</button></div>
+    <div class="card"><h2>10 · Featured listing</h2><div class="mute">Pick up to 6 things to show first on your Home page. If you pick none, we show your first three.</div><div id="need_feat">${FEATS.length ? FEATS.map(f => `<label class="chk"><input type="checkbox" data-fk="${f.k}" data-fid="${esc(f.id)}" ${(st.featured || []).some(x => x.k === f.k && String(x.id) === String(f.id)) ? 'checked' : ''} onchange="sfFeatLimit(this)"> <span><b>${esc(f.n)}</b> <span class="mute">${FKL[f.k]}</span></span></label>`).join('') : '<p class="mute">Nothing to feature yet. Add your listings, services or products first.</p>'}</div></div>
+    <div class="card"><h2>11 · Frequently asked questions</h2><div class="mute">Add at least <b>3 questions</b> your customers often ask, with your answers. They show on your Home page.</div><div id="need_faq"><div id="sf_faq"></div></div><button type="button" class="btn sec sm" style="width:auto" onclick="sfFaqAdd()">+ Add question</button></div>
+    <div class="card"><h2>12 · About page: map &amp; privacy</h2><label>Your location (for the map)</label><input id="sf_map" maxlength="200" value="${esc(st.mapQuery || '')}" placeholder="e.g. Tagaytay City, Cavite, Philippines"><div class="mute">Bookings made on the About page calendar are sent to your inquiry email (section 8).</div>
+    <label>Privacy &amp; policies</label><textarea id="sf_priv" rows="6" maxlength="4000" placeholder="Write your privacy and booking policies here.">${esc(st.privacy || '')}</textarea><button type="button" class="btn sec sm" style="width:auto;margin-top:6px" onclick="sfPrivTpl()">Use a simple template</button></div>
+    <div class="card"><h2>13 · Deals / Promo page</h2><div class="mute">Your 4th page: a landing page with an offer, your payment QR, and a form where customers attach their proof of payment. You get it by email, and they get a Messenger button.</div>
+    <label>Headline</label><input id="sf_dt" maxlength="80" value="${esc(st.dealTitle || '')}" placeholder="e.g. Weekend promo"><label>Offer (short)</label><input id="sf_do" maxlength="80" value="${esc(st.dealOffer || '')}" placeholder="e.g. 20% off until Sunday"><label>Description</label><textarea id="sf_dx" rows="3" maxlength="600">${esc(st.dealText || '')}</textarea>
+    <label>Payment QR code (GCash, InstaPay or bank)</label><div class="row" id="need_qr" style="justify-content:flex-start;gap:10px"><img id="sf_qr" style="height:90px;border-radius:8px;background:#fff;display:${SF.payQrUrl ? 'block' : 'none'}" src="${esc(SF.payQrUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'payQrUrl','sf_qr',900)"></div>
+    <label>Payment instructions (optional)</label><textarea id="sf_pn" rows="2" maxlength="400" placeholder="e.g. GCash name and number, how to pay, deposit amount">${esc(st.payNote || '')}</textarea></div>
+    <div class="card" id="dm_card"><h2>14 · My own domain</h2><div class="mute">Want your website on your own web address, like <b>yourbusiness.com</b>? Buy a domain first (GoDaddy or Cloudflare are reliable), then add it here. We connect it for you and tell you the exact steps. Until it is connected, your website keeps working on its normal link.</div>
       ${ACT ? '' : '<label>Your domain</label><div class="row" style="gap:8px"><input id="dm_in" placeholder="yourbusiness.com" autocapitalize="none" autocomplete="off"><button class="btn sm" style="width:auto" onclick="dmAdd()">Add</button></div>'}<div class="err" id="dm_e"></div><div id="dm_list"></div></div>
     <div class="err" id="sf_e"></div><button class="btn" style="margin-top:10px" onclick="saveSf()">Save My Website</button> <a class="btn sec" style="text-decoration:none;display:inline-block" target="_blank" rel="noopener" href="${esc(siteLink('guest', { host: hostNow() }))}">👁 Preview my website</a>`;
-  drawTm(); drawHooks(); drawDomains(); refreshNeeds();
+  drawTm(); sfFaqDraw(); drawHooks(); drawDomains(); refreshNeeds();
   if (!$('#main')._nd) { $('#main')._nd = 1; ['input', 'change'].forEach(ev => $('#main').addEventListener(ev, () => refreshNeeds())); }
 }
 function msgFrom(v) { return msgName(v); }
@@ -1072,6 +1088,9 @@ function refreshNeeds() {
   mark($('#need_logo'), !SF.logoUrl); mark($('#need_bg'), !SF.bgUrl); mark($('#need_ph'), !SF.ownerPhotoUrl);
   mark($('#need_tm'), !SF.testimonials.some(t => (t.text || '').trim()));
   mark($('#need_chat'), !val('sf_msg'));
+  if ($('#sf_words')) { const wn = val('sf_words').split(/[\n,]+/).map(x => x.trim()).filter(Boolean).length; mark(inp('sf_words'), wn < 20); if ($('#sf_wc')) $('#sf_wc').textContent = wn + ' of 20 words'; }
+  if ($('#need_faq')) mark($('#need_faq'), SF.faq.filter(f => (f.q || '').trim() && (f.a || '').trim()).length < 3);
+  ['sf_map', 'sf_dt', 'sf_dx'].forEach(id => { if ($('#' + id)) mark(inp(id), !val(id)); }); if ($('#need_qr')) mark($('#need_qr'), !SF.payQrUrl);
   mark(inp('sf_s_facebook'), !val('sf_s_facebook') && !val('sf_s_instagram') && !val('sf_s_tiktok') && !val('sf_s_youtube') && !val('sf_s_website'));
   let total = 0; main.querySelectorAll('.card').forEach(c => {
     const n = c.querySelectorAll('.need').length, h = c.querySelector('h2'); if (!h || !c.querySelector('[id^=sf_],[id^=need_]')) return; total += n;
@@ -1146,6 +1165,42 @@ function sbImport() {
   const r = sbApply(B, $('#sb_rep').checked); $('#sb_box').dataset.m = ''; $('#sb_box').innerHTML = `<div class="mute" style="margin-top:8px"><b style="color:#2e8b57">Imported ✓</b> ${r.n} part${r.n === 1 ? '' : 's'} filled${r.kept ? ', ' + r.kept + ' kept because you already wrote them' : ''}. The red boxes below still need you. Press Save My Website when you are happy.</div>`;
   needNext();
 }
+/* Copy a website */
+let CS = null;
+function csCard() {
+  return `<div class="card" id="cs_card" style="border-color:#4fb3bf"><div onclick="csToggle()" style="display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:10px"><h2 style="color:#4fb3bf;margin:0">Copy a website</h2><span id="cs_arr" style="color:#4fb3bf;font-size:18px">▾</span></div><div class="mute" style="margin-top:4px">Paste a website link. We show its parts, and copy the words if it is your own site.</div>
+  <div id="cs_body" style="display:none"><input id="cs_u" inputmode="url" autocapitalize="none" placeholder="https://yourwebsite.com" style="margin-top:8px"><label class="chk" style="display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:14px;line-height:1.4"><input type="checkbox" id="cs_own" style="width:20px;height:20px;flex:none;margin-top:1px"> <span>This is my own website, or I have permission to copy its words.</span></label>
+  <div class="mute" style="margin-top:4px">Not ticked? We only show the structure. We never copy the words, logo or photos.</div><div class="err" id="cs_e"></div><div class="mute" id="cs_m"></div><button class="btn" style="margin-top:8px;width:100%" id="cs_go" onclick="csRead()">Read website</button><div id="cs_box"></div></div></div>`;
+}
+function csToggle() { const b = $('#cs_body'), o = b.style.display === 'none'; b.style.display = o ? 'block' : 'none'; $('#cs_arr').textContent = o ? '▴' : '▾'; if (o) setTimeout(() => $('#cs_u').focus({ preventScroll: true }), 50); }
+const csFind = (R, re) => (R.sections || []).find(x => re.test(x.h));
+async function csRead() {
+  const er = $('#cs_e'), m = $('#cs_m'), go = $('#cs_go'); er.textContent = ''; const u = ($('#cs_u').value || '').trim(); if (!u) { er.textContent = 'Paste the website link first.'; return; }
+  go.disabled = true; m.textContent = 'Reading the website…'; $('#cs_box').innerHTML = '';
+  try { const r = await api('copySite', { url: u }); if (!r.ok) throw new Error(r.reason || 'Could not read that website.'); CS = r; csShow(); m.textContent = ''; }
+  catch (e) { er.textContent = e.message; m.textContent = ''; } go.disabled = false;
+}
+function csShow() {
+  const R = CS, own = $('#cs_own').checked, L = a => (a || []).map(x => esc(x)).join(', ');
+  const secs = (R.sections || []).map(x => `<li><b>${esc(x.h)}</b>${x.subs.length ? ' <span class="mute">(' + L(x.subs.slice(0, 5)) + ')</span>' : ''}</li>`).join('');
+  $('#cs_box').innerHTML = `<div style="margin-top:10px"><b>Parts we found on ${esc(R.host)}</b><ul style="margin:6px 0 0 18px;padding:0;font-size:14px;line-height:1.6">${R.h1 ? '<li>Hero headline</li>' : ''}${secs}${R.ctas.length ? '<li>' + R.ctas.length + ' call-to-action buttons</li>' : ''}${R.hasForm ? '<li>Inquiry / contact form</li>' : ''}</ul></div>` +
+    (own ? `<label class="chk" style="display:flex;gap:10px;align-items:center;margin-top:10px;font-size:14px"><input type="checkbox" id="cs_rep" style="width:20px;height:20px;flex:none"> Replace what I already wrote</label><button class="btn" style="margin-top:8px;width:100%" onclick="csCopy()">Copy its words into my website</button>`
+      : `<div class="mute" style="margin-top:8px">Structure only: nothing was copied. Use these parts as a guide, then let us write your own words.</div><button class="btn" style="margin-top:8px;width:100%" onclick="sbStart()">Answer the Slam Book questions</button>`);
+}
+function csCopy() {
+  if (!CS || !$('#cs_own').checked) { toast('Tick the box first: it must be your own website'); return; }
+  const R = CS, force = $('#cs_rep') && $('#cs_rep').checked; let n = 0, kept = 0;
+  const put = (id, v, max) => { const e = $('#' + id); v = sbCut(String(v || '').trim(), max); if (!e || !v) return; if (!force && e.value.trim()) { kept++; return; } e.value = v; n++; };
+  put('sf_b', R.title, 80); put('sf_t', (R.description.split(/(?<=[.!?])\s/)[0] || ''), 90); put('sf_hk', R.h1, 140); put('sf_hs', R.heroPara, 200);
+  const how = csFind(R, /how|step|process|simple|work/i);
+  if (how) { const st = (how.items.length ? how.items : how.subs).slice(0, 3); st.forEach((t, i) => { const parts = t.split(/\s*[:–—-]\s+/); put('sf_w' + i + 't', parts[0], 60); put('sf_w' + i + 'd', parts[1] || '', 240); }); if (how.h) put('sf_wt', how.h, 60); }
+  const mi = csFind(R, /mission/i), vi = csFind(R, /vision/i); if (mi) put('sf_mi', mi.paras[0], 600); if (vi) put('sf_vi', vi.paras[0], 600);
+  const ab = csFind(R, /about|who we are|our story/i); if (ab && ab.paras.length) put('sf_a', ab.paras.join(' '), 900);
+  if (R.ctas[0] && !/^(home|menu|call|learn)/i.test(R.ctas[0])) put('sf_cta', R.ctas[0], 30);
+  put('sf_cp', R.phone, 40); put('sf_ce', R.email, 120);
+  if (typeof drawHooks === 'function') drawHooks(); refreshNeeds();
+  $('#cs_box').innerHTML += `<div class="mute" style="margin-top:8px"><b style="color:#2e8b57">Copied ✓</b> ${n} part${n === 1 ? '' : 's'} filled${kept ? ', ' + kept + ' kept because you already wrote them' : ''}. Photos and logo are not copied. The red boxes still need you. Press Save My Website when you are happy.</div>`; needNext();
+}
 let SBW = null;
 const SB_Q = [
   { k: 'sell', t: 'What do you sell, and to whom?', text: true, ph: 'e.g. Cozy villas for families in Tagaytay' },
@@ -1210,11 +1265,20 @@ function sfBg(el) {
 }
 function drawTm() { $('#sf_tm').innerHTML = SF.testimonials.map((t, i) => `<div class="card" style="margin:8px 0"><div class="row" style="justify-content:flex-start;gap:10px"><img src="${esc(t.photo)}" style="height:48px;width:48px;border-radius:50%;object-fit:cover;display:${t.photo ? 'block' : 'none'}"><input type="file" accept="image/*" onchange="tmUp(this,${i})"></div><div class="g2" style="margin-top:6px"><input placeholder="Customer name" value="${esc(t.name)}" oninput="SF.testimonials[${i}].name=this.value"><div style="display:flex;gap:6px"><input placeholder="What they said" value="${esc(t.text)}" oninput="SF.testimonials[${i}].text=this.value"><button class="btn sec sm" onclick="SF.testimonials.splice(${i},1);drawTm();refreshNeeds()">✕</button></div></div></div>`).join('') || '<p class="mute">No testimonials yet.</p>'; }
 async function tmUp(el, i) { if (!el.files[0]) return; try { SF.testimonials[i].photo = await api('uploadImage', { data: await resize(el.files[0], 300) }); drawTm(); } catch (e) { $('#sf_e').textContent = e.message; } el.value = ''; }
+
+const SF_WORDS = { staycation: ['Relax', 'Unwind', 'Escape', 'Cozy', 'Private', 'Pool', 'Family', 'Barkada', 'Romantic', 'Weekend', 'Getaway', 'Comfort', 'Clean', 'Peaceful', 'Scenic', 'Fun', 'Memories', 'Celebrate', 'Staycation', 'Rest', 'Bonding', 'Retreat'], real_estate: ['Homes', 'Condos', 'Lots', 'Rentals', 'Investment', 'Family', 'Starter', 'Luxury', 'Affordable', 'Location', 'Viewing', 'Financing', 'Trusted', 'Secure', 'Move-in', 'Resale', 'Pre-selling', 'Townhouse', 'Dreams', 'Space', 'Value', 'Guidance'], business: ['Quality', 'Fast', 'Friendly', 'Trusted', 'Local', 'Affordable', 'Custom', 'Reliable', 'Fresh', 'Easy', 'Professional', 'Caring', 'Results', 'Support', 'Value', 'Convenient', 'Expert', 'Simple', 'Personal', 'Honest', 'Prompt', 'Satisfaction'] };
+function sfWordsSuggest() { const set = SF_WORDS[indNow()] || SF_WORDS.business, cur = $('#sf_words').value.split(/[\n,]+/).map(x => x.trim()).filter(Boolean), have = new Set(cur.map(x => x.toLowerCase())); set.forEach(w => { if (!have.has(w.toLowerCase())) cur.push(w); }); $('#sf_words').value = cur.join(', '); refreshNeeds(); }
+function sfFeatLimit(el) { if ([...document.querySelectorAll('[data-fk]:checked')].length > 6) { el.checked = false; toast('You can feature up to 6.'); } }
+function sfFaqDraw() { $('#sf_faq').innerHTML = SF.faq.map((f, i) => `<div class="card" style="margin:8px 0"><label>Question ${i + 1}</label><input maxlength="160" value="${esc(f.q)}" oninput="SF.faq[${i}].q=this.value" placeholder="${['How do I book?', 'How do I pay?', 'Can I cancel or change my booking?'][i] || 'Another question'}"><label>Answer</label><div style="display:flex;gap:6px"><textarea rows="2" maxlength="800" oninput="SF.faq[${i}].a=this.value" style="flex:1">${esc(f.a)}</textarea>${i >= 3 ? `<button type="button" class="btn sec sm" onclick="SF.faq.splice(${i},1);sfFaqDraw();refreshNeeds()">✕</button>` : ''}</div></div>`).join(''); }
+function sfFaqAdd() { if (SF.faq.length >= 12) return; SF.faq.push({ q: '', a: '' }); sfFaqDraw(); refreshNeeds(); }
+function sfPrivTpl() { const b = ($('#sf_b') || {}).value || 'our business'; if ($('#sf_priv').value.trim() && !confirm('Replace what you wrote with the template?')) return; $('#sf_priv').value = `Privacy\nWhen you send an inquiry, a booking request or a payment on this website, ${b} receives your name, mobile number, email address and any message or file you attach. We use them only to reply to you, confirm your booking and process your payment. We do not sell your information.\n\nBookings and payments\nA booking is confirmed only after ${b} replies to you. Please keep your reference number. Payment proofs you attach are used only to verify your payment.\n\nCancellations and changes\nContact ${b} as early as you can if you need to change or cancel. [Edit this part with your own rules.]\n\nQuestions\nContact us using the details on this website.`; refreshNeeds(); }
 function sfTm() { if (SF.testimonials.length >= 12) return; SF.testimonials.push({ name: '', text: '', photo: '' }); drawTm(); refreshNeeds(); }
 async function saveSf() {
   const socials = {}; ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].forEach(k => socials[k] = $('#sf_s_' + k).value); $('#sf_e').textContent = '';
   const site = { bgUrl: SF.bgUrl, color1: $('#sf_c1').value, color2: $('#sf_c2').value, font1: $('#sf_f1').value, font2: $('#sf_f2').value, font3: $('#sf_f3').value, chatMessenger: $('#sf_msg').value, chatMobile: false, heroStyle: $('#sf_hst').value, fbUrl: ($('#sf_fu') || {}).value || '', ctaText: $('#sf_cta').value, hook: $('#sf_hk').value, hookSub: $('#sf_hs').value, whyTitle: $('#sf_wt').value,
-    why: [0, 1, 2].map(i => ({ title: $('#sf_w' + i + 't').value, text: $('#sf_w' + i + 'd').value })), mission: $('#sf_mi').value, vision: $('#sf_vi').value, ownerName: $('#sf_on').value, salutation: $('#sf_sa').value, license: $('#sf_li').value };
+    why: [0, 1, 2].map(i => ({ title: $('#sf_w' + i + 't').value, text: $('#sf_w' + i + 'd').value })), mission: $('#sf_mi').value, vision: $('#sf_vi').value, ownerName: $('#sf_on').value, salutation: $('#sf_sa').value, license: $('#sf_li').value,
+    words: $('#sf_words').value.split(/[\n,]+/).map(x => x.trim()).filter(Boolean), featured: [...document.querySelectorAll('[data-fk]:checked')].map(c => ({ k: c.dataset.fk, id: c.dataset.fid })), faq: SF.faq,
+    mapQuery: $('#sf_map').value, privacy: $('#sf_priv').value, dealTitle: $('#sf_dt').value, dealText: $('#sf_dx').value, dealOffer: $('#sf_do').value, payQrUrl: SF.payQrUrl, payNote: $('#sf_pn').value };
   try {
     if (!ACT) await api('saveProfile', { name: ME.name, businessName: $('#sf_b').value, phone: ME.phone, paymentInfo: ME.paymentInfo });
     await api('saveStorefront', { businessName: $('#sf_b').value, logoUrl: SF.logoUrl, ownerPhotoUrl: SF.ownerPhotoUrl, tagline: $('#sf_t').value, about: $('#sf_a').value, contactPhone: $('#sf_cp').value, contactEmail: $('#sf_ce').value, socials, testimonials: SF.testimonials, site, inquiryEmail: $('#sf_iq').value });

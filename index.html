@@ -252,6 +252,51 @@ header img#logo{height:44px!important;max-width:60vw;object-fit:contain}
 .st2{display:inline-block;background:var(--gold);color:var(--onGold,#1f1a05);border-radius:999px;font-weight:800;font-size:13px;padding:3px 12px;margin:16px 0 6px}
 .hp{position:absolute;left:-9999px;width:1px;height:1px;opacity:0}
 .fgrid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+
+/* hero: show the whole photo, never crop */
+#hero{min-height:0!important;height:auto!important;aspect-ratio:16/9;display:block;border-radius:0;margin:0 0 8px;background:var(--c2)!important;max-height:82vh}
+#hero .s{background-size:contain!important;background-position:center!important;background-repeat:no-repeat!important;transform:none!important}
+#hero:after{display:none!important}
+@media(max-width:640px){#hero{min-height:0!important;margin:0 0 4px}}
+/* shared FAQ */
+.faqw details{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin:8px 0;padding:0}
+.faqw summary{cursor:pointer;padding:16px 18px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px;min-height:48px;align-items:center}
+.faqw summary::-webkit-details-marker{display:none}.faqw summary:after{content:"+";font-size:22px;color:var(--gold)}.faqw details[open] summary:after{content:"\2212"}
+.faqw details p{margin:0;padding:0 18px 16px;line-height:1.6;white-space:pre-wrap;color:var(--ink)}
+/* Deals / Promo landing */
+.dl-hero{display:grid;gap:22px;grid-template-columns:1.1fr .9fr;align-items:center;padding:14px 0 6px}
+.dl-eb{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);border-radius:999px;padding:8px 14px;background:var(--panel);font-weight:700;font-size:13px;letter-spacing:.04em}
+.dl-eb i{width:8px;height:8px;border-radius:50%;background:var(--gold);display:inline-block}
+.dl-hero h2{font-size:clamp(32px,8vw,58px);line-height:1.04;margin:14px 0 10px}
+.dl-hero p{line-height:1.6;font-size:17px;white-space:pre-wrap;margin:0 0 18px;opacity:.9}
+.dl-depth{position:relative;width:100%;max-width:340px;aspect-ratio:1/.8;margin:0 auto}
+.dl-depth:before{content:"";position:absolute;inset:0;transform:translate(7%,8%);border-radius:24px;background:var(--c2)}
+.dl-depth div{position:absolute;inset:0;border-radius:24px;background:var(--gold);color:var(--onGold,#1f1a05);display:grid;place-content:center;text-align:center;padding:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
+.dl-depth small{letter-spacing:.14em;font-size:12px;font-weight:700;text-transform:uppercase;opacity:.8}
+.dl-depth strong{font:800 clamp(26px,7vw,40px)/1.1 var(--hf,inherit);margin-top:6px}
+.dl-re{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:14px;margin-top:16px;opacity:.9}.dl-re span:before{content:"\2713";color:var(--gold);font-weight:800;margin-right:6px}
+.dl-sec{margin-top:34px}
+.dl-items{display:grid;gap:12px}
+.dl-item{display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:12px;transition:border-color .2s,transform .2s}
+.dl-item.on{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold)}
+.dl-item img,.dl-item .ph{width:76px;height:76px;border-radius:14px;object-fit:cover;background:var(--chip)}
+.dl-item b{display:block;font-size:17px}.dl-item .pr{font-weight:800;color:var(--gold)}
+.dl-item .ds{font-size:14px;color:var(--mute);margin:2px 0 8px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dl-item .btn{width:auto;padding:10px 16px;font-size:14px;min-height:44px}
+.dl-steps{display:grid;gap:12px;grid-template-columns:repeat(3,1fr)}
+.dl-st{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.dl-st i{display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--gold);color:var(--onGold,#1f1a05);font:800 18px var(--hf,inherit);font-style:normal;margin-bottom:10px}
+.dl-st b{display:block;margin-bottom:4px}.dl-st span{font-size:14px;color:var(--mute);line-height:1.5}
+.dl-co{background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:20px 18px;max-width:560px;margin:0 auto;box-shadow:0 20px 50px -24px rgba(0,0,0,.35)}
+.dl-ind{display:flex;gap:6px;margin-bottom:16px}.dl-ind i{flex:1;height:4px;border-radius:4px;background:var(--line)}.dl-ind i.on{background:var(--gold)}
+.dl-co h3{margin:0 0 4px;font-size:24px}.dl-co .hint{color:var(--mute);font-size:14px;margin-bottom:12px}
+.dl-sel{background:var(--bg);border:1px dashed var(--line);border-radius:12px;padding:10px 12px;font-size:14px;margin-bottom:6px}
+.dl-qr{display:block;width:100%;max-width:250px;margin:8px auto;border-radius:16px;background:#fff}
+@media(max-width:760px){.dl-hero{grid-template-columns:1fr}.dl-steps{grid-template-columns:1fr}.dl-hero p{font-size:16px}.dl-item{grid-template-columns:64px 1fr}.dl-item img,.dl-item .ph{width:64px;height:64px}}
+
+body.themed .dl-hero,body.themed .dl-hero h2,body.themed .dl-hero p,body.themed .dl-re{color:var(--bgInk)}
+.dl-hero .btn{background:var(--c2);color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.dl-hero .btn:hover{background:var(--c2);filter:brightness(1.15)}
 </style>
 </head>
 <body>
@@ -424,7 +469,8 @@ async function init() {
   const HSITE = (H && H.site) || {}, heroes = /^https:\/\//.test(HSITE.bgUrl || '') ? [HSITE.bgUrl] : urls(S.heroImages), promos = urls(S.promoBanners);
   if (on('showHero') || heroes.length && /^https:\/\//.test(HSITE.bgUrl || '')) {
     const h = $('#hero'); h.style.display = 'flex'; h.className = 'hs-' + (HSITE.heroStyle || 'soft') + (heroes.length ? '' : ' nophoto');
-    h.innerHTML = heroes.map((u, i) => `<div class="s ${i ? '' : 'on'}" style="background-image:url('${esc(u)}')"></div>`).join('') + (heroes.length ? '<div class="shade"></div>' : '') + `<div class="t"><button class="cta" onclick="CTA_GO()">BOOK NOW</button></div>`; window.HERO_ON = true;
+    h.innerHTML = heroes.map((u, i) => `<div class="s ${i ? '' : 'on'}" style="background-image:url('${esc(u)}')"></div>`).join('');
+    if (!heroes.length) { h.style.display = 'none'; window.HERO_ON = false; } else { window.HERO_ON = true; const im = new Image(); im.onload = () => { if (im.naturalWidth && im.naturalHeight) h.style.aspectRatio = im.naturalWidth + ' / ' + im.naturalHeight; }; im.src = heroes[0]; }
     if (heroes.length > 1) { let n = 0; setInterval(() => { const sl = h.querySelectorAll('.s'); sl[n].classList.remove('on'); n = (n + 1) % sl.length; sl[n].classList.add('on'); }, 5000); }
   }
   if (on('showPromo') && promos.length) { const p = $('#promo'); p.style.display = 'flex'; p.innerHTML = promos.map(u => `<img src="${esc(u)}" alt="">`).join(''); }
@@ -698,8 +744,9 @@ function drawHome(H, hid) {
   };
   if (items.length) $('#feat').innerHTML = '<div class="coll sect"><small>FEATURED</small><h2>Featured Listing</h2></div><div class="fgrid">' + items.map(card).join('') + '</div><div style="text-align:center;margin-top:14px"><button class="btn sec" style="width:auto;padding:12px 26px" onclick="goPage(\'services\')">See everything →</button></div>';
   const F = (SI.faq || []).filter(f => f && f.q && f.a);
-  if (F.length) $('#faq').innerHTML = '<div class="coll sect"><small>FAQ</small><h2>Frequently asked questions</h2></div>' + F.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('');
+  if (F.length) $('#faq').innerHTML = '<div class="coll sect"><small>FAQ</small><h2>Frequently asked questions</h2></div><div class="faqw">' + faqHTML(F) + '</div>';
 }
+const faqHTML = F => F.map(f => `<details><summary>${esc(f.q)}</summary><p>${esc(f.a)}</p></details>`).join('');
 const DEF_PRIV = n => `Privacy\nWhen you send an inquiry, a booking request or a payment on this website, ${n} receives your name, mobile number, email address and any message or file you attach. We use them only to reply to you, confirm your booking and process your payment. We do not sell your information.\n\nBookings and payments\nA booking is confirmed only after ${n} replies to you. Please keep your reference number. Payment proofs you attach are used only to verify your payment.\n\nQuestions\nContact us using the details on this website.`;
 let CAL = { y: 0, m: 0, sel: '' };
 function calDraw() {
@@ -738,16 +785,46 @@ function drawAbout(H, hid) {
   }
   $('#privacy').innerHTML = '<div class="coll sect"><small>POLICIES</small><h2>Privacy &amp; policies</h2></div><details class="polbox"><summary>Read our privacy &amp; policies</summary><div>' + esc(SI.privacy || DEF_PRIV(name)) + '</div></details>';
 }
+let DL = { items: [], pick: -1 };
+function dlGo(id) { const e = document.getElementById(id); if (e) e.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+function dlSel() { const x = DL.items[DL.pick]; const t = x ? x.name + (x.price ? ' (' + x.price + ')' : '') : ''; const m = document.querySelector('#payf [name=message]'); if (m) m.value = t ? 'Selected offer: ' + t : ''; const l = document.getElementById('dlsel'); if (l) l.innerHTML = t ? '✓ <b>' + esc(t) + '</b> <a href="#" onclick="DL.pick=-1;dlSel();dlMark();return false" style="color:var(--gold)">change</a>' : 'No item chosen. You can pick one above, or just continue.'; }
+function dlMark() { document.querySelectorAll('.dl-item').forEach((e, i) => e.classList.toggle('on', i === DL.pick)); dlSel(); }
+function dlPick(i) { DL.pick = i; dlMark(); dlGo('dl_co'); }
+function dlNext() {
+  const f = $('#payf'), er = $('#payerr'), g = n => f.elements[n].value.trim(); er.textContent = '';
+  if (g('name').length < 2) { er.textContent = 'Please enter your full name.'; return; }
+  if (!/^[+0-9][0-9 ()-]{6,}$/.test(g('mobile'))) { er.textContent = 'Please enter a valid mobile number.'; return; }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g('email'))) { er.textContent = 'Please enter a valid email address.'; return; }
+  $('#dl_s1').style.display = 'none'; $('#dl_s2').style.display = 'block'; document.querySelectorAll('.dl-ind i').forEach((x, k) => x.classList.toggle('on', k < 2)); dlGo('dl_co');
+}
+function dlBack() { $('#dl_s2').style.display = 'none'; $('#dl_s1').style.display = 'block'; document.querySelectorAll('.dl-ind i').forEach((x, k) => x.classList.toggle('on', k < 1)); }
 function drawDeals(H, hid) {
   const SI = (H && H.site) || {}, https = u => /^https:\/\//.test(u || ''), has = https(SI.payQrUrl);
   if (!hid || !H) { $('#deals').innerHTML = '<div class="empty">No deals yet. Please check back soon.</div>'; return; }
-  const ml = msgrLink();
-  $('#deals').innerHTML = `<div class="deal"><small style="letter-spacing:4px;color:var(--gold)">DEALS &amp; PROMO</small><h2>${esc(SI.dealTitle || 'Special offer')}</h2>${SI.dealOffer ? `<div class="badge">${esc(SI.dealOffer)}</div>` : ''}${SI.dealText ? `<p style="line-height:1.65;white-space:pre-wrap">${esc(SI.dealText)}</p>` : ''}
-  ${has ? `<div class="st2">Step 1: Scan and pay</div><img class="qr" src="${esc(SI.payQrUrl)}" alt="Payment QR code">${SI.payNote ? `<p class="mute" style="white-space:pre-wrap">${esc(SI.payNote)}</p>` : ''}<div class="st2">Step 2: Send your proof of payment</div>
-  <form id="payf" class="dform" novalidate><label>Full name</label><input name="name" type="text" autocomplete="name"><label>Mobile number</label><input name="mobile" type="tel" autocomplete="tel"><label>Email address (we send your confirmation here)</label><input name="email" type="email" autocomplete="email"><label>Attach your payment screenshot</label><input name="proof" type="file" accept="image/*,application/pdf"><div class="mute" style="margin-top:4px">Photo or PDF, up to 5 MB.</div><input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="err" id="payerr" role="alert"></div><button class="btn" id="paygo" type="submit">Send my payment</button></form>
-  <div id="paydone" style="display:none"><h3>Payment sent ✓</h3><p>Reference <b id="payref"></b>. Check your email for a confirmation.</p>${ml ? `<a class="btn" style="display:block;text-decoration:none;text-align:center;max-width:360px;margin:10px auto" target="_blank" rel="noopener" href="${esc(ml)}">💬 Also tell us on Messenger</a>` : ''}</div>`
-   : `<p class="mute">Payment details are coming soon. Contact us to claim this offer.</p>${ml ? `<a class="btn" style="display:block;text-decoration:none;text-align:center;max-width:360px;margin:10px auto" target="_blank" rel="noopener" href="${esc(ml)}">💬 Message us on Messenger</a>` : ''}`}</div>`;
-  const f = $('#payf'); if (f) f.addEventListener('submit', e => { e.preventDefault(); postReq('payment', e.target, $('#payerr'), $('#paygo'), j => { f.style.display = 'none'; $('#paydone').style.display = 'block'; $('#payref').textContent = j.ref; }); });
+  const ml = msgrLink(), title = SI.dealTitle || 'Special offer';
+  DL = { items: [].concat(
+    DATA.units.map(u => ({ name: u.name, price: peso(u.price) + '/night', desc: u.location ? '📍 ' + u.location : '', img: u.images[0] })),
+    (DATA.listings || []).map(x => ({ name: x.title, price: peso(x.price) + (x.listingType === 'rent' ? '/mo' : ''), desc: x.location ? '📍 ' + x.location : '', img: x.images[0] })),
+    (DATA.services || []).map(x => ({ name: x.name, price: peso(x.price), desc: x.description || '', img: x.images[0] })),
+    (DATA.products || []).map(x => ({ name: x.name, price: peso(x.price), desc: x.description || '', img: x.images[0] }))).slice(0, 10), pick: -1 };
+  const items = DL.items.length ? '<div class="coll dl-sec"><small>WHAT\'S INCLUDED</small><h2>Choose your offer</h2></div><div class="dl-items">' + DL.items.map((x, i) => `<div class="dl-item">${x.img ? `<img src="${esc(x.img)}" alt="">` : '<div class="ph"></div>'}<div><b>${esc(x.name)}</b><span class="pr">${esc(x.price)}</span><div class="ds">${esc(x.desc)}</div><button class="btn sec" type="button" onclick="dlPick(${i})">Choose this</button></div></div>`).join('') + '</div>' : '';
+  const F = (SI.faq || []).filter(f => f && f.q && f.a);
+  const msgBtn = ml ? `<a class="btn sec" style="display:block;text-decoration:none;text-align:center;margin-top:10px" target="_blank" rel="noopener" href="${esc(ml)}">💬 Message us on Messenger</a>` : '';
+  $('#deals').innerHTML = `<div class="dl-hero"><div><span class="dl-eb"><i></i>DEALS &amp; PROMO</span><h2>${esc(title)}</h2>${SI.dealText ? `<p>${esc(SI.dealText)}</p>` : ''}<button class="btn" type="button" style="width:auto;padding:15px 32px" onclick="dlGo('dl_co')">${esc(SI.ctaText || 'Claim this offer')}</button><div class="dl-re"><span>Pay by QR</span><span>Confirmation by email</span><span>Chat on Messenger</span></div></div>${SI.dealOffer ? `<div class="dl-depth"><div><small>Special offer</small><strong>${esc(SI.dealOffer)}</strong></div></div>` : ''}</div>
+  ${items}
+  <div class="coll dl-sec"><small>HOW IT WORKS</small><h2>3 simple steps</h2></div><div class="dl-steps"><div class="dl-st"><i>1</i><b>Choose</b><span>Pick your offer and enter your details.</span></div><div class="dl-st"><i>2</i><b>Scan and pay</b><span>Pay with the QR code.</span></div><div class="dl-st"><i>3</i><b>Send your proof</b><span>Attach your payment screenshot. We confirm by email.</span></div></div>
+  <div class="coll dl-sec" id="dl_co"><small>CLAIM IT</small><h2>Your details</h2></div>
+  <div class="dl-co">${has ? `<div class="dl-ind"><i class="on"></i><i></i><i></i></div>
+  <form id="payf" novalidate><input type="hidden" name="message" value="">
+   <div id="dl_s1"><h3>Step 1 · Your details</h3><div class="dl-sel" id="dlsel"></div><label>Full name</label><input name="name" type="text" autocomplete="name"><label>Mobile number</label><input name="mobile" type="tel" autocomplete="tel"><label>Email address (we send your confirmation here)</label><input name="email" type="email" autocomplete="email"><div class="err" id="payerr" role="alert"></div><button class="btn" type="button" style="margin-top:14px" onclick="dlNext()">Continue to payment</button></div>
+   <div id="dl_s2" style="display:none"><h3>Step 2 · Scan and pay</h3><img class="dl-qr" src="${esc(SI.payQrUrl)}" alt="Payment QR code">${SI.payNote ? `<p class="mute" style="white-space:pre-wrap;text-align:center">${esc(SI.payNote)}</p>` : ''}<label>Attach your payment screenshot</label><input name="proof" type="file" accept="image/*,application/pdf"><div class="mute" style="margin-top:4px">Photo or PDF, up to 5 MB.</div><input class="hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"><div class="err" id="payerr2" role="alert"></div><button class="btn" id="paygo" type="submit" style="margin-top:14px">Send my payment</button><button class="btn sec" type="button" style="margin-top:8px" onclick="dlBack()">Back</button></div>
+  </form>
+  <div id="paydone" style="display:none;text-align:center"><div class="dl-ind"><i class="on"></i><i class="on"></i><i class="on"></i></div><h3>Payment sent ✓</h3><p>Reference <b id="payref"></b>. Check your email for a confirmation.</p>${ml ? `<a class="btn" style="display:block;text-decoration:none;text-align:center;margin-top:10px" target="_blank" rel="noopener" href="${esc(ml)}">💬 Also tell us on Messenger</a>` : ''}</div>`
+  : `<h3>Payment details coming soon</h3><p class="mute">Contact us to claim this offer.</p>${msgBtn}`}${has ? msgBtn : ''}</div>
+  ${F.length ? '<div class="coll dl-sec"><small>FAQ</small><h2>Questions, answered</h2></div><div class="faqw">' + faqHTML(F) + '</div>' : ''}
+  <div class="cband"><h3>Ready to claim ${esc(title)}?</h3><p>It takes about a minute.</p><button class="btn" type="button" onclick="dlGo('dl_co')">${esc(SI.ctaText || 'Claim this offer')}</button></div>`;
+  dlSel();
+  const f = $('#payf'); if (f) f.addEventListener('submit', e => { e.preventDefault(); const er = $('#payerr2'); postReq('payment', e.target, er, $('#paygo'), j => { f.style.display = 'none'; $('#paydone').style.display = 'block'; $('#payref').textContent = j.ref; dlGo('dl_co'); }); });
 }
 
 const emphF = t => String(t).replace(/\*([^*]+)\*/g, '<em class="ac">$1</em>');

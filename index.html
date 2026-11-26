@@ -298,6 +298,7 @@ body.themed .dl-hero,body.themed .dl-hero h2,body.themed .dl-hero p,body.themed 
 .dl-hero .btn{background:var(--c2);color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25)}
 .dl-hero .btn:hover{background:var(--c2);filter:brightness(1.15)}
 #brandbar{text-align:center;padding:14px 16px 4px}.bbname{margin:0;font-size:clamp(26px,7vw,40px);line-height:1.1}.bbtag{margin-top:6px;font-size:15px;opacity:.85}
+.vid{position:relative;width:100%;aspect-ratio:16/9;margin:8px 0;border-radius:12px;overflow:hidden;background:#000}.vid iframe,.vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
 </style>
 </head>
 <body>
@@ -554,23 +555,49 @@ function gLogout() { run('logout', GTOK).catch(() => {}); GTOK = ''; GME = null;
 function closeSheet() { $('#ov').classList.remove('on'); }
 $('#ov').addEventListener('click', e => { if (e.target.id === 'ov') closeSheet(); });
 
+
+function vidHTML(u) {
+  u = String(u || '').trim(); if (!/^https:\/\//i.test(u)) return '';
+  let m, src = '';
+  if ((m = u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,15})/))) src = 'https://www.youtube.com/embed/' + m[1];
+  else if ((m = u.match(/vimeo\.com\/(?:video\/)?(\d{5,})/))) src = 'https://player.vimeo.com/video/' + m[1];
+  else if (/^https:\/\/(www\.|m\.|web\.)?(facebook\.com|fb\.watch)\//i.test(u)) src = 'https://www.facebook.com/plugins/video.php?show_text=false&href=' + encodeURIComponent(u);
+  if (src) return `<div class="vid"><iframe src="${esc(src)}" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen loading="lazy" title="Video"></iframe></div>`;
+  if (/\.(mp4|webm|mov|m4v)(\?|$)/i.test(u)) return `<div class="vid"><video src="${esc(u)}" controls playsinline preload="metadata"></video></div>`;
+  return `<a class="btn sec" style="display:block;text-align:center;text-decoration:none;margin:8px 0" target="_blank" rel="noopener" href="${esc(u)}">▶ Watch video</a>`;
+}
+function shareDetails(kind, x, link) {
+  const L = [], name = x.title || x.name || '';
+  L.push('✨ ' + name);
+  if (kind === 'unit') { L.push(peso(x.price) + ' / night'); if (x.location) L.push('📍 ' + x.location); L.push('👥 up to ' + x.maxGuests + ' guests · 🛏 ' + x.beds + ' beds · 🚿 ' + x.bathrooms + ' baths'); }
+  else if (kind === 'listing') { L.push((x.listingType === 'rent' ? 'For rent ' : 'For sale ') + peso(x.price) + (x.listingType === 'rent' ? '/month' : '')); if (x.location) L.push('📍 ' + x.location); L.push([x.propertyType, '🛏 ' + x.bedrooms, '🚿 ' + x.bathrooms, x.floorArea ? '📐 ' + x.floorArea + ' sqm' : '', x.lotArea ? '🌳 ' + x.lotArea + ' sqm lot' : ''].filter(Boolean).join(' · ')); }
+  else if (kind === 'service') L.push(peso(x.price) + ' · ' + x.durationMinutes + ' min');
+  else L.push(peso(x.price));
+  if (x.description) L.push('', String(x.description).trim());
+  if (x.videoUrl) L.push('', '🎬 Video: ' + x.videoUrl);
+  L.push('', '👉 Details and booking: ' + link);
+  return L.join('\n');
+}
+
 const shareBtn = (k, i) => `<button class="btn sec shr" onclick="shareItem('${k}',${i})">🔗 Share this</button>`;
 async function shareItem(kind, i) {
   const x = ({ unit: DATA.units, listing: DATA.listings, service: DATA.services, product: DATA.products })[kind][i]; if (!x) return;
   let link; try { link = String(await run('webUrl')).split('?')[0] + '?' + (x.ownerId ? 'host=' + encodeURIComponent(x.ownerId) + '&' : '') + kind + '=' + encodeURIComponent(x.id); } catch (e) { return; }
   const name = x.name || x.title || 'this';
-  try { if (navigator.share) { await navigator.share({ title: name, url: link }); return; } } catch (e) { return; }
-  try { await navigator.clipboard.writeText(link); alert('Link copied! Paste it anywhere to share ' + name + '.'); } catch (e) { prompt('Copy this link:', link); }
+  const text = shareDetails(kind, x, link);
+  try { if (navigator.share) { await navigator.share({ title: name, text }); return; } } catch (e) { return; }
+  try { await navigator.clipboard.writeText(text); alert('Details copied! Paste it anywhere to share ' + name + '.'); } catch (e) { prompt('Copy this:', text); }
 }
 async function shareThis() {
   let link; try { link = String(await run('webUrl')).split('?')[0] + '?' + (unit.ownerId ? 'host=' + encodeURIComponent(unit.ownerId) + '&' : '') + 'unit=' + encodeURIComponent(unit.id); } catch (e) { return; }
-  try { if (navigator.share) { await navigator.share({ title: unit.name, url: link }); return; } } catch (e) { return; }
-  try { await navigator.clipboard.writeText(link); alert('Link copied!'); } catch (e) { prompt('Copy this link:', link); }
+  const text = shareDetails('unit', unit, link);
+  try { if (navigator.share) { await navigator.share({ title: unit.name, text }); return; } } catch (e) { return; }
+  try { await navigator.clipboard.writeText(text); alert('Details copied!'); } catch (e) { prompt('Copy this:', text); }
 }
 function openUnit(i) {
   unit = DATA.units[i];
   show(`<h2 style="margin:4px 0">${esc(unit.name)}</h2><div class="mute">${esc(unit.location)} · ★ ${esc(unit.rating)}</div>
-    <div class="car">${unit.images.map(s => `<img src="${esc(s)}" alt="">`).join('') || '<div class="ph" style="flex:0 0 100%;border-radius:12px"></div>'}</div>
+    <div class="car">${unit.images.map(s => `<img src="${esc(s)}" alt="">`).join('') || '<div class="ph" style="flex:0 0 100%;border-radius:12px"></div>'}</div>${vidHTML(unit.videoUrl)}
     <div class="stats">
       <div class="stat"><b>${esc(unit.maxGuests)}</b>Guests</div><div class="stat"><b>${esc(unit.beds)}</b>Beds</div><div class="stat"><b>${esc(unit.bedrooms)}</b>Bedrooms</div>
       <div class="stat"><b>${esc(unit.bathrooms)}</b>Baths</div><div class="stat"><b>${esc(unit.checkInTime)}</b>Check-in</div><div class="stat"><b>${esc(unit.checkOutTime)}</b>Check-out</div></div>
@@ -884,13 +911,13 @@ function drawSite(H, hid) {
 function drawExtras(hid) {
   const L = (DATA.listings || []).filter(x => !hid || String(x.ownerId) === hid), V = (DATA.services || []).filter(x => !hid || String(x.ownerId) === hid);
   const P = (DATA.products || []).filter(x => !hid || String(x.ownerId) === hid); DATA.products = P; DATA.listings = L; DATA.services = V;
-  if (P.length) $('#prd').innerHTML = '<div class="coll"><small>PRODUCTS</small><h2>Shop</h2></div><div class="grid">' + P.map((x, i) => `<div class="card" id="c_p_${esc(x.id)}">${x.images[0] ? `<div class="imgw"><img src="${esc(x.images[0])}" alt=""></div>` : ''}<div class="b"><div class="row"><b style="font-size:18px">${esc(x.name)}</b><b>${peso(x.price)}</b></div><div style="margin:6px 0">${esc(x.description)}</div>${x.stock === 0 ? '<div class="mute">Out of stock</div>' : orderBtn(x)}${shareBtn('product', i)}</div></div>`).join('') + '</div>';
+  if (P.length) $('#prd').innerHTML = '<div class="coll"><small>PRODUCTS</small><h2>Shop</h2></div><div class="grid">' + P.map((x, i) => `<div class="card" id="c_p_${esc(x.id)}">${x.images[0] ? `<div class="imgw"><img src="${esc(x.images[0])}" alt=""></div>` : ''}<div class="b"><div class="row"><b style="font-size:18px">${esc(x.name)}</b><b>${peso(x.price)}</b></div><div style="margin:6px 0">${esc(x.description)}</div>${vidHTML(x.videoUrl)}${x.stock === 0 ? '<div class="mute">Out of stock</div>' : orderBtn(x)}${shareBtn('product', i)}</div></div>`).join('') + '</div>';
   if (L.length) $('#lst').innerHTML = '<div class="coll"><small>PROPERTIES</small><h2>Properties for sale &amp; rent</h2></div><div class="grid">' + L.map((x, i) => `<div class="card"><div class="imgw">${x.images[0] ? `<img src="${esc(x.images[0])}" alt="" onclick="openListing(${i})" style="cursor:pointer">` : '<div class="ph"></div>'}</div>
     <div class="b"><div class="row"><b style="font-size:18px">${esc(x.title)}</b><span class="mute">${x.listingType === 'rent' ? 'For rent' : 'For sale'}</span></div><div class="loc">📍 ${esc(x.location)}</div>
     <div class="mini"><span>🛏 ${esc(x.bedrooms)}</span><span>🚿 ${esc(x.bathrooms)}</span>${x.floorArea ? `<span>📐 ${esc(x.floorArea)} sqm</span>` : ''}</div><b style="font-size:18px">${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b>
     <div class="acts" style="margin-top:8px"><button class="btn sec" onclick="openListing(${i})">👁 View</button><button class="btn" onclick="inquire(${i})">✉️ Inquire</button></div>${shareBtn('listing', i)}</div></div>`).join('') + '</div>';
   if (V.length) $('#svc').innerHTML = '<div class="coll"><small>SERVICES</small><h2>Book an appointment</h2></div><div class="grid">' + V.map((x, i) => `<div class="card">${x.images[0] ? `<div class="imgw"><img src="${esc(x.images[0])}" alt=""></div>` : ''}<div class="b"><div class="row"><b style="font-size:18px">${esc(x.name)}</b><b>${peso(x.price)}</b></div>
-    <div class="mute">⏱ ${esc(x.durationMinutes)} min</div><div style="margin:6px 0">${esc(x.description)}</div><button class="btn" onclick="bookService(${i})">📅 Book now</button>${shareBtn('service', i)}</div></div>`).join('') + '</div>';
+    <div class="mute">⏱ ${esc(x.durationMinutes)} min</div><div style="margin:6px 0">${esc(x.description)}</div>${vidHTML(x.videoUrl)}<button class="btn" onclick="bookService(${i})">📅 Book now</button>${shareBtn('service', i)}</div></div>`).join('') + '</div>';
   try { const q = new URLSearchParams(location.search), l = q.get('listing'), sv = q.get('service'); if (l) { const k = L.findIndex(x => x.id === l); if (k >= 0) openListing(k); } if (sv) { const k = V.findIndex(x => x.id === sv); if (k >= 0) bookService(k); } const pr = q.get('product'); if (pr) setTimeout(() => { const e = document.getElementById('c_p_' + pr); if (e) { e.scrollIntoView({ behavior: 'smooth', block: 'center' }); e.style.outline = '3px solid var(--gold)'; } }, 400); } catch (e) {}
 }
 function orderBtn(x) {
@@ -900,7 +927,7 @@ function orderBtn(x) {
 }
 function openListing(i) {
   const x = DATA.listings[i];
-  show(`${x.images.map(u => `<img src="${esc(u)}" alt="" style="width:100%;border-radius:12px;margin-bottom:8px">`).join('')}<h3 style="margin:6px 0">${esc(x.title)}</h3><div class="mute">📍 ${esc(x.location)} · ${esc(x.propertyType)} · ${x.listingType === 'rent' ? 'For rent' : 'For sale'}</div>
+  show(`${x.images.map(u => `<img src="${esc(u)}" alt="" style="width:100%;border-radius:12px;margin-bottom:8px">`).join('')}${vidHTML(x.videoUrl)}<h3 style="margin:6px 0">${esc(x.title)}</h3><div class="mute">📍 ${esc(x.location)} · ${esc(x.propertyType)} · ${x.listingType === 'rent' ? 'For rent' : 'For sale'}</div>
     <div class="mini"><span>🛏 ${esc(x.bedrooms)}</span><span>🚿 ${esc(x.bathrooms)}</span>${x.floorArea ? `<span>📐 ${esc(x.floorArea)} sqm</span>` : ''}${x.lotArea ? `<span>🌳 ${esc(x.lotArea)} sqm lot</span>` : ''}</div>
     <b style="font-size:20px">${peso(x.price)}${x.listingType === 'rent' ? '/mo' : ''}</b><p style="white-space:pre-wrap">${esc(x.description)}</p><button class="btn" onclick="inquire(${i})">✉️ Inquire about this property</button>`);
 }

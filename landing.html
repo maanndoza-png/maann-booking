@@ -340,19 +340,34 @@ body{font-size:16px}.stage{aspect-ratio:1/1.08}.slide{left:0;right:0;top:12%}.st
 .pg4-w i{display:block;border-radius:6px;background:#2c3764}.pg4-w i.g{background:#d4a62a}.pg4-w i.l{background:#3a4676}
 .pg4-w .r{display:flex;gap:6px;min-height:24px}.pg4-w .r i{flex:1;min-height:24px}
 .pg4-a{display:none}
+
+#dvLc .sc-hd{padding:12px 48px;gap:28px;justify-content:flex-start}
+#dvLc .sc-hd img{height:52px}
+.sc-nav{display:flex;gap:34px;margin-left:24px;flex:1;font:600 17px Montserrat,system-ui,sans-serif;color:#0d092f}
+.sc-nav .cur{border-bottom:3px solid #0d092f;padding-bottom:3px}
+.sc-call{font:600 16px Montserrat,system-ui,sans-serif;color:#0d092f}
+.sc-bk{background:#0d092f;color:#fff;border-radius:999px;padding:12px 24px;font:700 16px Montserrat,system-ui,sans-serif}
+/* 3D motion */
+.dv-stage{perspective:1400px}
+.dv-3d{position:relative;padding-bottom:6%;transform-style:preserve-3d;animation:dvfloat 9s ease-in-out infinite;transform:rotateX(var(--rx,4deg)) rotateY(var(--ry,-10deg))}
+.dv-3d .dv-lap{transform:translateZ(0)}
+.dv-3d .dv-ph{transform:translateZ(90px);animation:dvph 6s ease-in-out infinite}
+.dv-3d::after{content:"";position:absolute;left:8%;right:8%;bottom:-3%;height:30px;background:radial-gradient(50% 50% at 50% 50%,rgba(0,0,0,.55),transparent 70%);transform:translateZ(-40px);filter:blur(6px);z-index:-1}
+@keyframes dvfloat{0%,100%{transform:rotateX(5deg) rotateY(-12deg) translateY(0)}50%{transform:rotateX(2deg) rotateY(10deg) translateY(-12px)}}
+@keyframes dvph{0%,100%{transform:translateZ(90px) translateY(0)}50%{transform:translateZ(120px) translateY(-14px)}}
+@media(prefers-reduced-motion:reduce){.dv-3d,.dv-3d .dv-ph{animation:none!important}}
 </style>
 <section class="dv" id="preview">
 <h2>See a website built with SlamBook</h2>
 <p class="dvsub">A sample: Pragma Realty, on a laptop and on a phone.</p>
-<div class="dv-stage">
+<div class="dv-stage" id="dvStage"><div class="dv-3d" id="dv3d">
 <div class="dv-lap"><div class="dv-lscr"><div class="dv-lview"><div class="dv-cv" id="dvLc" data-w="1280">
-<div class="sc-h"><img src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795246982871-qneyy.jpg" alt="Pragma Realty logo"><div class="sc-bg"><i></i><i></i><i></i></div></div>
+<div class="sc-h sc-hd"><img src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795246982871-qneyy.jpg" alt="Pragma Realty logo"><nav class="sc-nav"><span class="cur">Home</span><span>About</span><span>Services Offered</span><span>Deals / Promo</span></nav><span class="sc-call">📞 0917 624 4641</span><span class="sc-bk">Book a Viewing</span></div>
 <img class="sc-hero" src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795247008481-cuycn.jpg" alt="">
 <div class="sc-name">Pragma Realty</div><div class="sc-tag">Your Condo Match Maker</div>
 <div class="sc-hook">Find the home that fits your <i>life</i> and your budget.<small>Made for renters who need a safe place near work.</small></div>
 <div class="sc-sec" style="padding:14px 0 6px">FEATURED LISTING</div>
 <div class="sc-feat"><div class="sc-card"><img src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795611122501-2vxyb.jpg" alt="" loading="lazy"><div class="sc-b"><div class="sc-r"><b>2br With Loft</b><i>For rent</i></div><div class="sc-l">📍 Eastwood · Condo</div><div class="sc-m">🛏 2 · 📐 80 sqm</div><b class="sc-p">₱70,000/mo</b></div></div><div class="sc-card"><img src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795611213448-jg7vz.jpg" alt="" loading="lazy"><div class="sc-b"><div class="sc-r"><b>3br with loft</b><i>For sale</i></div><div class="sc-l">📍 Eastwood · Condo</div><div class="sc-m">🛏 3 · 🚿 2</div><b class="sc-p">₱90,000</b></div></div><div class="sc-card"><img src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795611391697-nt6xj.jpg" alt="" loading="lazy"><div class="sc-b"><div class="sc-r"><b>1br</b><i>For rent</i></div><div class="sc-l">📍 Eastwood · Condo</div><div class="sc-m">🛏 1</div><b class="sc-p">₱20,000/mo</b></div></div></div>
-<div class="sc-drawer"><a class="cur">🏠 Home</a><a>ℹ️ About</a><a>🛎 Services Offered</a><a>🏷 Deals / Promo</a><a class="ph">📞 0917 624 4641</a><a class="cta">Book a Viewing</a></div>
 </div></div></div><div class="dv-base"></div></div>
 <div class="dv-ph"><div class="dv-pview"><div class="dv-cv" id="dvPc" data-w="390">
 <div class="sc-h"><img src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795246982871-qneyy.jpg" alt=""><div class="sc-bg"><i></i><i></i><i></i></div></div>
@@ -363,11 +378,11 @@ body{font-size:16px}.stage{aspect-ratio:1/1.08}.slide{left:0;right:0;top:12%}.st
 <div class="sc-sec">FEATURED LISTING</div>
 <div class="sc-feat"><div class="sc-card"><img src="https://wqngwiagcoehytfbexil.supabase.co/storage/v1/object/public/unit-photos/c5176b6d-18fa-4a49-aefe-0e1391e450ff/unit-1795611122501-2vxyb.jpg" alt="" loading="lazy"><div class="sc-b"><div class="sc-r"><b>2br With Loft</b><i>For rent</i></div><div class="sc-l">📍 Eastwood · Condo</div><div class="sc-m">🛏 2 · 📐 80 sqm</div><b class="sc-p">₱70,000/mo</b></div></div></div>
 </div></div></div>
-</div>
+</div></div>
 <div class="dv-cap" style="margin-top:22px;font-size:14px;color:#a5aec9">Sample website: Pragma Realty</div>
 </section>
 <script>
-(function(){function fit(){document.querySelectorAll('.dv-cv').forEach(function(c){c.style.transform='scale('+(c.parentNode.clientWidth/c.dataset.w)+')'})}fit();addEventListener('resize',fit);addEventListener('load',fit)})();
+(function(){function fit(){document.querySelectorAll('.dv-cv').forEach(function(c){c.style.transform='scale('+(c.parentNode.clientWidth/c.dataset.w)+')'})}fit();addEventListener('resize',fit);addEventListener('load',fit);var st=document.getElementById('dvStage'),d3=document.getElementById('dv3d');if(st&&matchMedia('(hover:hover)').matches&&!matchMedia('(prefers-reduced-motion: reduce)').matches){st.addEventListener('pointermove',function(e){var r=st.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;d3.style.animation='none';d3.style.transform='rotateX('+(-y*14+3)+'deg) rotateY('+(x*26)+'deg)'});st.addEventListener('pointerleave',function(){d3.style.animation='';d3.style.transform=''})}})();
 </script>
 
 <!-- 4 pages illustration -->

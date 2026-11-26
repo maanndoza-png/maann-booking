@@ -16,6 +16,7 @@ body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;col
 #app{display:none;min-height:100vh}
 aside{position:fixed;inset:0 auto 0 0;width:240px;background:var(--panel);border-right:1px solid var(--line);padding:16px 12px;overflow:auto;z-index:30;transition:transform .2s}
 .brand{display:flex;gap:10px;align-items:center;padding:4px 8px 16px}
+.upd summary::-webkit-details-marker{display:none}.upd[open] .upc{transform:rotate(180deg)}.upd summary{-webkit-tap-highlight-color:transparent}
 .logo{width:56px;height:56px;border-radius:14px;background:var(--gold);color:var(--onGold);display:grid;place-items:center;font-size:30px;flex:0 0 56px}
 .brand b{display:block;letter-spacing:.5px}.brand small{color:var(--gold);font-weight:700;font-size:11px;letter-spacing:.8px}
 aside button.nv{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:none;color:var(--mute);padding:11px 12px;border-radius:10px;font-size:14px;cursor:pointer;margin-bottom:2px}
@@ -1313,17 +1314,18 @@ async function shareFull(kind, x) {
 
 /* ===== Grow your business: upsell waitlist ===== */
 const UPS = [
-  { id: 'meta_ads', icon: '📣', name: 'Meta Ads / Marketing Automation', price: 8999, line: 'We run your Facebook and Instagram ads and automate your follow-ups.' },
   { id: 'content_creator', icon: '🎬', name: 'Meta Ads Content Creator', price: 4999, line: 'We create the photos, videos and captions for your Facebook and Instagram ads.' },
+  { id: 'meta_ads', icon: '📣', name: 'Meta Ads / Marketing Automation', price: 8999, line: 'We run your Facebook and Instagram ads and automate your follow-ups.' },
   { id: 'crm_email', icon: '📧', name: 'CRM + Email Automation', price: 14999, line: 'Keep every lead in one place and send automatic emails.' },
   { id: 'ai_agents', icon: '🤖', name: 'AI Agents / Office Automation', price: 19999, line: 'AI agents that handle replies, bookings and office tasks for you.' }];
 async function upsell() {
   let mine = []; try { mine = (await A.sel('upsell_waitlist', 'select=product')).map(r => r.product); } catch (e) { }
   $('#main').innerHTML = head('Grow your business', 'Coming soon. Join the waitlist to get first access.') +
-    UPS.map(u => `<div class="card"><div class="row"><b>${u.icon} ${esc(u.name)}</b><b>${peso(u.price)}</b></div><p class="mute" style="margin:6px 0 10px">${esc(u.line)}</p>
-      <button class="btn ${mine.includes(u.id) ? 'sec' : ''}" style="width:100%" ${mine.includes(u.id) ? 'disabled' : ''} onclick="joinWait('${u.id}',${u.price})">${mine.includes(u.id) ? '✓ You are on the waitlist' : 'Join waitlist · ' + peso(u.price)}</button></div>`).join('') + '<div class="err" id="up_e"></div>';
+    UPS.map(u => { const on = mine.includes(u.id); return `<details class="card upd" ${window.UPOPEN === u.id ? 'open' : ''} style="padding:0"><summary style="list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px"><b>${u.icon} ${esc(u.name)}</b><span style="display:flex;align-items:center;gap:8px;white-space:nowrap"><b>${peso(u.price)}</b>${on ? '<span class="mute">✓</span>' : ''}<span class="upc" style="color:var(--gold);font-weight:800">▾</span></span></summary>
+      <div style="padding:0 16px 16px"><p class="mute" style="margin:0 0 10px">${esc(u.line)}</p>
+      <button class="btn ${on ? 'sec' : ''}" style="width:100%" ${on ? 'disabled' : ''} onclick="joinWait('${u.id}',${u.price})">${on ? '✓ You are on the waitlist' : 'Join waitlist · ' + peso(u.price)}</button></div></details>`; }).join('') + '<div class="err" id="up_e"></div>';
 }
-async function joinWait(id, price) { try { await A.ins('upsell_waitlist', { host_id: ME.ownerId, product: id, price }); toast('You are on the waitlist ✓'); upsell(); } catch (e) { $('#up_e').textContent = /duplicate|unique/i.test(e.message) ? 'You are already on this waitlist.' : e.message; } }
+async function joinWait(id, price) { window.UPOPEN = id; try { await A.ins('upsell_waitlist', { host_id: ME.ownerId, product: id, price }); toast('You are on the waitlist ✓'); upsell(); } catch (e) { $('#up_e').textContent = /duplicate|unique/i.test(e.message) ? 'You are already on this waitlist.' : e.message; } }
 
 /* ===== Property listings ===== */
 let LE = null;

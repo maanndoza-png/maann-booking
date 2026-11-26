@@ -747,7 +747,7 @@ window.addEventListener('hashchange', () => { toggleMenu(false); goPage(location
 document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('#navmenu a[data-pg]'); if (a) { e.preventDefault(); toggleMenu(false); goPage(a.dataset.pg); } });
 
 function drawChrome(S, H) {
-  { const bb = $('#brandbar'); if (bb) bb.innerHTML = S.brand ? '<h1 class="bbname">' + esc(S.brand) + '</h1>' + (S.tagline ? '<div class="bbtag">' + emphF(esc(S.tagline)) + '</div>' : '') : ''; }
+  { const bb = $('#brandbar'); if (bb) bb.innerHTML = S.tagline ? '<div class="bbtag">' + emphF(esc(S.tagline)) + '</div>' : ''; }
   if (!/^https:\/\//.test(S.logoUrl || '')) { const b = $('#brandfb'); b.textContent = S.brand || ''; b.style.display = 'block'; }
   const ph = H && H.contactPhone ? String(H.contactPhone).trim() : '', n = $('#navphone');
   if (ph) { n.href = 'tel:' + ph.replace(/[^0-9+]/g, ''); n.textContent = '📞 ' + ph; n.style.display = 'block'; }

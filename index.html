@@ -216,7 +216,7 @@ header>div:first-child,header>div:first-child>div{overflow:visible}
 header img#logo{height:44px!important;max-width:60vw;object-fit:contain}
 #brandfb{color:#fff;font-size:15px;letter-spacing:1px;text-transform:uppercase;max-width:55vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #navbk{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:18}
-#navmenu{position:fixed;top:0;left:0;bottom:0;width:min(86vw,340px);background:var(--panel);color:var(--ink);z-index:19;transform:translateX(-102%);transition:transform .22s;padding:70px 16px 20px;overflow:auto;box-shadow:0 0 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px}
+#navmenu{position:fixed;top:0;right:0;bottom:0;width:min(86vw,340px);background:var(--panel);color:var(--ink);z-index:19;transform:translateX(102%);transition:transform .22s;padding:70px 16px 20px;overflow:auto;box-shadow:0 0 40px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:6px}
 #navmenu.on{transform:none}#navbk.on{display:block}
 #navmenu a{display:block;padding:15px 12px;border-radius:12px;color:var(--ink);text-decoration:none;font-weight:600;font-size:17px;min-height:48px;box-sizing:border-box}
 #navmenu a.cur{background:var(--gold);color:var(--onGold,#1f1a05)}
@@ -297,13 +297,14 @@ header img#logo{height:44px!important;max-width:60vw;object-fit:contain}
 body.themed .dl-hero,body.themed .dl-hero h2,body.themed .dl-hero p,body.themed .dl-re{color:var(--bgInk)}
 .dl-hero .btn{background:var(--c2);color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.25)}
 .dl-hero .btn:hover{background:var(--c2);filter:brightness(1.15)}
+#brandbar{text-align:center;padding:14px 16px 4px}.bbname{margin:0;font-size:clamp(26px,7vw,40px);line-height:1.1}.bbtag{margin-top:6px;font-size:15px;opacity:.85}
 </style>
 </head>
 <body>
-<header class="row"><button id="menubtn" class="menubtn" aria-label="Open menu" aria-expanded="false" onclick="toggleMenu()"><span></span><span></span><span></span></button><div style="flex:1"></div><img id="logo" alt="Logo" style="display:none;height:44px;border-radius:8px"><b id="brandfb" style="display:none"></b><span id="brand" hidden></span><div id="tag" hidden></div><div id="tagm" hidden></div></header>
+<header class="row"><img id="logo" alt="Logo" style="display:none;height:44px;border-radius:8px"><b id="brandfb" style="display:none"></b><div style="flex:1"></div><button id="menubtn" class="menubtn" aria-label="Open menu" aria-expanded="false" onclick="toggleMenu()"><span></span><span></span><span></span></button><span id="brand" hidden></span><div id="tag" hidden></div><div id="tagm" hidden></div></header>
 <div id="navbk" onclick="toggleMenu(false)"></div>
 <nav id="navmenu" aria-label="Main menu"><a href="#home" data-pg="home">🏠 Home</a><a href="#about" data-pg="about">ℹ️ About</a><a href="#services" data-pg="services">🛎 Services Offered</a><a href="#deals" data-pg="deals">🏷 Deals / Promo</a><a id="navphone" href="#" style="display:none"></a><button class="btn" id="navcta" onclick="toggleMenu(false);CTA_GO()">Book Now</button><button class="btn sec" onclick="toggleMenu(false);openLookup()">Check my booking</button><div id="acct"></div></nav>
-<div id="hero" style="display:none"></div>
+<div id="hero" style="display:none"></div><div id="brandbar"></div>
 <main>
 <section class="pg" id="pg-home"><div id="hook"></div><div id="words"></div><div id="promo" style="display:none"></div><div id="feat"></div><div id="why"></div><div id="reviews"></div><div id="faq"></div><div id="cta1"></div></section>
 <section class="pg" id="pg-about" style="display:none"><section id="about" style="display:none"></section><div id="mv"></div><div id="map"></div><div id="calsec"></div><div id="privacy"></div><div id="chat"></div><div id="cta2"></div></section>
@@ -719,6 +720,7 @@ window.addEventListener('hashchange', () => { toggleMenu(false); goPage(location
 document.addEventListener('click', e => { const a = e.target.closest && e.target.closest('#navmenu a[data-pg]'); if (a) { e.preventDefault(); toggleMenu(false); goPage(a.dataset.pg); } });
 
 function drawChrome(S, H) {
+  { const bb = $('#brandbar'); if (bb) bb.innerHTML = S.brand ? '<h1 class="bbname">' + esc(S.brand) + '</h1>' + (S.tagline ? '<div class="bbtag">' + emphF(esc(S.tagline)) + '</div>' : '') : ''; }
   if (!/^https:\/\//.test(S.logoUrl || '')) { const b = $('#brandfb'); b.textContent = S.brand || ''; b.style.display = 'block'; }
   const ph = H && H.contactPhone ? String(H.contactPhone).trim() : '', n = $('#navphone');
   if (ph) { n.href = 'tel:' + ph.replace(/[^0-9+]/g, ''); n.textContent = '📞 ' + ph; n.style.display = 'block'; }

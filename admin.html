@@ -968,7 +968,7 @@ async function unlocks() {
       <button class="btn ok sm" onclick="act('resolveUnlock',{id:'${esc(r.id)}',approve:true,months:$('#mo_${esc(r.id)}').value})">Approve</button><button class="btn bad sm" onclick="act('resolveUnlock',{id:'${esc(r.id)}',approve:false})">Decline</button></div>` : ''}</div>`).join('') || '<p class="mute">No requests yet.</p>');
 }
 
-/* ===== My Website: one-page site designer ===== */
+/* ===== My Website: four-page site designer ===== */
 let SF = null;
 const SF_FONTS = ['Playfair Display', 'Cormorant Garamond', 'DM Serif Display', 'Lora', 'Montserrat', 'Poppins', 'Raleway', 'Inter', 'Open Sans', 'Nunito', 'Georgia', 'System'];
 const SF_SCRIPT = ['Dancing Script', 'Caveat', 'Satisfy', 'Great Vibes', 'Sacramento'];
@@ -1019,7 +1019,7 @@ async function fbSyncRun(url, setMsg) {
 }
 function showSyncStep() {
   const d = document.createElement('div'); d.id = 'syncstep'; d.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto';
-  d.innerHTML = `<div class="card" style="max-width:480px;width:100%"><h2>Before we begin</h2><p class="mute">Paste the link of your <b>Facebook Page</b>. We read its public name, description and profile photo to pre-fill your one-page website and suggest hooks for you.</p>
+  d.innerHTML = `<div class="card" style="max-width:480px;width:100%"><h2>Before we begin</h2><p class="mute">Paste the link of your <b>Facebook Page</b>. We read its public name, description and profile photo to pre-fill your four-page website and suggest hooks for you.</p>
     <label>Facebook Page link</label><input id="sy_u" placeholder="https://facebook.com/yourpage"><div class="mute" id="sy_m" style="margin:8px 0"></div><div class="err" id="sy_e"></div>
     <button class="btn" style="width:100%" id="sy_go" onclick="doSync()">Sync</button><button class="btn sec" style="width:100%;margin-top:8px" onclick="skipSync()">No Page yet</button></div>`;
   document.body.appendChild(d);
@@ -1036,7 +1036,7 @@ async function storefront() {
   SF = { payQrUrl: st.payQrUrl || '', faq: [0, 1, 2].map(i => (st.faq || [])[i] || { q: '', a: '' }).concat((st.faq || []).slice(3)), logoUrl: m.logoUrl || '', ownerPhotoUrl: m.ownerPhotoUrl || '', bgUrl: st.bgUrl || '', testimonials: (m.testimonials || []).map(t => ({ name: t.name || '', text: t.text || '', photo: t.photo || '' })), why: [0, 1, 2].map(i => (st.why || [])[i] || { title: '', text: '' }) };
   const so = m.socials || {}; loadAdminFonts(); const note = SYNC_NOTE; SYNC_NOTE = '';
   const c1 = /^#[0-9a-fA-F]{6}$/.test(st.color1 || '') ? st.color1 : '#d4a62a', c2 = /^#[0-9a-fA-F]{6}$/.test(st.color2 || '') ? st.color2 : '#0b1226';
-  $('#main').innerHTML = (ACT ? `<div class="card" style="border-color:var(--gold)"><b>Editing as owner:</b> ${esc(ACT.me.businessName || ACT.me.name || 'host')}'s website <button class="btn sec sm" style="width:auto;margin-left:8px" onclick="go('users')">← Back to Users</button></div>` : '') + head(ACT ? (ACT.me.businessName || 'Host') + ' · Website' : 'My Website', 'Your one-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') + '<div class="card" id="sf_sum" style="position:sticky;top:60px;z-index:5;padding:8px 14px"></div>' +
+  $('#main').innerHTML = (ACT ? `<div class="card" style="border-color:var(--gold)"><b>Editing as owner:</b> ${esc(ACT.me.businessName || ACT.me.name || 'host')}'s website <button class="btn sec sm" style="width:auto;margin-left:8px" onclick="go('users')">← Back to Users</button></div>` : '') + head(ACT ? (ACT.me.businessName || 'Host') + ' · Website' : 'My Website', 'Your four-page website. Fill in each part, then press Save My Website.') + (note ? `<div class="card" style="border-color:var(--gold,#d4a62a)">${note}</div>` : '') + '<div class="card" id="sf_sum" style="position:sticky;top:60px;z-index:5;padding:8px 14px"></div>' +
     sbCard() + csCard() + (ACT ? '' : `<div class="card"><h2>Sync from Facebook</h2><div class="mute">Paste your Facebook Page link and press Sync. Empty parts of your website are pre-filled; what you already wrote is kept.</div><div class="row" style="gap:8px;margin-top:6px"><input id="sf_fu" placeholder="https://facebook.com/yourpage" value="${esc(st.fbUrl || '')}"><button class="btn sm" style="width:auto" onclick="sfResync()">Sync</button><button class="btn sec sm" style="width:auto;white-space:nowrap" onclick="noPageYet()">No Page yet</button></div><div class="mute" id="sf_fm"></div><div class="err" id="sf_fe"></div></div>
     `) +
     `<div class="card"><h2>1 · Logo, hero &amp; hook</h2><label>Logo</label><div class="row" id="need_logo" style="justify-content:flex-start;gap:10px"><img id="sf_logo" style="height:56px;border-radius:8px;display:${SF.logoUrl ? 'block' : 'none'}" src="${esc(SF.logoUrl)}"><input type="file" accept="image/*" onchange="sfUp(this,'logoUrl','sf_logo',600)"></div>

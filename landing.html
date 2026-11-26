@@ -237,6 +237,9 @@ body{font-size:16px}.stage{aspect-ratio:1/1.08}.slide{left:0;right:0;top:12%}.st
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.rv,.rv-st>*{opacity:1;transform:none}.sub path,.circle path{stroke-dashoffset:0}.slide{transform:none}}
 .hero-mock{min-width:0}.hero .dv-stage{max-width:560px;margin:0 auto}.hero .dv-ph{width:25%;left:-5%;bottom:-2%}.hero #dvStage{padding-bottom:0}
 @media(max-width:980px){.hero .dv-stage{max-width:520px}}
+.nav img,footer img{filter:drop-shadow(0 0 6px rgba(212,166,42,.85)) drop-shadow(0 0 16px rgba(139,92,246,.55));animation:logoGlow 3s ease-in-out infinite}
+@keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 5px rgba(212,166,42,.7)) drop-shadow(0 0 12px rgba(139,92,246,.45))}50%{filter:drop-shadow(0 0 10px rgba(255,214,94,1)) drop-shadow(0 0 26px rgba(139,92,246,.8))}}
+@media(prefers-reduced-motion:reduce){.nav img,footer img{animation:none}}
 </style>
 </head>
 <body>

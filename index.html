@@ -311,6 +311,22 @@ header img#logo{width:75vw!important;max-width:75vw!important;height:auto!import
 #navmenu a#navphone{border-color:rgba(255,255,255,.3)!important}
 #navmenu .btn.sec,#navmenu #acct .btn,#navmenu #acct button{background:transparent!important;color:#fff!important;border:1px solid rgba(255,255,255,.4)!important}
 #navmenu #acct,#navmenu #acct *{color:#fff}
+
+/* logo float + glow, footer owner + copyright */
+header,header.row{background:transparent!important;border-bottom:0!important;box-shadow:none!important;position:relative!important;padding-left:6px!important}
+header img#logo{margin-left:0!important;border-radius:0!important;background:transparent!important;filter:drop-shadow(0 0 4px rgba(255,255,255,.95)) drop-shadow(0 0 12px rgba(255,255,255,.7)) drop-shadow(0 6px 14px rgba(0,0,0,.35));animation:lgfloat 3.2s ease-in-out infinite}
+@keyframes lgfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@media(prefers-reduced-motion:reduce){header img#logo{animation:none}}
+.menubtn{background:rgba(11,18,38,.55)!important;border-color:rgba(255,255,255,.5)!important}
+.owner p.ap{white-space:normal;margin:0 0 16px}
+#foot2{text-align:center;margin:26px auto 10px;padding:0 16px}
+#foot2 .fown{display:inline-flex;align-items:center;gap:12px;text-align:left;margin-bottom:12px}
+#foot2 .fown img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid var(--gold)}
+#foot2 .fown b{display:block;font-size:16px}
+#foot2 .fown span{font-size:13px;opacity:.75}
+#foot2 .fcopy{font-size:13px;opacity:.8}
+body.themed #foot2{color:var(--bgInk)}
+@media(max-width:760px){#foot2{margin-bottom:96px}}
 </style>
 </head>
 <body>
@@ -323,7 +339,7 @@ header img#logo{width:75vw!important;max-width:75vw!important;height:auto!import
 <section class="pg" id="pg-about" style="display:none"><section id="about" style="display:none"></section><div id="mv"></div><div id="map"></div><div id="calsec"></div><div id="privacy"></div><div id="chat"></div><div id="cta2"></div></section>
 <section class="pg" id="pg-services" style="display:none"><div class="coll" id="svch"><small>WHAT WE OFFER</small><h2>Services Offered</h2></div><div id="amstrip"></div><div class="coll" id="coll"><small>OUR COLLECTION</small><h2>Exceptional Properties</h2></div><div id="list" class="grid"></div><div id="lst"></div><div id="svc"></div><div id="prd"></div><div id="empty" class="empty" style="display:none">Nothing is listed yet.</div></section>
 <section class="pg" id="pg-deals" style="display:none"><div id="deals"></div></section>
-<div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div></main>
+<div id="foot" class="mute" style="text-align:center;margin:28px 0 8px;white-space:pre-wrap"></div><div id="foot2"></div></main>
 
 <div id="ov" class="overlay"><div class="sheet" id="sheet"></div></div>
 
@@ -776,7 +792,8 @@ function drawHome(H, hid) {
     if (f.k === 'service') { const i = (DATA.services || []).findIndex(x => String(x.id) === String(f.id)); if (i >= 0) items.push(['service', i]); }
     if (f.k === 'product') { const i = (DATA.products || []).findIndex(x => String(x.id) === String(f.id)); if (i >= 0) items.push(['product', i]); }
   });
-  if (!items.length) { const pool = [].concat(DATA.units.map((_, i) => ['unit', i]), (DATA.listings || []).map((_, i) => ['listing', i]), (DATA.services || []).map((_, i) => ['service', i]), (DATA.products || []).map((_, i) => ['product', i])); pool.slice(0, 3).forEach(x => items.push(x)); }
+  if (!items.length) { const pool = [].concat(DATA.units.map((_, i) => ['unit', i]), (DATA.listings || []).map((_, i) => ['listing', i]), (DATA.services || []).map((_, i) => ['service', i]), (DATA.products || []).map((_, i) => ['product', i])); pool.slice(0, 4).forEach(x => items.push(x)); }
+  { const pool2 = [].concat(DATA.units.map((_, i) => ['unit', i]), (DATA.listings || []).map((_, i) => ['listing', i]), (DATA.services || []).map((_, i) => ['service', i]), (DATA.products || []).map((_, i) => ['product', i])); for (const x of pool2) { if (items.length >= 4) break; if (!items.some(y => y[0] === x[0] && y[1] === x[1])) items.push(x); } items.splice(4); }
   const card = ([k, i]) => {
     if (k === 'unit') { const u = DATA.units[i]; return FCARD(u.images[0], u.name, '📍 ' + (u.location || ''), peso(u.price) + '/night', `<button class="btn sec" onclick="openUnit(${i})">👁 View</button><button class="btn" onclick="unit=DATA.units[${i}];startBooking()">📅 Book Now</button>`); }
     if (k === 'listing') { const x = DATA.listings[i]; return FCARD(x.images[0], x.title, '📍 ' + (x.location || ''), peso(x.price) + (x.listingType === 'rent' ? '/mo' : ''), `<button class="btn sec" onclick="openListing(${i})">👁 View</button><button class="btn" onclick="inquire(${i})">✉️ Inquire</button>`); }
@@ -909,13 +926,15 @@ function drawSite(H, hid) {
   drawChat(H); drawMbar(label);
   const so = H.socials || {}, L = ['facebook', 'instagram', 'tiktok', 'youtube', 'website'].filter(k => https(so[k]));
   const name = SI.ownerName || H.hostName || H.businessName || '';
+  { const fr = $('#foot2'); if (fr) { const role = SI.ownerRole || 'Owner', cy = SI.copyright || 'full', yr = new Date().getFullYear(), bn = H.businessName || (DATA.settings && DATA.settings.brand) || ''; const ct = cy === 'off' ? '' : cy === 'short' ? '© ' + yr + ' ' + bn : cy === 'owner' ? '© ' + yr + ' ' + name + '. All rights reserved.' : '© ' + yr + ' ' + bn + '. All rights reserved.';
+    fr.innerHTML = ((https(H.ownerPhotoUrl) || name) ? `<div class="fown">${https(H.ownerPhotoUrl) ? `<img src="${esc(H.ownerPhotoUrl)}" alt="">` : ''}<div><b>${esc(name)}</b><span>${esc(role)}</span></div></div>` : '') + (ct ? `<div class="fcopy">${esc(ct)}</div>` : ''); } }
   if (H.about || H.ownerPhotoUrl || H.contactPhone || H.contactEmail || L.length || SI.salutation || SI.license || SI.ownerName) {
     const a = $('#about'); a.style.display = 'block';
     const subs = [SI.salutation, SI.license, H.contactPhone ? `<a href="tel:${esc(H.contactPhone)}" style="color:inherit">${esc(H.contactPhone)}</a>` : ''].filter(Boolean);
-    a.innerHTML = '<div class="coll"><small>THE OWNER</small><h2>Meet the owner</h2></div><div class="owner">' +
+    a.innerHTML = '<div class="coll"><small>THE ' + esc(String(SI.ownerRole || 'Owner').toUpperCase()) + '</small><h2>Meet the ' + esc(SI.ownerRole || 'Owner') + '</h2></div><div class="owner">' +
       (https(H.ownerPhotoUrl) ? `<img src="${esc(H.ownerPhotoUrl)}" alt="">` : '<div class="nophoto" style="background:var(--c2)"></div>') +
       `<div><h3>${esc(name)}</h3>${subs.length ? '<div class="sub">' + subs.map((x, i) => (x === SI.salutation ? esc(x) : x === SI.license ? esc(x) : x)).map(x => `<span>${x}</span>`).join('') + '</div>' : ''}` +
-      (H.about ? `<p>${esc(H.about)}</p>` : '') +
+      (H.about ? String(H.about).split(/\n+/).map(s => s.trim()).filter(Boolean).map(s => `<p class="ap">${esc(s)}</p>`).join('') : '') +
       `<div class="soc">${L.map(k => `<a href="${esc(so[k])}" target="_blank" rel="noopener" aria-label="${k}">${ICO[k]}</a>`).join('')}${H.contactPhone ? `<a href="tel:${esc(H.contactPhone)}" aria-label="Call">${ICO.phone}</a>` : ''}${H.contactEmail ? `<a href="mailto:${esc(H.contactEmail)}" aria-label="Email">${ICO.mail}</a>` : ''}</div></div></div>`;
   }
 }
@@ -979,5 +998,9 @@ async function sendAppt(i) {
   catch (e) { $('#ap_go').disabled = false; alert(e.message); }
 }
 </script>
-</body>
+<script>
+(function(){const lg=document.getElementById('logo');if(!lg)return;
+function clean(){if(lg.dataset.cl===lg.src||!lg.src||lg.src.startsWith('data:'))return;const src=lg.src;const im=new Image();im.crossOrigin='anonymous';im.onload=function(){try{const w=im.naturalWidth,h=im.naturalHeight;if(!w||!h)return;const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,w,h),p=d.data;const isW=i=>p[i+3]>0&&p[i]>228&&p[i+1]>228&&p[i+2]>228;const seen=new Uint8Array(w*h),st=[];for(let i=0;i<w;i++){st.push(i,(h-1)*w+i);}for(let j=0;j<h;j++){st.push(j*w,j*w+w-1);}let n=0;while(st.length){const k=st.pop();if(seen[k])continue;seen[k]=1;if(!isW(k*4))continue;p[k*4+3]=0;n++;const xx=k%w,yy=(k-xx)/w;if(xx>0)st.push(k-1);if(xx<w-1)st.push(k+1);if(yy>0)st.push(k-w);if(yy<h-1)st.push(k+w);}if(n<w*h*0.03){lg.dataset.cl=src;return;}x.putImageData(d,0,0);const u=c.toDataURL('image/png');lg.dataset.cl=u;lg.src=u;}catch(e){lg.dataset.cl=src;}};im.onerror=function(){lg.dataset.cl=src;};im.src=src+(src.indexOf('?')<0?'?':'&')+'cors=1';}
+lg.addEventListener('load',clean);if(lg.complete)clean();})();
+</script></body>
 </html>

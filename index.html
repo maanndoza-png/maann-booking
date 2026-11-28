@@ -313,7 +313,8 @@ header img#logo{width:75vw!important;max-width:75vw!important;height:auto!import
 #navmenu #acct,#navmenu #acct *{color:#fff}
 
 /* logo float + glow, footer owner + copyright */
-header,header.row{background:transparent!important;border-bottom:0!important;box-shadow:none!important;position:relative!important;padding-left:6px!important}
+header,header.row{background:transparent!important;border-bottom:0!important;box-shadow:none!important;position:relative!important;padding-left:4px!important}
+header img#logo{object-position:left center!important;width:auto!important;max-width:75vw!important;margin-right:auto}
 header img#logo{margin-left:0!important;border-radius:0!important;background:transparent!important;filter:drop-shadow(0 0 4px rgba(255,255,255,.95)) drop-shadow(0 0 12px rgba(255,255,255,.7)) drop-shadow(0 6px 14px rgba(0,0,0,.35));animation:lgfloat 3.2s ease-in-out infinite}
 @keyframes lgfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @media(prefers-reduced-motion:reduce){header img#logo{animation:none}}
@@ -1000,7 +1001,7 @@ async function sendAppt(i) {
 </script>
 <script>
 (function(){const lg=document.getElementById('logo');if(!lg)return;
-function clean(){if(lg.dataset.cl===lg.src||!lg.src||lg.src.startsWith('data:'))return;const src=lg.src;const im=new Image();im.crossOrigin='anonymous';im.onload=function(){try{const w=im.naturalWidth,h=im.naturalHeight;if(!w||!h)return;const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,w,h),p=d.data;const isW=i=>p[i+3]>0&&p[i]>228&&p[i+1]>228&&p[i+2]>228;const seen=new Uint8Array(w*h),st=[];for(let i=0;i<w;i++){st.push(i,(h-1)*w+i);}for(let j=0;j<h;j++){st.push(j*w,j*w+w-1);}let n=0;while(st.length){const k=st.pop();if(seen[k])continue;seen[k]=1;if(!isW(k*4))continue;p[k*4+3]=0;n++;const xx=k%w,yy=(k-xx)/w;if(xx>0)st.push(k-1);if(xx<w-1)st.push(k+1);if(yy>0)st.push(k-w);if(yy<h-1)st.push(k+w);}if(n<w*h*0.03){lg.dataset.cl=src;return;}x.putImageData(d,0,0);const u=c.toDataURL('image/png');lg.dataset.cl=u;lg.src=u;}catch(e){lg.dataset.cl=src;}};im.onerror=function(){lg.dataset.cl=src;};im.src=src+(src.indexOf('?')<0?'?':'&')+'cors=1';}
+function clean(){if(lg.dataset.cl===lg.src||!lg.src||lg.src.startsWith('data:'))return;const src=lg.src;const im=new Image();im.crossOrigin='anonymous';im.onload=function(){try{const w=im.naturalWidth,h=im.naturalHeight;if(!w||!h)return;const c=document.createElement('canvas');c.width=w;c.height=h;const x=c.getContext('2d');x.drawImage(im,0,0);const d=x.getImageData(0,0,w,h),p=d.data;const isW=i=>p[i+3]>0&&p[i]>228&&p[i+1]>228&&p[i+2]>228;const seen=new Uint8Array(w*h),st=[];for(let i=0;i<w;i++){st.push(i,(h-1)*w+i);}for(let j=0;j<h;j++){st.push(j*w,j*w+w-1);}let n=0;while(st.length){const k=st.pop();if(seen[k])continue;seen[k]=1;if(!isW(k*4))continue;p[k*4+3]=0;n++;const xx=k%w,yy=(k-xx)/w;if(xx>0)st.push(k-1);if(xx<w-1)st.push(k+1);if(yy>0)st.push(k-w);if(yy<h-1)st.push(k+w);}if(n<w*h*0.03){lg.dataset.cl=src;return;}x.putImageData(d,0,0);let x0=w,y0=h,x1=-1,y1=-1;for(let yy=0;yy<h;yy++)for(let xx=0;xx<w;xx++){if(p[(yy*w+xx)*4+3]>16){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(yy<y0)y0=yy;if(yy>y1)y1=yy;}}let cc=c;if(x1>=x0&&y1>=y0){cc=document.createElement('canvas');cc.width=x1-x0+1;cc.height=y1-y0+1;cc.getContext('2d').drawImage(c,x0,y0,cc.width,cc.height,0,0,cc.width,cc.height);}const u=cc.toDataURL('image/png');lg.dataset.cl=u;lg.src=u;}catch(e){lg.dataset.cl=src;}};im.onerror=function(){lg.dataset.cl=src;};im.src=src+(src.indexOf('?')<0?'?':'&')+'cors=1';}
 lg.addEventListener('load',clean);if(lg.complete)clean();})();
 </script></body>
 </html>

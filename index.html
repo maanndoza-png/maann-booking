@@ -299,12 +299,24 @@ body.themed .dl-hero,body.themed .dl-hero h2,body.themed .dl-hero p,body.themed 
 .dl-hero .btn:hover{background:var(--c2);filter:brightness(1.15)}
 #brandbar{text-align:center;padding:14px 16px 4px}.bbname{margin:0;font-size:clamp(26px,7vw,40px);line-height:1.1}.bbtag{margin-top:6px;font-size:15px;opacity:.85}
 .vid{position:relative;width:100%;aspect-ratio:16/9;margin:8px 0;border-radius:12px;overflow:hidden;background:#000}.vid iframe,.vid video{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+/* mobile: big logo + dark menu */
+@media(max-width:760px){
+header img#logo{width:75vw!important;max-width:75vw!important;height:auto!important;max-height:84px}
+#brandfb{font-size:24px;max-width:75vw}
+}
+#navmenu{background:#0b1226!important;color:#fff!important;border-left:1px solid rgba(255,255,255,.08)}
+#navmenu a{color:#fff!important}
+#navmenu a.cur{color:var(--onGold,#1f1a05)!important}
+#navmenu a#navphone{border-color:rgba(255,255,255,.3)!important}
+#navmenu .btn.sec,#navmenu #acct .btn,#navmenu #acct button{background:transparent!important;color:#fff!important;border:1px solid rgba(255,255,255,.4)!important}
+#navmenu #acct,#navmenu #acct *{color:#fff}
 </style>
 </head>
 <body>
 <header class="row"><img id="logo" alt="Logo" style="display:none;height:44px;border-radius:8px"><b id="brandfb" style="display:none"></b><div style="flex:1"></div><button id="menubtn" class="menubtn" aria-label="Open menu" aria-expanded="false" onclick="toggleMenu()"><span></span><span></span><span></span></button><span id="brand" hidden></span><div id="tag" hidden></div><div id="tagm" hidden></div></header>
 <div id="navbk" onclick="toggleMenu(false)"></div>
-<nav id="navmenu" aria-label="Main menu"><a href="#home" data-pg="home">🏠 Home</a><a href="#about" data-pg="about">ℹ️ About</a><a href="#services" data-pg="services">🛎 Services Offered</a><a href="#deals" data-pg="deals">🏷 Deals / Promo</a><a id="navphone" href="#" style="display:none"></a><button class="btn" id="navcta" onclick="toggleMenu(false);CTA_GO()">Book Now</button><button class="btn sec" onclick="toggleMenu(false);openLookup()">Check my booking</button><div id="acct"></div></nav>
+<nav id="navmenu" aria-label="Main menu"><a href="#home" data-pg="home">🏠 Home</a><a href="#about" data-pg="about">ℹ️ About Us</a><a href="#services" data-pg="services">🛎 Services Offered</a><a href="#deals" data-pg="deals">🏷 Deals / Promo</a><a id="navphone" href="#" style="display:none"></a><button class="btn" id="navcta" onclick="toggleMenu(false);CTA_GO()">Book Now</button><button class="btn sec" onclick="toggleMenu(false);openLookup()">Check my booking</button><div id="acct"></div></nav>
 <div id="hero" style="display:none"></div><div id="brandbar"></div>
 <main>
 <section class="pg" id="pg-home"><div id="hook"></div><div id="words"></div><div id="promo" style="display:none"></div><div id="feat"></div><div id="why"></div><div id="reviews"></div><div id="faq"></div><div id="cta1"></div></section>

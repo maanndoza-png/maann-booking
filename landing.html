@@ -143,7 +143,7 @@ h2{font-size:clamp(30px,4.6vw,52px);font-weight:700}h3{font-size:20px;font-weigh
 .pfeat div{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px 18px;font-size:15px;color:var(--muted);line-height:1.5}.pfeat b{display:block;font:600 16px var(--display);margin-bottom:4px}
 /* rules */
 .rules{background:var(--bg2);overflow:hidden}
-.rules-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(30px,6vw,80px);align-items:center}
+.rules-grid{display:grid;grid-template-columns:1fr;gap:clamp(30px,6vw,80px);align-items:center}
 .never{display:flex;flex-wrap:wrap;gap:10px;margin:28px 0 8px}
 .never span{font:500 15px/1 var(--body);padding:11px 15px;border-radius:999px;border:1px solid rgba(255,107,107,.55);color:#ffc2c2;box-shadow:0 0 0 0 rgba(255,107,107,.5);animation:glow 2.4s infinite}
 .chat{border-radius:22px;background:var(--surface);border:1px solid var(--border);padding:22px;display:grid;gap:12px;box-shadow:0 30px 60px -30px rgba(0,0,0,.7)}
@@ -262,6 +262,32 @@ body{font-size:16px}.stage{aspect-ratio:1/1.08}.slide{left:0;right:0;top:12%}.st
 .nav img,footer img{filter:drop-shadow(0 0 6px rgba(212,166,42,.85)) drop-shadow(0 0 16px rgba(139,92,246,.55));animation:logoGlow 3s ease-in-out infinite}
 @keyframes logoGlow{0%,100%{filter:drop-shadow(0 0 5px rgba(212,166,42,.7)) drop-shadow(0 0 12px rgba(139,92,246,.45))}50%{filter:drop-shadow(0 0 10px rgba(255,214,94,1)) drop-shadow(0 0 26px rgba(139,92,246,.8))}}
 @media(prefers-reduced-motion:reduce){.nav img,footer img{animation:none}}
+
+/* one-line layouts (all screens) */
+.stairs{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important}
+.step:nth-of-type(n){margin-bottom:0}
+.shots{grid-template-columns:repeat(2,minmax(0,1fr))!important;max-width:none!important}
+.fit-grid{grid-template-columns:1fr 1fr!important}
+.f-grid{grid-template-columns:auto 1fr!important}
+@media(max-width:640px){
+.step{padding:16px 10px}
+.step .num{font-size:28px;margin-bottom:10px}
+.step h3{font-size:15px;margin-bottom:6px}
+.step p{font-size:13px}
+.shots{gap:10px}
+.shot{padding:6px;border-radius:18px}
+.shot img{border-radius:13px}
+.shot span{font-size:12px}
+.fit-grid{gap:10px}
+.fitcard{padding:16px 12px}
+.fitcard h3{font-size:16px;margin-bottom:12px}
+.fitcard li{font-size:14px;grid-template-columns:18px 1fr;gap:8px}
+.fitcard li svg{width:16px}
+.f-grid{gap:20px}
+.mono{width:120px}
+.mono .hand{font-size:18px;right:-6px;bottom:-26px}
+.founder blockquote{font-size:16px}
+}
 </style>
 </head>
 <body>
@@ -476,11 +502,6 @@ body{font-size:16px}.stage{aspect-ratio:1/1.08}.slide{left:0;right:0;top:12%}.st
 <p class="lede" style="margin-top:20px">Nothing gets forgotten. Empty parts of your website glow red until you fill them, so you always know what is left before you share your link.</p>
 <div class="never" aria-label="Examples of parts that glow red"><span>headline</span><span>photo</span><span>price</span><span>contact number</span><span>call to action</span></div>
 <p class="hand" style="font-size:26px;margin-top:18px;transform:rotate(-2deg);display:inline-block">fill them, and the red goes away.</p></div>
-<div class="chat rv" aria-label="Example of the question wizard">
-<span class="who">SlamBook asks</span><div class="bubble ai">Let us start with three quick questions:<ol><li>Who do you serve?</li><li>What problem do you solve?</li><li>What do you offer?</li></ol></div>
-<span class="who">You</span><div class="bubble me">Condo renters who need a safe place near work.</div>
-<span class="who">SlamBook</span><div class="bubble ai">Got it. I drafted your headline. Want to see it?</div>
-<p class="chat-cap">Sample conversation.</p></div>
 </div></section>
 
 <!-- FIT -->
